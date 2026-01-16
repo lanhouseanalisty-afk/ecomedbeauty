@@ -1,0 +1,22 @@
+project_id = "nmolphhxkphgayuxftvv"
+
+[functions.create-checkout]
+verify_jwt = false
+
+[functions.sap-b1-items]
+verify_jwt = false
+
+[functions.sap-b1-orders]
+verify_jwt = false
+
+[functions.stripe-webhook]
+verify_jwt = false
+
+[functions.search-leads-google-maps]
+verify_jwt = false
+
+[functions.search-leads-instagram]
+verify_jwt = false
+
+[functions.search-leads-linkedin]
+verify_jwt = false
