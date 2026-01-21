@@ -13,13 +13,13 @@ export function CategoriesSection() {
   const displayCategories = categories.filter((c) => c.id !== "all");
 
   return (
-    <section className="py-20 lg:py-28 bg-gradient-to-b from-background to-muted/10">
+    <section className="py-16 lg:py-24">
       <div className="mx-auto max-w-7xl px-4 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="font-serif text-3xl font-bold text-foreground sm:text-4xl lg:text-5xl">
+        <div className="text-center mb-12">
+          <h2 className="font-serif text-3xl font-bold text-foreground">
             Explore por categoria
           </h2>
-          <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
             Encontre os melhores produtos para cada tipo de procedimento
           </p>
         </div>
@@ -29,35 +29,29 @@ export function CategoriesSection() {
             <Link
               key={category.id}
               to={`/produtos?categoria=${category.id}`}
-              className="group relative overflow-hidden rounded-2xl aspect-[4/3] shadow-lg hover:shadow-2xl transition-all duration-500 animate-fade-in-up opacity-0"
+              className="group relative overflow-hidden rounded-xl aspect-[4/3] animate-fade-in-up opacity-0"
               style={{ animationDelay: `${index * 100}ms` }}
             >
-              {/* Image with parallax effect */}
+              {/* Image */}
               <img
                 src={categoryImages[category.id]}
                 alt={category.name}
-                className="absolute inset-0 h-full w-full object-cover transition-all duration-700 group-hover:scale-125"
+                className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
               />
-
-              {/* Enhanced gradient overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent transition-opacity duration-500 group-hover:from-black/80" />
-
-              {/* Accent border on hover */}
-              <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary/50 rounded-2xl transition-all duration-500" />
-
+              
+              {/* Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-foreground/20 to-transparent" />
+              
               {/* Content */}
-              <div className="absolute inset-0 flex flex-col justify-end p-5 lg:p-7">
-                <h3 className="font-serif text-lg font-bold text-white lg:text-2xl mb-2 transform transition-transform duration-500 group-hover:translate-y-[-4px]">
+              <div className="absolute inset-0 flex flex-col justify-end p-4 lg:p-6">
+                <h3 className="font-serif text-lg font-bold text-white lg:text-xl">
                   {category.name}
                 </h3>
-                <div className="flex items-center gap-2 text-sm text-white/90 transform transition-all duration-500 group-hover:gap-3">
-                  <span className="font-medium">{category.count} produtos</span>
-                  <ArrowRight className="h-4 w-4 transition-transform duration-500 group-hover:translate-x-2" />
+                <div className="mt-1 flex items-center gap-2 text-sm text-white/80">
+                  <span>{category.count} produtos</span>
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </div>
               </div>
-
-              {/* Shine effect on hover */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
             </Link>
           ))}
         </div>
@@ -65,4 +59,3 @@ export function CategoriesSection() {
     </section>
   );
 }
-

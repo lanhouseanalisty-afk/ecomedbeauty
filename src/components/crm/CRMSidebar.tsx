@@ -1,8 +1,8 @@
-import {
-  LayoutDashboard,
-  Users,
-  DollarSign,
-  Megaphone,
+import { 
+  LayoutDashboard, 
+  Users, 
+  DollarSign, 
+  Megaphone, 
   Handshake,
   Truck,
   Scale,
@@ -151,9 +151,8 @@ const menuSections: MenuSection[] = [
         icon: Truck,
         url: "/crm/logistica",
         subitems: [
-          { title: "Painel", url: "/crm/logistica" },
+          { title: "Dashboard", url: "/crm/logistica" },
           { title: "Admissão", url: "/crm/logistica/admissao" },
-          { title: "Pedidos de Insumos", url: "/crm/logistica/pedidos-insumos" },
           { title: "Pedidos", url: "/crm/logistica/pedidos" },
           { title: "Envios", url: "/crm/logistica/envios" },
           { title: "Estoque", url: "/crm/logistica/estoque" },

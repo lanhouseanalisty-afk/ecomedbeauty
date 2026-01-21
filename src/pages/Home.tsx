@@ -2,8 +2,7 @@ import { Helmet } from "react-helmet-async";
 import { HeroSection } from "@/components/home/HeroSection";
 import { FeaturesSection } from "@/components/home/FeaturesSection";
 import { CategoriesSection } from "@/components/home/CategoriesSection";
-import { HowItWorksSection } from "@/components/home/HowItWorksSection";
-import { ProductCarousel3D } from "@/components/home/ProductCarousel3D";
+import { FeaturedProducts } from "@/components/home/FeaturedProducts";
 import { TestimonialsSection } from "@/components/home/TestimonialsSection";
 import { NewsletterSection } from "@/components/home/NewsletterSection";
 import { CTASection } from "@/components/home/CTASection";
@@ -24,10 +23,9 @@ export default function Home() {
       <HeroSection />
       <FeaturesSection />
       <CategoriesSection />
-      <HowItWorksSection />
-      <ProductCarousel3D />
+      <FeaturedProducts />
       <TestimonialsSection />
-
+      
       {/* Trust Badges */}
       <section className="py-12 border-y border-border bg-card">
         <div className="mx-auto max-w-7xl px-4 lg:px-8">

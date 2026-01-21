@@ -34,14 +34,10 @@ import FinanceiroDashboard from "./pages/crm/financeiro/FinanceiroDashboard";
 import FinanceiroAdmissaoPage from "./pages/crm/financeiro/FinanceiroAdmissaoPage";
 import MarketingDashboard from "./pages/crm/marketing/MarketingDashboard";
 import MarketingAdmissaoPage from "./pages/crm/marketing/MarketingAdmissaoPage";
-import MarketingSolicitacaoPage from "./pages/crm/marketing/MarketingSolicitacaoPage";
-import MarketingRequestsListPage from "./pages/crm/marketing/MarketingRequestsListPage";
-import MarketingRequestsManagementPage from "./pages/crm/marketing/MarketingRequestsManagementPage";
 import ComercialDashboard from "./pages/crm/comercial/ComercialDashboard";
 import ComercialAdmissaoPage from "./pages/crm/comercial/ComercialAdmissaoPage";
 import LogisticaDashboard from "./pages/crm/logistica/LogisticaDashboard";
 import LogisticaAdmissaoPage from "./pages/crm/logistica/LogisticaAdmissaoPage";
-import LogisticaPedidosInsumosPage from "./pages/crm/logistica/LogisticaPedidosInsumosPage";
 import JuridicoDashboard from "./pages/crm/juridico/JuridicoDashboard";
 import JuridicoAdmissaoPage from "./pages/crm/juridico/JuridicoAdmissaoPage";
 import TechDashboard from "./pages/crm/tech/TechDashboard";
@@ -161,21 +157,6 @@ const App = () => (
                         <MarketingAdmissaoPage />
                       </ProtectedRoute>
                     } />
-                    <Route path="marketing/solicitacao-insumos" element={
-                      <ProtectedRoute requiredModule="marketing">
-                        <MarketingSolicitacaoPage />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="marketing/solicitacoes" element={
-                      <ProtectedRoute requiredModule="marketing">
-                        <MarketingRequestsListPage />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="marketing/gerenciar-solicitacoes" element={
-                      <ProtectedRoute requiredModule="marketing">
-                        <MarketingRequestsManagementPage />
-                      </ProtectedRoute>
-                    } />
                     <Route path="marketing/docusign" element={
                       <ProtectedRoute requiredModule="marketing">
                         <DocuSignPage />
@@ -214,11 +195,6 @@ const App = () => (
                     <Route path="logistica/admissao" element={
                       <ProtectedRoute requiredModule="logistica">
                         <LogisticaAdmissaoPage />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="logistica/pedidos-insumos" element={
-                      <ProtectedRoute requiredModule="logistica">
-                        <LogisticaPedidosInsumosPage />
                       </ProtectedRoute>
                     } />
                     <Route path="logistica/docusign" element={

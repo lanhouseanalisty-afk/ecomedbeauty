@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import {
-  Megaphone,
-  Plus,
+import { 
+  Megaphone, 
+  Plus, 
   Target,
   TrendingUp,
   Eye,
@@ -12,8 +11,7 @@ import {
   MoreHorizontal,
   Play,
   Pause,
-  BarChart3,
-  Package
+  BarChart3
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -68,7 +66,6 @@ const channelData = [
 ];
 
 export default function MarketingDashboard() {
-  const navigate = useNavigate();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { campaigns, isLoading, createCampaign } = useCampaigns();
   const { data: stats } = useMarketingStats();
@@ -127,30 +124,30 @@ export default function MarketingDashboard() {
   };
 
   const quickStats = [
-    {
-      title: "Campanhas Ativas",
-      value: stats?.active || 0,
-      icon: Megaphone,
+    { 
+      title: "Campanhas Ativas", 
+      value: stats?.active || 0, 
+      icon: Megaphone, 
       color: "text-primary",
       trend: { value: 12 }
     },
-    {
-      title: "Orçamento Total",
-      value: formatCurrency(stats?.totalBudget || 0),
-      icon: Target,
-      color: "text-info"
+    { 
+      title: "Orçamento Total", 
+      value: formatCurrency(stats?.totalBudget || 0), 
+      icon: Target, 
+      color: "text-info" 
     },
-    {
-      title: "Gasto Acumulado",
-      value: formatCurrency(stats?.totalSpent || 0),
-      icon: TrendingUp,
+    { 
+      title: "Gasto Acumulado", 
+      value: formatCurrency(stats?.totalSpent || 0), 
+      icon: TrendingUp, 
       color: "text-warning",
       description: `${stats?.totalBudget ? Math.round((stats.totalSpent / stats.totalBudget) * 100) : 0}% do orçamento`
     },
-    {
-      title: "ROI Médio",
-      value: "340%",
-      icon: BarChart3,
+    { 
+      title: "ROI Médio", 
+      value: "340%", 
+      icon: BarChart3, 
       color: "text-success",
       trend: { value: 8 }
     },
@@ -197,18 +194,21 @@ export default function MarketingDashboard() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="type">Tipo</Label>
-                  <select
-                    id="type"
+                  <Select
                     value={newCampaign.type}
-                    onChange={(e) => setNewCampaign({ ...newCampaign, type: e.target.value })}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    onValueChange={(value) => setNewCampaign({ ...newCampaign, type: value })}
                   >
-                    <option value="awareness">Awareness</option>
-                    <option value="leads">Geração de Leads</option>
-                    <option value="conversion">Conversão</option>
-                    <option value="retention">Retenção</option>
-                    <option value="remarketing">Remarketing</option>
-                  </select>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="awareness">Awareness</SelectItem>
+                      <SelectItem value="leads">Geração de Leads</SelectItem>
+                      <SelectItem value="conversion">Conversão</SelectItem>
+                      <SelectItem value="retention">Retenção</SelectItem>
+                      <SelectItem value="remarketing">Remarketing</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="budget">Orçamento (R$)</Label>
@@ -263,50 +263,6 @@ export default function MarketingDashboard() {
       </div>
 
       <QuickStats stats={quickStats} />
-
-      {/* Card de Acesso Rápido - Solicitação de Insumos */}
-      <Card className="bg-gradient-to-br from-purple-600 to-indigo-700 border-0 text-white">
-        <CardHeader>
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-3 bg-white/20 rounded-lg backdrop-blur-sm">
-              <Package className="h-6 w-6" />
-            </div>
-            <div>
-              <CardTitle className="text-white">Solicitação de Insumos</CardTitle>
-              <CardDescription className="text-white/80">
-                Gerencie materiais e kits para eventos e workshops
-              </CardDescription>
-            </div>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => navigate('/crm/marketing/solicitacao-insumos')}
-              className="flex-1 min-w-[140px]"
-            >
-              <Plus className="h-4 w-4 mr-1" />
-              Nova Solicitação
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate('/crm/marketing/solicitacoes')}
-              className="flex-1 min-w-[140px] bg-white/10 hover:bg-white/20 text-white border-white/20"
-            >
-              Minhas Solicitações
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate('/crm/marketing/gerenciar-solicitacoes')}
-              className="flex-1 min-w-[140px] bg-white/10 hover:bg-white/20 text-white border-white/20"
-            >
-              Gerenciar Todas
-            </Button>
-          </div>
-        </CardHeader>
-      </Card>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <KPIChart
@@ -402,9 +358,9 @@ export default function MarketingDashboard() {
                               {formatCurrency(campaign.spent || 0)} / {formatCurrency(campaign.budget || 0)}
                             </span>
                           </div>
-                          <Progress
-                            value={campaign.budget ? ((campaign.spent || 0) / campaign.budget) * 100 : 0}
-                            className="h-2"
+                          <Progress 
+                            value={campaign.budget ? ((campaign.spent || 0) / campaign.budget) * 100 : 0} 
+                            className="h-2" 
                           />
                         </div>
 
