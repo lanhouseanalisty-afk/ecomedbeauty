@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { 
-  Users, 
-  Plus, 
+import {
+  Users,
+  Plus,
   Target,
   TrendingUp,
   DollarSign,
@@ -132,109 +132,110 @@ export default function ComercialDashboard() {
             <Search className="mr-2 h-4 w-4" />
             Buscar Leads
           </Button>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Novo Lead
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px]">
-              <DialogHeader>
-                <DialogTitle>Novo Lead</DialogTitle>
-                <DialogDescription>
-                  Cadastre um novo lead no sistema.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="first_name">Nome</Label>
-                    <Input
-                      id="first_name"
-                      value={newLead.first_name}
-                      onChange={(e) => setNewLead({ ...newLead, first_name: e.target.value })}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="last_name">Sobrenome</Label>
-                    <Input
-                      id="last_name"
-                      value={newLead.last_name}
-                      onChange={(e) => setNewLead({ ...newLead, last_name: e.target.value })}
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={newLead.email}
-                      onChange={(e) => setNewLead({ ...newLead, email: e.target.value })}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="phone">Telefone</Label>
-                    <Input
-                      id="phone"
-                      value={newLead.phone}
-                      onChange={(e) => setNewLead({ ...newLead, phone: e.target.value })}
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="company">Empresa</Label>
-                    <Input
-                      id="company"
-                      value={newLead.company}
-                      onChange={(e) => setNewLead({ ...newLead, company: e.target.value })}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="source">Origem</Label>
-                    <Select
-                      value={newLead.source}
-                      onValueChange={(value) => setNewLead({ ...newLead, source: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="website">Website</SelectItem>
-                        <SelectItem value="referral">Indicação</SelectItem>
-                        <SelectItem value="google_ads">Google Ads</SelectItem>
-                        <SelectItem value="social_media">Redes Sociais</SelectItem>
-                        <SelectItem value="event">Evento</SelectItem>
-                        <SelectItem value="other">Outro</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="notes">Observações</Label>
-                  <Textarea
-                    id="notes"
-                    value={newLead.notes}
-                    onChange={(e) => setNewLead({ ...newLead, notes: e.target.value })}
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  Cancelar
-                </Button>
-                <Button onClick={handleCreateLead} disabled={createLead.isPending}>
-                  {createLead.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Cadastrar
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
         </div>
       </div>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogTrigger asChild>
+          <Button>
+            <Plus className="mr-2 h-4 w-4" />
+            Novo Lead
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Novo Lead</DialogTitle>
+            <DialogDescription>
+              Cadastre um novo lead no sistema.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="first_name">Nome</Label>
+                <Input
+                  id="first_name"
+                  value={newLead.first_name}
+                  onChange={(e) => setNewLead({ ...newLead, first_name: e.target.value })}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="last_name">Sobrenome</Label>
+                <Input
+                  id="last_name"
+                  value={newLead.last_name}
+                  onChange={(e) => setNewLead({ ...newLead, last_name: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={newLead.email}
+                  onChange={(e) => setNewLead({ ...newLead, email: e.target.value })}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="phone">Telefone</Label>
+                <Input
+                  id="phone"
+                  value={newLead.phone}
+                  onChange={(e) => setNewLead({ ...newLead, phone: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="company">Empresa</Label>
+                <Input
+                  id="company"
+                  value={newLead.company}
+                  onChange={(e) => setNewLead({ ...newLead, company: e.target.value })}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="source">Origem</Label>
+                <Select
+                  value={newLead.source}
+                  onValueChange={(value) => setNewLead({ ...newLead, source: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="website">Website</SelectItem>
+                    <SelectItem value="referral">Indicação</SelectItem>
+                    <SelectItem value="google_ads">Google Ads</SelectItem>
+                    <SelectItem value="social_media">Redes Sociais</SelectItem>
+                    <SelectItem value="event">Evento</SelectItem>
+                    <SelectItem value="other">Outro</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="notes">Observações</Label>
+              <Textarea
+                id="notes"
+                value={newLead.notes}
+                onChange={(e) => setNewLead({ ...newLead, notes: e.target.value })}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleCreateLead} disabled={createLead.isPending}>
+              {createLead.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Cadastrar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <div className="grid gap-4 md:grid-cols-4">
         {stats.map((stat) => (

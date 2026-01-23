@@ -1,8 +1,20 @@
-import { testimonials } from "@/data/products";
 import { RatingStars } from "@/components/ui/rating-stars";
-import { Quote } from "lucide-react";
+import { Quote, Loader2 } from "lucide-react";
+import { useTestimonials } from "@/hooks/useTestimonials";
 
 export function TestimonialsSection() {
+  const { data: testimonials, isLoading } = useTestimonials();
+
+  if (isLoading) {
+    return (
+      <section className="py-16 lg:py-24 bg-muted/30">
+        <div className="flex justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="py-16 lg:py-24 bg-muted/30">
       <div className="mx-auto max-w-7xl px-4 lg:px-8">
@@ -16,15 +28,15 @@ export function TestimonialsSection() {
         </div>
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {testimonials.map((testimonial, index) => (
+          {testimonials?.map((testimonial, index) => (
             <div
               key={testimonial.id}
-              className="relative rounded-xl border border-border bg-card p-6 shadow-card transition-all duration-300 hover:shadow-soft hover-lift animate-fade-in-up opacity-0"
+              className="relative rounded-xl border border-border bg-card p-6 shadow-card transition-all duration-300 hover:shadow-soft hover-lift animate-fade-in-up"
               style={{ animationDelay: `${index * 150}ms` }}
             >
               {/* Quote icon */}
               <Quote className="absolute top-4 right-4 h-8 w-8 text-primary/10" />
-              
+
               <div className="flex items-center gap-4">
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold">
                   {testimonial.avatar}

@@ -1,11 +1,11 @@
 import { useMemo, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { ShoppingCart, Star, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { ShoppingCart, Star, ArrowRight, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import useEmblaCarousel from "embla-carousel-react";
 import { CartItem, Product } from "@/types/product";
-import { products } from "@/data/products";
 import { useCart } from "@/contexts/CartContext";
 import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
+import { useProducts } from "@/hooks/useProducts";
 import { Button } from "@/components/ui/button";
 
 interface CartRecommendationsProps {
@@ -15,16 +15,23 @@ interface CartRecommendationsProps {
 
 // Define complementary category pairs for smarter recommendations
 const COMPLEMENTARY_CATEGORIES: Record<string, string[]> = {
-  "Preenchedores": ["Instrumentais", "Skincare"],
+  "Preendedores": ["Instrumentais", "Skincare"],
+  "Preenchimentos": ["Instrumentais", "Skincare"],
   "Fios": ["Instrumentais", "Skincare"],
-  "Skincare": ["Preenchedores", "Fios"],
-  "Instrumentais": ["Preenchedores", "Fios"],
+  "Skincare": ["Preenchimentos", "Fios", "Preenchedores"],
+  "Instrumentais": ["Preenchimentos", "Fios", "Preenchedores"],
 };
 
 export function CartRecommendations({ cartItems, maxItems = 8 }: CartRecommendationsProps) {
   const { addItem } = useCart();
   const { items: recentlyViewed } = useRecentlyViewed();
-  
+
+  const { data: productsData, isLoading } = useProducts({
+    top: 50 // Fetch a good amount to score
+  });
+
+  const allProducts = productsData?.items || [];
+
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: "start",
     slidesToScroll: 1,
@@ -41,13 +48,13 @@ export function CartRecommendations({ cartItems, maxItems = 8 }: CartRecommendat
   }, [emblaApi]);
 
   const recommendations = useMemo(() => {
-    if (cartItems.length === 0) return [];
+    if (cartItems.length === 0 || allProducts.length === 0) return [];
 
     const cartProductIds = new Set(cartItems.map((item) => item.product.id));
     const cartCategories = [...new Set(cartItems.map((item) => item.product.category))];
 
     // Score-based recommendation system
-    const scoredProducts = products
+    const scoredProducts = allProducts
       .filter((product) => !cartProductIds.has(product.id) && product.inStock)
       .map((product) => {
         let score = 0;
@@ -91,7 +98,7 @@ export function CartRecommendations({ cartItems, maxItems = 8 }: CartRecommendat
       })
       .slice(0, maxItems)
       .map((item) => item.product);
-  }, [cartItems, recentlyViewed, maxItems]);
+  }, [cartItems, recentlyViewed, maxItems, allProducts]);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("pt-BR", {
@@ -104,10 +111,18 @@ export function CartRecommendations({ cartItems, maxItems = 8 }: CartRecommendat
     addItem(product, 1);
   };
 
+  if (isLoading) {
+    return (
+      <div className="mt-12 flex justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   if (recommendations.length === 0) return null;
 
   return (
-    <div className="mt-12 animate-fade-in-up opacity-0" style={{ animationDelay: "200ms" }}>
+    <div className="mt-12 animate-fade-in-up">
       <div className="flex items-center justify-between mb-6">
         <h2 className="font-serif text-xl font-semibold text-foreground">
           Você também pode gostar
@@ -147,8 +162,8 @@ export function CartRecommendations({ cartItems, maxItems = 8 }: CartRecommendat
               className="min-w-[160px] max-w-[160px] sm:min-w-[200px] sm:max-w-[200px] flex-shrink-0"
             >
               <div
-                className="group h-full rounded-xl border border-border bg-card p-3 transition-all hover:shadow-lg hover:border-primary/30 animate-fade-in-up opacity-0"
-                style={{ animationDelay: `${300 + index * 50}ms` }}
+                className="group h-full rounded-xl border border-border bg-card p-3 transition-all hover:shadow-lg hover:border-primary/30 animate-fade-in-up"
+                style={{ animationDelay: `${index * 50}ms` }}
               >
                 {/* Image */}
                 <Link to={`/produto/${product.id}`} className="block overflow-hidden rounded-lg">

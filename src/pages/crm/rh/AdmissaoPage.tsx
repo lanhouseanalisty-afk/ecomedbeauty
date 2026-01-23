@@ -8,10 +8,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { 
-  UserPlus, 
-  ClipboardCheck, 
-  Plus, 
+import {
+  UserPlus,
+  ClipboardCheck,
+  Plus,
   Users,
   CheckCircle2,
   Clock,
@@ -46,6 +46,17 @@ const stepColors: Record<string, string> = {
   concluido: "bg-emerald-500",
 };
 
+const formatDateSafe = (dateString: string | null | undefined, formatStr: string = "dd/MM/yyyy") => {
+  if (!dateString) return "—";
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "—";
+    return format(date, formatStr, { locale: ptBR });
+  } catch (e) {
+    return "—";
+  }
+};
+
 export default function AdmissaoPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [viewingProcess, setViewingProcess] = useState<string | null>(null);
@@ -55,7 +66,7 @@ export default function AdmissaoPage() {
     targetStep: null,
   });
   const [returnReason, setReturnReason] = useState("");
-  
+
   const { processes, isLoading, createAdmission, sendToColaborador, returnToStep } = useAdmissionProcesses();
 
   // Filtrar processos
@@ -72,7 +83,7 @@ export default function AdmissaoPage() {
 
   const handleReturnToStep = async () => {
     if (!returnDialog.processId || !returnDialog.targetStep) return;
-    
+
     try {
       await returnToStep.mutateAsync({
         id: returnDialog.processId,
@@ -108,7 +119,7 @@ export default function AdmissaoPage() {
         work_regime: data.regime_trabalho === "Hibrido" ? "Híbrido" : data.regime_trabalho,
         hr_observations: data.observacoes_rh || null,
       });
-      
+
       setIsFormOpen(false);
     } catch (error) {
       // Error is handled in the hook
@@ -117,8 +128,9 @@ export default function AdmissaoPage() {
 
 
   const getProgressValue = (step: string) => {
-    const steps = ['rh', 'gestor', 'ti', 'colaborador', 'concluido'];
+    const steps = ['rh', 'gestor', 'ti', 'rh_review', 'colaborador', 'concluido'];
     const index = steps.indexOf(step);
+    if (index === -1) return 0;
     return ((index + 1) / steps.length) * 100;
   };
 
@@ -244,13 +256,13 @@ export default function AdmissaoPage() {
                             {process.position} • {process.department}
                           </p>
                           <p className="text-xs text-muted-foreground mt-1">
-                            Início: {format(new Date(process.start_date), "dd/MM/yyyy", { locale: ptBR })}
+                            Início: {formatDateSafe(process.start_date)}
                           </p>
                           <div className="flex gap-2 mt-2 flex-wrap">
                             {process.ti_completed_at && (
                               <Badge variant="outline" className="text-xs">
                                 <CheckCircle2 className="h-3 w-3 mr-1 text-green-500" />
-                                TI: {format(new Date(process.ti_completed_at), "dd/MM HH:mm")}
+                                TI: {formatDateSafe(process.ti_completed_at, "dd/MM HH:mm")}
                               </Badge>
                             )}
                             {process.email_created && (
@@ -266,8 +278,8 @@ export default function AdmissaoPage() {
                           <Eye className="h-4 w-4 mr-2" />
                           Revisar
                         </Button>
-                        <Button 
-                          size="sm" 
+                        <Button
+                          size="sm"
                           onClick={() => handleSendToColaborador(process.id)}
                           disabled={sendToColaborador.isPending}
                           className="bg-cyan-600 hover:bg-cyan-700"
@@ -317,19 +329,19 @@ export default function AdmissaoPage() {
                             {process.position} • {process.department}
                           </p>
                           <p className="text-xs text-muted-foreground mt-1">
-                            Início: {format(new Date(process.start_date), "dd/MM/yyyy", { locale: ptBR })}
+                            Início: {formatDateSafe(process.start_date)}
                           </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-4">
                         <div className="text-right">
                           <div className="flex items-center gap-2 mb-1">
-                            <Badge className={`${stepColors[process.current_step]} text-white`}>
-                              {stepLabels[process.current_step]}
+                            <Badge className={`${stepColors[process.current_step] || 'bg-muted'} text-white`}>
+                              {stepLabels[process.current_step] || process.current_step}
                             </Badge>
                             <ArrowRight className="h-4 w-4 text-muted-foreground" />
                             <span className="text-sm text-muted-foreground">
-                              Setor: {process.target_department.toUpperCase()}
+                              Setor: {process.target_department?.toUpperCase() || "N/A"}
                             </span>
                           </div>
                           <Progress value={getProgressValue(process.current_step)} className="w-32 h-2" />
@@ -406,7 +418,8 @@ export default function AdmissaoPage() {
               Nova Admissão - Dados Iniciais
             </DialogTitle>
           </DialogHeader>
-          <AdmissaoForm 
+          <AdmissaoForm
+            key="new-admission-form"
             onSubmit={handleFormSubmit}
             showOnlySections={[1]} // RH só preenche seção 1 (dados iniciais)
             userRole="rh" // RH sempre envia, não navega
@@ -425,7 +438,7 @@ export default function AdmissaoPage() {
               {(() => {
                 const process = processes.find(p => p.id === viewingProcess);
                 if (!process) return null;
-                
+
                 return (
                   <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
@@ -435,7 +448,7 @@ export default function AdmissaoPage() {
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Departamento Destino</p>
-                        <Badge>{process.target_department.toUpperCase()}</Badge>
+                        <Badge>{process.target_department?.toUpperCase() || "N/A"}</Badge>
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Cargo</p>
@@ -443,14 +456,14 @@ export default function AdmissaoPage() {
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Etapa Atual</p>
-                        <Badge className={`${stepColors[process.current_step]} text-white`}>
-                          {stepLabels[process.current_step]}
+                        <Badge className={`${stepColors[process.current_step] || 'bg-muted'} text-white`}>
+                          {stepLabels[process.current_step] || process.current_step}
                         </Badge>
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Data de Início</p>
                         <p className="font-medium">
-                          {format(new Date(process.start_date), "dd/MM/yyyy", { locale: ptBR })}
+                          {formatDateSafe(process.start_date)}
                         </p>
                       </div>
                       <div>
@@ -458,7 +471,7 @@ export default function AdmissaoPage() {
                         <p className="font-medium">{process.contract_type}</p>
                       </div>
                     </div>
-                    
+
                     {/* Se está em revisão, mostrar o que a TI preencheu */}
                     {process.current_step === 'rh_review' && (
                       <div className="pt-4 border-t space-y-4">
@@ -481,7 +494,7 @@ export default function AdmissaoPage() {
                               </div>
                             )}
                           </div>
-                          
+
                           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                             <div className="flex items-center gap-2">
                               {process.user_ad_created ? (
@@ -562,7 +575,7 @@ export default function AdmissaoPage() {
 
                         <div className="flex justify-between items-center pt-2">
                           <div className="flex gap-2">
-                            <Button 
+                            <Button
                               variant="outline"
                               size="sm"
                               onClick={() => openReturnDialog(process.id, 'gestor')}
@@ -571,7 +584,7 @@ export default function AdmissaoPage() {
                               <RotateCcw className="h-4 w-4 mr-2" />
                               Retornar ao Gestor
                             </Button>
-                            <Button 
+                            <Button
                               variant="outline"
                               size="sm"
                               onClick={() => openReturnDialog(process.id, 'ti')}
@@ -581,7 +594,7 @@ export default function AdmissaoPage() {
                               Retornar à TI
                             </Button>
                           </div>
-                          <Button 
+                          <Button
                             onClick={() => {
                               handleSendToColaborador(process.id);
                               setViewingProcess(null);
@@ -595,30 +608,31 @@ export default function AdmissaoPage() {
                         </div>
                       </div>
                     )}
-                    
+
                     <div className="pt-4 border-t">
                       <h4 className="font-medium mb-2">Progresso do Fluxo</h4>
                       <div className="flex items-center gap-2">
-                        {['rh', 'gestor', 'ti', 'rh_review', 'colaborador', 'concluido'].map((step, index) => (
-                          <div key={step} className="flex items-center">
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium ${
-                              step === process.current_step 
-                                ? 'bg-primary text-primary-foreground' 
-                                : index < ['rh', 'gestor', 'ti', 'rh_review', 'colaborador', 'concluido'].indexOf(process.current_step)
+                        {['rh', 'gestor', 'ti', 'rh_review', 'colaborador', 'concluido'].map((step, index) => {
+                          const currentStepIndex = ['rh', 'gestor', 'ti', 'rh_review', 'colaborador', 'concluido'].indexOf(process.current_step || 'rh');
+                          return (
+                            <div key={step} className="flex items-center">
+                              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium ${step === process.current_step
+                                ? 'bg-primary text-primary-foreground'
+                                : index < currentStepIndex
                                   ? 'bg-green-500 text-white'
                                   : 'bg-muted text-muted-foreground'
-                            }`}>
-                              {index + 1}
-                            </div>
-                            {index < 5 && (
-                              <div className={`w-6 h-0.5 ${
-                                index < ['rh', 'gestor', 'ti', 'rh_review', 'colaborador', 'concluido'].indexOf(process.current_step)
+                                }`}>
+                                {index + 1}
+                              </div>
+                              {index < 5 && (
+                                <div className={`w-6 h-0.5 ${index < currentStepIndex
                                   ? 'bg-green-500'
                                   : 'bg-muted'
-                              }`} />
-                            )}
-                          </div>
-                        ))}
+                                  }`} />
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
                       <div className="flex justify-between text-xs text-muted-foreground mt-2 px-1">
                         <span>RH</span>
@@ -653,7 +667,7 @@ export default function AdmissaoPage() {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <p className="text-sm text-muted-foreground">
-              O processo será retornado para <strong>{returnDialog.targetStep === 'gestor' ? 'o Gestor' : 'a TI'}</strong> para ajustes. 
+              O processo será retornado para <strong>{returnDialog.targetStep === 'gestor' ? 'o Gestor' : 'a TI'}</strong> para ajustes.
               Uma notificação será enviada automaticamente.
             </p>
             <div>
@@ -668,8 +682,8 @@ export default function AdmissaoPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => {
                 setReturnDialog({ open: false, processId: null, targetStep: null });
                 setReturnReason("");
@@ -677,7 +691,7 @@ export default function AdmissaoPage() {
             >
               Cancelar
             </Button>
-            <Button 
+            <Button
               onClick={handleReturnToStep}
               disabled={returnToStep.isPending}
               className={returnDialog.targetStep === 'gestor' ? 'bg-purple-600 hover:bg-purple-700' : 'bg-orange-600 hover:bg-orange-700'}

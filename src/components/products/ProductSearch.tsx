@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { Search, X } from "lucide-react";
+import { Search, X, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { searchProducts } from "@/data/products";
+import { useProducts } from "@/hooks/useProducts";
 import { Product } from "@/types/product";
 import { cn } from "@/lib/utils";
 
@@ -14,17 +14,21 @@ interface ProductSearchProps {
 
 export function ProductSearch({ onClose, className }: ProductSearchProps) {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<Product[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const { data: productsData, isLoading } = useProducts({
+    query: query.length >= 2 ? query : undefined,
+    enabled: query.length >= 2,
+    top: 5
+  });
+
+  const results = productsData?.items || [];
+
   useEffect(() => {
     if (query.length >= 2) {
-      const found = searchProducts(query);
-      setResults(found);
       setIsOpen(true);
     } else {
-      setResults([]);
       setIsOpen(false);
     }
   }, [query]);
@@ -54,7 +58,11 @@ export function ProductSearch({ onClose, className }: ProductSearchProps) {
           onChange={(e) => setQuery(e.target.value)}
           className="pl-10 pr-10"
         />
-        {query && (
+        {isLoading ? (
+          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+          </div>
+        ) : query && (
           <Button
             variant="ghost"
             size="icon"
@@ -72,7 +80,7 @@ export function ProductSearch({ onClose, className }: ProductSearchProps) {
       {/* Results dropdown */}
       {isOpen && (
         <div className="absolute top-full left-0 right-0 z-50 mt-2 max-h-80 overflow-auto rounded-xl border border-border bg-card shadow-elegant animate-fade-in-down">
-          {results.length === 0 ? (
+          {results.length === 0 && !isLoading ? (
             <div className="p-4 text-center text-sm text-muted-foreground">
               Nenhum produto encontrado para "{query}"
             </div>
@@ -105,14 +113,14 @@ export function ProductSearch({ onClose, className }: ProductSearchProps) {
                   </span>
                 </Link>
               ))}
-              
-              {results.length > 5 && (
+
+              {productsData && productsData.total > 5 && (
                 <Link
                   to={`/produtos?q=${encodeURIComponent(query)}`}
                   onClick={handleSelect}
                   className="block p-3 text-center text-sm font-medium text-primary hover:bg-muted"
                 >
-                  Ver todos os {results.length} resultados
+                  Ver todos os {productsData.total} resultados
                 </Link>
               )}
             </div>

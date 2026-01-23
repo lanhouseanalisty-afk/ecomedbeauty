@@ -19,7 +19,6 @@ import {
 } from "@/components/ui/sheet";
 import { Filter, SlidersHorizontal, Loader2 } from "lucide-react";
 import { useCategories } from "@/hooks/useProducts";
-import { categories as localCategories } from "@/data/products";
 
 interface ProductFiltersProps {
   activeCategory: string;
@@ -43,14 +42,14 @@ export function ProductFilters({
   onInStockChange,
 }: ProductFiltersProps) {
   const [localPriceRange, setLocalPriceRange] = useState(priceRange);
-  
-  // Fetch categories from SAP B1 (with local fallback)
+
+  // Fetch categories from Supabase
   const { data: sapCategories, isLoading: isLoadingCategories } = useCategories();
-  
-  // Merge SAP categories with local categories, prioritizing SAP
-  const categories = sapCategories && sapCategories.length > 0
+
+  // Use fetched categories, adding "Todos" at the beginning
+  const categories = sapCategories
     ? [{ id: "all", name: "Todos", count: undefined }, ...sapCategories]
-    : localCategories;
+    : [{ id: "all", name: "Todos", count: undefined }];
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("pt-BR", {
@@ -123,11 +122,10 @@ export function ProductFilters({
               <button
                 key={category.id}
                 onClick={() => onCategoryChange(category.id)}
-                className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors ${
-                  activeCategory === category.id
-                    ? "bg-primary text-primary-foreground"
-                    : "hover:bg-muted"
-                }`}
+                className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors ${activeCategory === category.id
+                  ? "bg-primary text-primary-foreground"
+                  : "hover:bg-muted"
+                  }`}
               >
                 <span>{category.name}</span>
                 {category.count !== undefined && (

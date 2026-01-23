@@ -1,8 +1,8 @@
 import { useParams, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { Minus, Plus, ShoppingCart, Truck, Shield, RotateCcw, Heart } from "lucide-react";
+import { Minus, Plus, ShoppingCart, Truck, Shield, RotateCcw, Heart, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
-import { getProductById, getRelatedProducts } from "@/data/products";
+import { useProduct, useProducts } from "@/hooks/useProducts";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
@@ -19,7 +19,13 @@ import { cn } from "@/lib/utils";
 
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
-  const product = getProductById(id || "");
+  const { data: product, isLoading: isProductLoading } = useProduct(id || "");
+  const { data: relatedData, isLoading: isRelatedLoading } = useProducts({
+    category: product?.category,
+    top: 5, // Fetch 5 to filter out current product
+    enabled: !!product
+  });
+
   const { addItem } = useCart();
   const { addItem: addToWishlist, isInWishlist, removeItem: removeFromWishlist } = useWishlist();
   const { addProduct } = useRecentlyViewed();
@@ -30,6 +36,32 @@ export default function ProductDetail() {
       addProduct(product);
     }
   }, [product?.id]);
+
+  const relatedProducts = relatedData?.items.filter(p => p.id !== product?.id).slice(0, 4) || [];
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    }).format(price);
+  };
+
+  const handleWishlistClick = () => {
+    if (product && isInWishlist(product.id)) {
+      removeFromWishlist(product.id);
+    } else if (product) {
+      addToWishlist(product);
+    }
+  };
+
+  if (isProductLoading) {
+    return (
+      <div className="flex min-h-[60vh] flex-col items-center justify-center space-y-4">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        <p className="text-muted-foreground animate-pulse">Carregando detalhes do produto...</p>
+      </div>
+    );
+  }
 
   if (!product) {
     return (
@@ -43,23 +75,6 @@ export default function ProductDetail() {
       </div>
     );
   }
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    }).format(price);
-  };
-
-  const relatedProducts = getRelatedProducts(product.id, 4);
-
-  const handleWishlistClick = () => {
-    if (isInWishlist(product.id)) {
-      removeFromWishlist(product.id);
-    } else {
-      addToWishlist(product);
-    }
-  };
 
   return (
     <>
@@ -195,7 +210,7 @@ export default function ProductDetail() {
             </TabsList>
             <TabsContent value="description" className="mt-6">
               <div className="prose prose-neutral max-w-none dark:prose-invert">
-                <p className="text-muted-foreground text-lg leading-relaxed">
+                <p className="text-muted-foreground text-lg leading-relaxed whitespace-pre-wrap">
                   {product.longDescription || product.description}
                 </p>
               </div>
@@ -207,7 +222,7 @@ export default function ProductDetail() {
         </section>
 
         {/* Related Products */}
-        {relatedProducts.length > 0 && (
+        {!isRelatedLoading && relatedProducts.length > 0 && (
           <section className="mt-24">
             <h2 className="mb-8 font-serif text-2xl font-bold text-foreground">Produtos Relacionados</h2>
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">

@@ -13,7 +13,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { 
+import {
   Form,
   FormControl,
   FormDescription,
@@ -22,12 +22,12 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { 
-  ChevronRight, 
-  ChevronLeft, 
-  User, 
-  Briefcase, 
-  Monitor, 
+import {
+  ChevronRight,
+  ChevronLeft,
+  User,
+  Briefcase,
+  Monitor,
   CheckCircle2,
   Send,
   Save
@@ -51,7 +51,7 @@ const secaoRHSchema = z.object({
   cpf: z.string().min(11, "CPF inválido").max(14),
   data_admissao: z.string().min(1, "Data de admissão é obrigatória"),
   data_inicio: z.string().min(1, "Data de início é obrigatória"),
-  tipo_contratacao: z.enum(["CLT", "PJ", "Estagio", "Temporario"], {
+  tipo_contratacao: z.enum(["CLT", "PJ", "Estágio", "Temporário"], {
     required_error: "Selecione o tipo de contratação",
   }),
   setor_departamento: z.string().min(1, "Setor é obrigatório"),
@@ -59,7 +59,7 @@ const secaoRHSchema = z.object({
   gestor_direto: z.string().min(1, "Gestor é obrigatório"),
   email_gestor: z.string().email("Email inválido").optional().or(z.literal("")),
   cargo_funcao: z.string().min(1, "Cargo é obrigatório"),
-  regime_trabalho: z.enum(["Presencial", "Hibrido", "Remoto"], {
+  regime_trabalho: z.enum(["Presencial", "Híbrido", "Remoto"], {
     required_error: "Selecione o regime de trabalho",
   }),
   observacoes_rh: z.string().optional(),
@@ -169,9 +169,9 @@ const sections = [
   { id: 4, title: "Documentos", icon: CheckCircle2, role: "Colaborador" },
 ];
 
-export default function AdmissaoForm({ 
-  onSubmit, 
-  onSaveDraft, 
+export default function AdmissaoForm({
+  onSubmit,
+  onSaveDraft,
   initialData,
   currentSection: initialSection = 1,
   isReadOnly = false,
@@ -180,7 +180,7 @@ export default function AdmissaoForm({
   userRole = 'rh',
 }: AdmissaoFormProps) {
   const [currentSection, setCurrentSection] = useState(initialSection);
-  
+
   const form = useForm<FormData>({
     resolver: zodResolver(fullSchema),
     defaultValues: {
@@ -271,15 +271,14 @@ export default function AdmissaoForm({
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               {sections.map((section) => (
-                <div 
+                <div
                   key={section.id}
-                  className={`flex items-center gap-1 ${
-                    section.id === currentSection 
-                      ? "text-primary font-medium" 
-                      : section.id < currentSection 
-                        ? "text-green-600" 
-                        : "text-muted-foreground"
-                  }`}
+                  className={`flex items-center gap-1 ${section.id === currentSection
+                    ? "text-primary font-medium"
+                    : section.id < currentSection
+                      ? "text-green-600"
+                      : "text-muted-foreground"
+                    }`}
                 >
                   <section.icon className="h-4 w-4" />
                   <span className="hidden sm:inline">{section.role}</span>
@@ -325,7 +324,7 @@ export default function AdmissaoForm({
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          
+
           {/* Seção 1 - DADOS DO COLABORADOR (RH) */}
           {currentSection === 1 && (
             <Card>
@@ -384,9 +383,9 @@ export default function AdmissaoForm({
                         3. CPF do Colaborador <span className="text-destructive">*</span>
                       </FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="000.000.000-00" 
-                          {...field} 
+                        <Input
+                          placeholder="000.000.000-00"
+                          {...field}
                           disabled={isReadOnly}
                         />
                       </FormControl>
@@ -447,11 +446,11 @@ export default function AdmissaoForm({
                           className="flex flex-wrap gap-4"
                           disabled={isReadOnly}
                         >
-                          {["CLT", "PJ", "Estagio", "Temporario"].map((tipo) => (
+                          {["CLT", "PJ", "Estágio", "Temporário"].map((tipo) => (
                             <div key={tipo} className="flex items-center space-x-2">
                               <RadioGroupItem value={tipo} id={`tipo-${tipo}`} />
                               <Label htmlFor={`tipo-${tipo}`} className="cursor-pointer">
-                                {tipo === "Estagio" ? "Estágio" : tipo === "Temporario" ? "Temporário" : tipo}
+                                {tipo}
                               </Label>
                             </div>
                           ))}
@@ -471,24 +470,21 @@ export default function AdmissaoForm({
                         <FormLabel>
                           7. Setor / Departamento <span className="text-destructive">*</span>
                         </FormLabel>
-                        <Select 
-                          onValueChange={field.onChange} 
-                          defaultValue={field.value}
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          value={field.value || ""}
+                          className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2"
                           disabled={isReadOnly}
                         >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Selecione o departamento" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {DEPARTAMENTOS.map((dept) => (
-                              <SelectItem key={dept.value} value={dept.value}>
+                          {DEPARTAMENTOS.map((dept) => (
+                            <div key={dept.value} className="flex items-center space-x-2 rounded-md border p-3 hover:bg-muted/50 transition-colors">
+                              <RadioGroupItem value={dept.value} id={`dept-${dept.value}`} />
+                              <Label htmlFor={`dept-${dept.value}`} className="flex-1 cursor-pointer font-normal">
                                 {dept.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                              </Label>
+                            </div>
+                          ))}
+                        </RadioGroup>
                         <FormDescription>
                           O formulário será enviado automaticamente para este setor
                         </FormDescription>
@@ -538,10 +534,10 @@ export default function AdmissaoForm({
                       <FormItem>
                         <FormLabel>10. E-mail Gestor</FormLabel>
                         <FormControl>
-                          <Input 
-                            type="email" 
-                            placeholder="email@medbeauty.com.br" 
-                            {...field} 
+                          <Input
+                            type="email"
+                            placeholder="email@medbeauty.com.br"
+                            {...field}
                             disabled={isReadOnly}
                           />
                         </FormControl>
@@ -582,11 +578,11 @@ export default function AdmissaoForm({
                           className="flex flex-wrap gap-4"
                           disabled={isReadOnly}
                         >
-                          {["Presencial", "Hibrido", "Remoto"].map((regime) => (
+                          {["Presencial", "Híbrido", "Remoto"].map((regime) => (
                             <div key={regime} className="flex items-center space-x-2">
                               <RadioGroupItem value={regime} id={`regime-${regime}`} />
                               <Label htmlFor={`regime-${regime}`} className="cursor-pointer">
-                                {regime === "Hibrido" ? "Híbrido" : regime}
+                                {regime}
                               </Label>
                             </div>
                           ))}
@@ -604,10 +600,10 @@ export default function AdmissaoForm({
                     <FormItem>
                       <FormLabel>13. Observações do RH</FormLabel>
                       <FormControl>
-                        <Textarea 
-                          placeholder="Insira sua resposta" 
+                        <Textarea
+                          placeholder="Insira sua resposta"
                           className="min-h-[100px]"
-                          {...field} 
+                          {...field}
                           disabled={isReadOnly}
                         />
                       </FormControl>
@@ -643,9 +639,9 @@ export default function AdmissaoForm({
                     <FormItem>
                       <FormLabel>1. Buddy / Mentor designado</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="Nome do colaborador que será o mentor" 
-                          {...field} 
+                        <Input
+                          placeholder="Nome do colaborador que será o mentor"
+                          {...field}
                           disabled={isReadOnly}
                         />
                       </FormControl>
@@ -683,8 +679,8 @@ export default function AdmissaoForm({
                                       return checked
                                         ? field.onChange([...field.value, item.value])
                                         : field.onChange(
-                                            field.value?.filter((value) => value !== item.value)
-                                          );
+                                          field.value?.filter((value) => value !== item.value)
+                                        );
                                     }}
                                     disabled={isReadOnly}
                                   />
@@ -728,8 +724,8 @@ export default function AdmissaoForm({
                                       return checked
                                         ? field.onChange([...field.value, item.value])
                                         : field.onChange(
-                                            field.value?.filter((value) => value !== item.value)
-                                          );
+                                          field.value?.filter((value) => value !== item.value)
+                                        );
                                     }}
                                     disabled={isReadOnly}
                                   />
@@ -773,8 +769,8 @@ export default function AdmissaoForm({
                                       return checked
                                         ? field.onChange([...field.value, item.value])
                                         : field.onChange(
-                                            field.value?.filter((value) => value !== item.value)
-                                          );
+                                          field.value?.filter((value) => value !== item.value)
+                                        );
                                     }}
                                     disabled={isReadOnly}
                                   />
@@ -787,7 +783,7 @@ export default function AdmissaoForm({
                           />
                         ))}
                       </div>
-                      
+
                       {/* Campo condicional para Sharepoint */}
                       {form.watch("acessos_necessarios")?.includes("Pastas de Rede / Sharepoint") && (
                         <FormField
@@ -810,7 +806,7 @@ export default function AdmissaoForm({
                           )}
                         />
                       )}
-                      
+
                       {/* Campo condicional para Outros */}
                       {form.watch("acessos_necessarios")?.includes("Outros") && (
                         <FormField
@@ -833,7 +829,7 @@ export default function AdmissaoForm({
                           )}
                         />
                       )}
-                      
+
                       <FormMessage />
                     </FormItem>
                   )}
@@ -876,10 +872,10 @@ export default function AdmissaoForm({
                     <FormItem>
                       <FormLabel>6. Observações do Gestor</FormLabel>
                       <FormControl>
-                        <Textarea 
-                          placeholder="Insira sua resposta" 
+                        <Textarea
+                          placeholder="Insira sua resposta"
                           className="min-h-[100px]"
-                          {...field} 
+                          {...field}
                           disabled={isReadOnly}
                         />
                       </FormControl>
@@ -908,7 +904,7 @@ export default function AdmissaoForm({
                 </div>
               </CardHeader>
               <CardContent className="pt-6 space-y-6">
-                
+
                 {/* 1. Conta AD criada */}
                 <FormField
                   control={form.control}
@@ -1006,8 +1002,8 @@ export default function AdmissaoForm({
                                       return checked
                                         ? field.onChange([...(field.value || []), item.value])
                                         : field.onChange(
-                                            field.value?.filter((value) => value !== item.value)
-                                          );
+                                          field.value?.filter((value) => value !== item.value)
+                                        );
                                     }}
                                     disabled={isReadOnly}
                                   />
@@ -1262,10 +1258,10 @@ export default function AdmissaoForm({
                     <FormItem>
                       <FormLabel>11. Observações da TI</FormLabel>
                       <FormControl>
-                        <Textarea 
-                          placeholder="Insira sua resposta" 
+                        <Textarea
+                          placeholder="Insira sua resposta"
                           className="min-h-[100px]"
-                          {...field} 
+                          {...field}
                           disabled={isReadOnly}
                         />
                       </FormControl>
@@ -1418,10 +1414,10 @@ export default function AdmissaoForm({
                     <FormItem>
                       <FormLabel>5. Observações do colaborador</FormLabel>
                       <FormControl>
-                        <Textarea 
-                          placeholder="Insira sua resposta" 
+                        <Textarea
+                          placeholder="Insira sua resposta"
                           className="min-h-[100px]"
-                          {...field} 
+                          {...field}
                           disabled={isReadOnly}
                         />
                       </FormControl>
@@ -1443,7 +1439,7 @@ export default function AdmissaoForm({
                 </Button>
               )}
             </div>
-            
+
             <div className="flex gap-2">
               {onSaveDraft && userRole !== 'rh' && (
                 <Button type="button" variant="outline" onClick={handleSaveDraft}>
@@ -1451,7 +1447,7 @@ export default function AdmissaoForm({
                   Salvar Rascunho
                 </Button>
               )}
-              
+
               {userRole === 'rh' ? (
                 <Button type="submit" className="bg-primary hover:bg-primary/90">
                   <Send className="h-4 w-4 mr-2" />

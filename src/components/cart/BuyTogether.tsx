@@ -1,8 +1,8 @@
 import { useState, useMemo } from "react";
-import { Plus, ShoppingCart, Sparkles, Check } from "lucide-react";
+import { Plus, ShoppingCart, Sparkles, Check, Loader2 } from "lucide-react";
 import { CartItem, Product } from "@/types/product";
-import { products } from "@/data/products";
 import { useCart } from "@/contexts/CartContext";
+import { useProducts } from "@/hooks/useProducts";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
@@ -14,18 +14,26 @@ interface BuyTogetherProps {
 
 // Define complementary category pairs
 const COMPLEMENTARY_CATEGORIES: Record<string, string[]> = {
-  "Preenchedores": ["Instrumentais", "Skincare"],
+  "Preenchimentos": ["Instrumentais", "Skincare"],
   "Fios": ["Instrumentais", "Skincare"],
-  "Skincare": ["Preenchedores", "Fios"],
-  "Instrumentais": ["Preenchedores", "Fios"],
+  "Skincare": ["Preenchimentos", "Fios"],
+  "Instrumentais": ["Preenchimentos", "Fios"],
+  "Preenchedores": ["Instrumentais", "Skincare"],
 };
 
 export function BuyTogether({ cartItems, discountPercent = 10 }: BuyTogetherProps) {
   const { addItem } = useCart();
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
 
+  const { data: productsData, isLoading } = useProducts({
+    enabled: cartItems.length > 0,
+    top: 50
+  });
+
+  const products = productsData?.items || [];
+
   const bundleProducts = useMemo(() => {
-    if (cartItems.length === 0) return [];
+    if (cartItems.length === 0 || products.length === 0) return [];
 
     const cartProductIds = cartItems.map((item) => item.product.id);
     const cartCategories = [...new Set(cartItems.map((item) => item.product.category))];
@@ -48,7 +56,7 @@ export function BuyTogether({ cartItems, discountPercent = 10 }: BuyTogetherProp
       .slice(0, 3);
 
     return complementaryProducts;
-  }, [cartItems]);
+  }, [cartItems, products]);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("pt-BR", {
@@ -81,7 +89,6 @@ export function BuyTogether({ cartItems, discountPercent = 10 }: BuyTogetherProp
     }
 
     selectedProductsList.forEach((product) => {
-      // We'll add items with a special flag for discount tracking
       addItem(product, 1);
     });
 
@@ -90,6 +97,14 @@ export function BuyTogether({ cartItems, discountPercent = 10 }: BuyTogetherProp
     );
     setSelectedProducts(new Set());
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex h-48 items-center justify-center rounded-xl border border-border bg-card">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   if (bundleProducts.length === 0) return null;
 
@@ -115,18 +130,16 @@ export function BuyTogether({ cartItems, discountPercent = 10 }: BuyTogetherProp
           <button
             key={product.id}
             onClick={() => toggleProduct(product.id)}
-            className={`flex w-full items-center gap-3 rounded-lg border p-3 transition-all ${
-              selectedProducts.has(product.id)
+            className={`flex w-full items-center gap-3 rounded-lg border p-3 transition-all ${selectedProducts.has(product.id)
                 ? "border-primary bg-primary/5"
                 : "border-border hover:border-primary/50"
-            }`}
+              }`}
           >
             <div
-              className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border transition-all ${
-                selectedProducts.has(product.id)
+              className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border transition-all ${selectedProducts.has(product.id)
                   ? "border-primary bg-primary"
                   : "border-muted-foreground"
-              }`}
+                }`}
             >
               {selectedProducts.has(product.id) && (
                 <Check className="h-3 w-3 text-primary-foreground" />
@@ -154,10 +167,6 @@ export function BuyTogether({ cartItems, discountPercent = 10 }: BuyTogetherProp
                 </p>
               )}
             </div>
-
-            {index < bundleProducts.length - 1 && (
-              <Plus className="absolute -bottom-3 left-1/2 h-4 w-4 -translate-x-1/2 text-muted-foreground hidden" />
-            )}
           </button>
         ))}
       </div>

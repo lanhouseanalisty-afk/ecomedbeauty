@@ -1,155 +1,93 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { corsHeaders } from '../_shared/cors.ts'
 
 serve(async (req) => {
-  // Handle CORS preflight requests
+  // Handle CORS
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    const { keywords, location, company, title } = await req.json();
-    const accessToken = Deno.env.get('LINKEDIN_ACCESS_TOKEN');
+    const { keywords, company, location, title } = await req.json()
 
-    if (!accessToken) {
-      console.error('LINKEDIN_ACCESS_TOKEN not configured');
-      throw new Error('LinkedIn access token not configured');
+    if (!keywords && !company && !location && !title) {
+      return new Response(
+        JSON.stringify({ error: 'Pelo menos um campo de busca é obrigatório' }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400
+        }
+      )
     }
 
-    console.log('Searching LinkedIn for:', { keywords, location, company, title });
+    // LinkedIn API configuration
+    const LINKEDIN_ACCESS_TOKEN = Deno.env.get('LINKEDIN_ACCESS_TOKEN')
 
-    // LinkedIn's API has very limited free access
-    // For full functionality, you would need LinkedIn Sales Navigator or Marketing API access
-    // This implementation uses the basic People Search API (requires Marketing Developer Platform access)
+    if (!LINKEDIN_ACCESS_TOKEN) {
+      return new Response(
+        JSON.stringify({
+          error: 'LinkedIn API não configurada',
+          message: 'Para usar a busca do LinkedIn, configure o LINKEDIN_ACCESS_TOKEN nas variáveis de ambiente do Supabase.'
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 500
+        }
+      )
+    }
 
-    let leads: any[] = [];
+    // Note: LinkedIn API requires OAuth 2.0 and has specific permissions
+    // This is a simplified implementation
+    const leads: any[] = []
 
-    // Search for companies
-    if (company || keywords) {
-      const searchQuery = company || keywords;
-      
-      // Organization lookup
-      const orgSearchUrl = `https://api.linkedin.com/v2/organizationLookup?q=vanityName&vanityName=${encodeURIComponent(searchQuery)}`;
-      
-      console.log('Searching LinkedIn organizations...');
-      const orgResponse = await fetch(orgSearchUrl, {
+    // LinkedIn People Search API
+    const searchUrl = `https://api.linkedin.com/v2/people`
+
+    try {
+      const searchResponse = await fetch(searchUrl, {
         headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'X-Restli-Protocol-Version': '2.0.0',
-        },
-      });
-
-      if (orgResponse.ok) {
-        const orgData = await orgResponse.json();
-        
-        if (orgData.elements && orgData.elements.length > 0) {
-          leads = orgData.elements.map((org: any) => ({
-            company_name: org.localizedName,
-            vanity_name: org.vanityName,
-            description: org.localizedDescription,
-            website: org.localizedWebsite,
-            industry: org.industry,
-            staff_count_range: org.staffCountRange,
-            headquarters: org.headquarters,
-            source: 'linkedin_company',
-          }));
+          'Authorization': `Bearer ${LINKEDIN_ACCESS_TOKEN}`,
+          'Content-Type': 'application/json',
         }
-      } else {
-        // Fallback: Try Sales Navigator API if available
-        const snSearchUrl = `https://api.linkedin.com/v2/salesNavigatorProfileLookup?q=criteria`;
-        
-        console.log('Trying Sales Navigator API...');
-        const snResponse = await fetch(snSearchUrl, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json',
-            'X-Restli-Protocol-Version': '2.0.0',
-          },
-          body: JSON.stringify({
-            keywords: keywords,
-            locations: location ? [location] : undefined,
-            companies: company ? [company] : undefined,
-            titles: title ? [title] : undefined,
-          }),
-        });
+      })
 
-        if (snResponse.ok) {
-          const snData = await snResponse.json();
-          
-          if (snData.elements) {
-            leads = snData.elements.map((profile: any) => ({
-              first_name: profile.firstName,
-              last_name: profile.lastName,
-              headline: profile.headline,
-              location: profile.location?.name,
-              company: profile.currentCompany?.name,
-              title: profile.title,
-              profile_url: profile.publicProfileUrl,
-              source: 'linkedin_sales_navigator',
-            }));
-          }
-        } else {
-          const errorText = await snResponse.text();
-          console.error('LinkedIn API error:', snResponse.status, errorText);
-          
-          // Return a helpful message about API access
-          return new Response(JSON.stringify({ 
-            leads: [],
-            total: 0,
-            message: 'LinkedIn API access requires Sales Navigator or Marketing Developer Platform access. Please ensure your access token has the necessary permissions.',
-            api_status: snResponse.status,
-          }), {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          });
-        }
+      const searchData = await searchResponse.json()
+
+      if (searchData.elements) {
+        searchData.elements.forEach((person: any) => {
+          leads.push({
+            first_name: person.firstName?.localized?.pt_BR || person.firstName?.localized?.en_US,
+            last_name: person.lastName?.localized?.pt_BR || person.lastName?.localized?.en_US,
+            headline: person.headline?.localized?.pt_BR || person.headline?.localized?.en_US,
+            company: company,
+          })
+        })
       }
+    } catch (error) {
+      console.error('LinkedIn API error:', error)
     }
 
-    // People search (requires specific permissions)
-    if (title || (location && !company && !keywords)) {
-      const peopleSearchUrl = `https://api.linkedin.com/v2/people?q=people&keywords=${encodeURIComponent(title || location || '')}`;
-      
-      console.log('Searching LinkedIn people...');
-      const peopleResponse = await fetch(peopleSearchUrl, {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'X-Restli-Protocol-Version': '2.0.0',
-        },
-      });
-
-      if (peopleResponse.ok) {
-        const peopleData = await peopleResponse.json();
-        
-        if (peopleData.elements) {
-          const peopleLeads = peopleData.elements.map((person: any) => ({
-            first_name: person.firstName?.localized?.en_US || person.firstName,
-            last_name: person.lastName?.localized?.en_US || person.lastName,
-            headline: person.headline?.localized?.en_US || person.headline,
-            location: person.location?.name,
-            source: 'linkedin_people',
-          }));
-          
-          leads = [...leads, ...peopleLeads];
-        }
+    return new Response(
+      JSON.stringify({
+        leads,
+        message: leads.length === 0
+          ? 'Nenhum resultado encontrado. A busca no LinkedIn requer configuração adicional da API e permissões OAuth.'
+          : undefined
+      }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200
       }
-    }
+    )
 
-    console.log(`Found ${leads.length} leads from LinkedIn`);
-
-    return new Response(JSON.stringify({ leads, total: leads.length }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error('Error in search-leads-linkedin function:', error);
-    return new Response(JSON.stringify({ error: errorMessage }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+  } catch (error) {
+    console.error('Error:', error)
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500
+      }
+    )
   }
-});
+})

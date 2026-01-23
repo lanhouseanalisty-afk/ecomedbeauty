@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
-import { useProducts, useCategories } from "@/hooks/useProducts";
-import { sortProducts, filterProductsByPrice } from "@/data/products";
+import { useProducts } from "@/hooks/useProducts";
+import { sortProducts, filterProductsByPrice } from "@/utils/product-utils";
 import { ProductGrid } from "@/components/products/ProductGrid";
 import { ProductFilters } from "@/components/products/ProductFilters";
 import { ProductSearch } from "@/components/products/ProductSearch";
@@ -65,7 +65,7 @@ export default function Products() {
               Soluções premium para profissionais de estética
             </p>
           </div>
-          
+
           {/* Search */}
           <div className="w-full sm:w-72">
             <ProductSearch />

@@ -1,11 +1,26 @@
 import { Link } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/products/ProductCard";
-import { products } from "@/data/products";
+import { useProducts } from "@/hooks/useProducts";
 
 export function FeaturedProducts() {
-  const featuredProducts = products.filter((p) => p.badge === "bestseller" || p.badge === "new").slice(0, 4);
+  const { data, isLoading } = useProducts({
+    badges: ["bestseller", "new"],
+    top: 4
+  });
+
+  const products = data?.items || [];
+
+  if (isLoading) {
+    return (
+      <section className="py-16 lg:py-24">
+        <div className="mx-auto max-w-7xl px-4 lg:px-8 flex justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-16 lg:py-24">
@@ -28,7 +43,7 @@ export function FeaturedProducts() {
         </div>
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {featuredProducts.map((product, index) => (
+          {products.map((product, index) => (
             <ProductCard key={product.id} product={product} index={index} />
           ))}
         </div>

@@ -10,8 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { 
-  UserPlus, 
+import {
+  UserPlus,
   Users,
   CheckCircle2,
   Clock,
@@ -28,9 +28,10 @@ import { ptBR } from "date-fns/locale";
 
 const stepLabels: Record<string, string> = {
   rh: "RH",
-  gestor: "Aguardando Gestor",
-  ti: "Aguardando TI",
-  colaborador: "Documentos",
+  gestor: "Gestor",
+  ti: "TI",
+  rh_review: "Revisão RH",
+  colaborador: "Colaborador",
   concluido: "Concluído",
 };
 
@@ -38,8 +39,20 @@ const stepColors: Record<string, string> = {
   rh: "bg-blue-500",
   gestor: "bg-purple-500",
   ti: "bg-orange-500",
+  rh_review: "bg-cyan-500",
   colaborador: "bg-green-500",
   concluido: "bg-emerald-500",
+};
+
+const formatDateSafe = (dateString: string | null | undefined, formatStr: string = "dd/MM/yyyy") => {
+  if (!dateString) return "—";
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "—";
+    return format(date, formatStr, { locale: ptBR });
+  } catch (e) {
+    return "—";
+  }
 };
 
 interface DepartmentAdmissaoPageProps {
@@ -49,24 +62,24 @@ interface DepartmentAdmissaoPageProps {
 
 export default function DepartmentAdmissaoPage({ departmentSlug, departmentName }: DepartmentAdmissaoPageProps) {
   const [selectedProcess, setSelectedProcess] = useState<string | null>(null);
-  
-  const { 
-    processes, 
-    isLoading, 
-    updateManagerStep, 
+
+  const {
+    processes,
+    isLoading,
+    updateManagerStep,
     updateITStep,
-    completeAdmission 
+    completeAdmission
   } = useDepartmentAdmissions(departmentSlug);
-  
+
   const { isAdmin } = useUserRole();
 
   // Para TI: mostrar todos os processos que estão no step 'ti', independente do departamento
   // Para outros departamentos: mostrar processos do próprio departamento
   // Admin vê todos os processos
   const isTech = departmentSlug === 'tech';
-  
-  const pendingProcesses = processes?.filter(p => 
-    p.status !== 'completed' && 
+
+  const pendingProcesses = processes?.filter(p =>
+    p.status !== 'completed' &&
     p.status !== 'cancelled' &&
     (isAdmin || isTech ? true : p.target_department === departmentSlug)
   ) || [];
@@ -74,17 +87,18 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
   // Para TI: aguardando ação são os processos no step 'ti'
   // Para outros (gestores): aguardando ação são os processos no step 'gestor' do seu departamento
   // Admin vê todos os processos pendentes de ação
-  const awaitingMyAction = isAdmin 
+  const awaitingMyAction = isAdmin
     ? pendingProcesses.filter(p => p.current_step === 'gestor' || p.current_step === 'ti')
-    : isTech 
+    : isTech
       ? pendingProcesses.filter(p => p.current_step === 'ti')
       : pendingProcesses.filter(p => p.current_step === 'gestor');
   const awaitingIT = pendingProcesses.filter(p => p.current_step === 'ti');
   const completedProcesses = processes?.filter(p => p.status === 'completed' && (isAdmin || isTech ? true : p.target_department === departmentSlug)) || [];
 
   const getProgressValue = (step: string) => {
-    const steps = ['rh', 'gestor', 'ti', 'colaborador', 'concluido'];
+    const steps = ['rh', 'gestor', 'ti', 'rh_review', 'colaborador', 'concluido'];
     const index = steps.indexOf(step);
+    if (index === -1) return 0;
     return ((index + 1) / steps.length) * 100;
   };
 
@@ -284,7 +298,7 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                             {process.position}
                           </p>
                           <p className="text-xs text-muted-foreground mt-1">
-                            Início previsto: {format(new Date(process.start_date), "dd/MM/yyyy", { locale: ptBR })}
+                            Início previsto: {formatDateSafe(process.start_date)}
                           </p>
                         </div>
                       </div>
@@ -335,8 +349,8 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                       </div>
                       <div className="flex items-center gap-4">
                         <div className="text-right">
-                          <Badge className={`${stepColors[process.current_step]} text-white`}>
-                            {stepLabels[process.current_step]}
+                          <Badge className={`${stepColors[process.current_step] || 'bg-muted'} text-white`}>
+                            {stepLabels[process.current_step] || process.current_step}
                           </Badge>
                           <Progress value={getProgressValue(process.current_step)} className="w-32 h-2 mt-2" />
                         </div>
@@ -419,13 +433,13 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
               })()}
             </DialogTitle>
           </DialogHeader>
-          
+
           {selectedProcess && processes && (
             <div className="space-y-6">
               {(() => {
                 const process = processes.find(p => p.id === selectedProcess);
                 if (!process) return null;
-                
+
                 // Para admin, determinar qual formulário mostrar baseado no step atual
                 const showITForm = isAdmin ? process.current_step === 'ti' : isTech;
                 const showManagerForm = isAdmin ? process.current_step === 'gestor' : !isTech;
@@ -446,7 +460,7 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                         <div>
                           <span className="text-muted-foreground">Data de Início:</span>
                           <p className="font-medium">
-                            {format(new Date(process.start_date), "dd/MM/yyyy", { locale: ptBR })}
+                            {formatDateSafe(process.start_date)}
                           </p>
                         </div>
                         <div>
@@ -479,10 +493,10 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                                 {process.needs_keyboard && <span className="block">• Teclado</span>}
                                 {process.needs_mouse && <span className="block">• Mouse</span>}
                                 {process.needs_printer && <span className="block">• Impressora</span>}
-                                {!process.needs_laptop && !process.needs_monitor && !process.needs_headset && 
-                                 !process.needs_keyboard && !process.needs_mouse && !process.needs_printer && (
-                                  <span className="text-muted-foreground italic">Nenhum solicitado</span>
-                                )}
+                                {!process.needs_laptop && !process.needs_monitor && !process.needs_headset &&
+                                  !process.needs_keyboard && !process.needs_mouse && !process.needs_printer && (
+                                    <span className="text-muted-foreground italic">Nenhum solicitado</span>
+                                  )}
                               </div>
                             </div>
                             <div>
@@ -517,7 +531,7 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                             id="it_responsible"
                             placeholder="Nome do técnico responsável"
                             value={itForm.it_responsible}
-                            onChange={(e) => 
+                            onChange={(e) =>
                               setItForm(prev => ({ ...prev, it_responsible: e.target.value }))
                             }
                             className="mt-2"
@@ -529,7 +543,7 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                           <Checkbox
                             id="user_ad_created"
                             checked={itForm.user_ad_created}
-                            onCheckedChange={(checked) => 
+                            onCheckedChange={(checked) =>
                               setItForm(prev => ({ ...prev, user_ad_created: !!checked }))
                             }
                           />
@@ -543,7 +557,7 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                             id="email_created"
                             placeholder="exemplo@medbeauty.com.br"
                             value={itForm.email_created}
-                            onChange={(e) => 
+                            onChange={(e) =>
                               setItForm(prev => ({ ...prev, email_created: e.target.value }))
                             }
                             className="mt-2"
@@ -559,10 +573,10 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                                 <Checkbox
                                   id={`lic-${item.value}`}
                                   checked={itForm.microsoft_licenses.includes(item.value)}
-                                  onCheckedChange={(checked) => 
+                                  onCheckedChange={(checked) =>
                                     setItForm(prev => ({
                                       ...prev,
-                                      microsoft_licenses: checked 
+                                      microsoft_licenses: checked
                                         ? [...prev.microsoft_licenses, item.value]
                                         : prev.microsoft_licenses.filter(v => v !== item.value)
                                     }))
@@ -579,7 +593,7 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                           <Checkbox
                             id="vpn_configured"
                             checked={itForm.vpn_configured}
-                            onCheckedChange={(checked) => 
+                            onCheckedChange={(checked) =>
                               setItForm(prev => ({ ...prev, vpn_configured: !!checked }))
                             }
                           />
@@ -595,10 +609,10 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                                 <Checkbox
                                   id={`soft-installed-${item.value}`}
                                   checked={itForm.software_list_installed.includes(item.value)}
-                                  onCheckedChange={(checked) => 
+                                  onCheckedChange={(checked) =>
                                     setItForm(prev => ({
                                       ...prev,
-                                      software_list_installed: checked 
+                                      software_list_installed: checked
                                         ? [...prev.software_list_installed, item.value]
                                         : prev.software_list_installed.filter(v => v !== item.value)
                                     }))
@@ -615,7 +629,7 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                           <Checkbox
                             id="sap_user_created"
                             checked={itForm.sap_user_created}
-                            onCheckedChange={(checked) => 
+                            onCheckedChange={(checked) =>
                               setItForm(prev => ({ ...prev, sap_user_created: !!checked }))
                             }
                           />
@@ -627,7 +641,7 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                           <Checkbox
                             id="salesforce_profile_created"
                             checked={itForm.salesforce_profile_created}
-                            onCheckedChange={(checked) => 
+                            onCheckedChange={(checked) =>
                               setItForm(prev => ({ ...prev, salesforce_profile_created: !!checked }))
                             }
                           />
@@ -639,7 +653,7 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                           <Checkbox
                             id="network_folders_released"
                             checked={itForm.network_folders_released}
-                            onCheckedChange={(checked) => 
+                            onCheckedChange={(checked) =>
                               setItForm(prev => ({ ...prev, network_folders_released: !!checked }))
                             }
                           />
@@ -651,7 +665,7 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                           <Checkbox
                             id="printers_configured"
                             checked={itForm.printers_configured}
-                            onCheckedChange={(checked) => 
+                            onCheckedChange={(checked) =>
                               setItForm(prev => ({ ...prev, printers_configured: !!checked }))
                             }
                           />
@@ -663,7 +677,7 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                           <Checkbox
                             id="general_tests_done"
                             checked={itForm.general_tests_done}
-                            onCheckedChange={(checked) => 
+                            onCheckedChange={(checked) =>
                               setItForm(prev => ({ ...prev, general_tests_done: !!checked }))
                             }
                           />
@@ -677,7 +691,7 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                             id="it_observations"
                             placeholder="Informações adicionais sobre a configuração..."
                             value={itForm.it_observations}
-                            onChange={(e) => 
+                            onChange={(e) =>
                               setItForm(prev => ({ ...prev, it_observations: e.target.value }))
                             }
                             className="mt-2"
@@ -694,7 +708,7 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                             id="buddy_mentor"
                             placeholder="Nome do buddy/mentor"
                             value={managerForm.buddy_mentor}
-                            onChange={(e) => 
+                            onChange={(e) =>
                               setManagerForm(prev => ({ ...prev, buddy_mentor: e.target.value }))
                             }
                             className="mt-2"
@@ -710,10 +724,10 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                                 <Checkbox
                                   id={`equip-${item.value}`}
                                   checked={managerForm.equipamentos_necessarios.includes(item.value)}
-                                  onCheckedChange={(checked) => 
+                                  onCheckedChange={(checked) =>
                                     setManagerForm(prev => ({
                                       ...prev,
-                                      equipamentos_necessarios: checked 
+                                      equipamentos_necessarios: checked
                                         ? [...prev.equipamentos_necessarios, item.value]
                                         : prev.equipamentos_necessarios.filter(v => v !== item.value)
                                     }))
@@ -734,10 +748,10 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                                 <Checkbox
                                   id={`soft-${item.value}`}
                                   checked={managerForm.softwares_necessarios.includes(item.value)}
-                                  onCheckedChange={(checked) => 
+                                  onCheckedChange={(checked) =>
                                     setManagerForm(prev => ({
                                       ...prev,
-                                      softwares_necessarios: checked 
+                                      softwares_necessarios: checked
                                         ? [...prev.softwares_necessarios, item.value]
                                         : prev.softwares_necessarios.filter(v => v !== item.value)
                                     }))
@@ -758,10 +772,10 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                                 <Checkbox
                                   id={`acesso-${item.value}`}
                                   checked={managerForm.acessos_necessarios.includes(item.value)}
-                                  onCheckedChange={(checked) => 
+                                  onCheckedChange={(checked) =>
                                     setManagerForm(prev => ({
                                       ...prev,
-                                      acessos_necessarios: checked 
+                                      acessos_necessarios: checked
                                         ? [...prev.acessos_necessarios, item.value]
                                         : prev.acessos_necessarios.filter(v => v !== item.value)
                                     }))
@@ -771,7 +785,7 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                               </div>
                             ))}
                           </div>
-                          
+
                           {/* Campo condicional para Sharepoint */}
                           {managerForm.acessos_necessarios.includes("Pastas de Rede / Sharepoint") && (
                             <div className="mt-3 pl-4 border-l-2 border-primary/30">
@@ -782,14 +796,14 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                                 id="sharepoint_pasta"
                                 placeholder="Ex: /Documentos/Projeto/Equipe"
                                 value={managerForm.sharepoint_pasta}
-                                onChange={(e) => 
+                                onChange={(e) =>
                                   setManagerForm(prev => ({ ...prev, sharepoint_pasta: e.target.value }))
                                 }
                                 className="mt-2"
                               />
                             </div>
                           )}
-                          
+
                           {/* Campo condicional para Outros */}
                           {managerForm.acessos_necessarios.includes("Outros") && (
                             <div className="mt-3 pl-4 border-l-2 border-primary/30">
@@ -800,7 +814,7 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                                 id="outros_acessos"
                                 placeholder="Descreva os outros acessos necessários..."
                                 value={managerForm.outros_acessos}
-                                onChange={(e) => 
+                                onChange={(e) =>
                                   setManagerForm(prev => ({ ...prev, outros_acessos: e.target.value }))
                                 }
                                 className="mt-2"
@@ -814,7 +828,7 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                           <Checkbox
                             id="necessita_impressora"
                             checked={managerForm.necessita_impressora}
-                            onCheckedChange={(checked) => 
+                            onCheckedChange={(checked) =>
                               setManagerForm(prev => ({ ...prev, necessita_impressora: !!checked }))
                             }
                           />
@@ -828,7 +842,7 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                             id="observations"
                             placeholder="Informe sistemas, acessos ou requisitos específicos..."
                             value={managerForm.manager_observations}
-                            onChange={(e) => 
+                            onChange={(e) =>
                               setManagerForm(prev => ({ ...prev, manager_observations: e.target.value }))
                             }
                             className="mt-2"

@@ -40,7 +40,7 @@ async function createNotificationAndSendEmail(
   if (targetEmail && notification) {
     try {
       const baseUrl = window.location.origin;
-      
+
       const { error: emailError } = await supabase.functions.invoke('send-admission-notification', {
         body: {
           email: targetEmail,
@@ -156,7 +156,7 @@ export function getDepartmentSlug(department: string): string {
   if (departmentToSlug[department]) {
     return departmentToSlug[department];
   }
-  
+
   // Try case-insensitive match
   const lowerDept = department.toLowerCase();
   for (const [key, value] of Object.entries(departmentToSlug)) {
@@ -164,7 +164,7 @@ export function getDepartmentSlug(department: string): string {
       return value;
     }
   }
-  
+
   // Default fallback - use the department name as slug
   return department.toLowerCase().replace(/\s+/g, '-').replace(/[áàãâ]/g, 'a').replace(/[éèê]/g, 'e').replace(/[íìî]/g, 'i').replace(/[óòõô]/g, 'o').replace(/[úùû]/g, 'u');
 }
@@ -179,15 +179,15 @@ export function useAdmissionProcesses(department?: string, fetchAll?: boolean) {
         .from('admission_processes')
         .select('*')
         .order('created_at', { ascending: false });
-      
+
       // Filter by department if specified and not fetching all
       if (department && !fetchAll) {
         const slug = getDepartmentSlug(department);
         query = query.eq('target_department', slug);
       }
-      
+
       const { data, error } = await query;
-      
+
       if (error) throw error;
       return data as AdmissionProcess[];
     },
@@ -211,10 +211,10 @@ export function useAdmissionProcesses(department?: string, fetchAll?: boolean) {
       hr_observations?: string;
     }) => {
       const { data: user } = await supabase.auth.getUser();
-      
+
       // Determine target department based on the selected department
       const targetDepartment = getDepartmentSlug(data.department);
-      
+
       const { data: result, error } = await supabase
         .from('admission_processes')
         .insert({
@@ -228,9 +228,9 @@ export function useAdmissionProcesses(department?: string, fetchAll?: boolean) {
         })
         .select()
         .single();
-      
+
       if (error) throw error;
-      
+
       // Create notification for Gestor (manager)
       await createNotificationAndSendEmail(
         result.id,
@@ -241,7 +241,7 @@ export function useAdmissionProcesses(department?: string, fetchAll?: boolean) {
         result.position,
         result.manager_name
       );
-      
+
       return result;
     },
     onSuccess: (data) => {
@@ -267,10 +267,10 @@ export function useAdmissionProcesses(department?: string, fetchAll?: boolean) {
       };
     }) => {
       const { data: user } = await supabase.auth.getUser();
-      
+
       // Mapear equipamentos_necessarios para os campos individuais do banco
       const equipamentos = data.equipamentos_necessarios || [];
-      
+
       const { data: result, error } = await supabase
         .from('admission_processes')
         .update({
@@ -292,9 +292,9 @@ export function useAdmissionProcesses(department?: string, fetchAll?: boolean) {
         .eq('id', id)
         .select()
         .single();
-      
+
       if (error) throw error;
-      
+
       // Create notification for TI
       await createNotificationAndSendEmail(
         result.id,
@@ -305,7 +305,7 @@ export function useAdmissionProcesses(department?: string, fetchAll?: boolean) {
         result.position,
         result.manager_name
       );
-      
+
       return result;
     },
     onSuccess: () => {
@@ -338,7 +338,7 @@ export function useAdmissionProcesses(department?: string, fetchAll?: boolean) {
       };
     }) => {
       const { data: user } = await supabase.auth.getUser();
-      
+
       const { data: result, error } = await supabase
         .from('admission_processes')
         .update({
@@ -362,9 +362,9 @@ export function useAdmissionProcesses(department?: string, fetchAll?: boolean) {
         .eq('id', id)
         .select()
         .single();
-      
+
       if (error) throw error;
-      
+
       // Create notification for RH to review
       await createNotificationAndSendEmail(
         result.id,
@@ -375,7 +375,7 @@ export function useAdmissionProcesses(department?: string, fetchAll?: boolean) {
         result.position,
         result.manager_name
       );
-      
+
       return result;
     },
     onSuccess: () => {
@@ -398,9 +398,9 @@ export function useAdmissionProcesses(department?: string, fetchAll?: boolean) {
         .eq('id', id)
         .select()
         .single();
-      
+
       if (error) throw error;
-      
+
       // Create notification for Colaborador
       await createNotificationAndSendEmail(
         result.id,
@@ -411,7 +411,7 @@ export function useAdmissionProcesses(department?: string, fetchAll?: boolean) {
         result.position,
         result.manager_name
       );
-      
+
       return result;
     },
     onSuccess: () => {
@@ -431,18 +431,18 @@ export function useAdmissionProcesses(department?: string, fetchAll?: boolean) {
       reason?: string;
     }) => {
       const { data: user } = await supabase.auth.getUser();
-      
+
       const { data: result, error } = await supabase
         .from('admission_processes')
         .update({
           current_step: targetStep,
           hr_observations: reason ? `[Retorno] ${reason}` : null,
           // Reset completion timestamps for the step being returned to
-          ...(targetStep === 'gestor' ? { 
+          ...(targetStep === 'gestor' ? {
             manager_completed_at: null,
             manager_completed_by: null,
           } : {}),
-          ...(targetStep === 'ti' ? { 
+          ...(targetStep === 'ti' ? {
             ti_completed_at: null,
             ti_completed_by: null,
           } : {}),
@@ -450,9 +450,9 @@ export function useAdmissionProcesses(department?: string, fetchAll?: boolean) {
         .eq('id', id)
         .select()
         .single();
-      
+
       if (error) throw error;
-      
+
       // Create notification for the target step
       const targetDepartment = targetStep === 'ti' ? 'tech' : result.target_department;
       await createNotificationAndSendEmail(
@@ -464,7 +464,7 @@ export function useAdmissionProcesses(department?: string, fetchAll?: boolean) {
         result.position,
         result.manager_name
       );
-      
+
       return result;
     },
     onSuccess: (_, variables) => {
@@ -496,7 +496,7 @@ export function useAdmissionProcesses(department?: string, fetchAll?: boolean) {
         .eq('id', id)
         .select()
         .single();
-      
+
       if (error) throw error;
       return result;
     },

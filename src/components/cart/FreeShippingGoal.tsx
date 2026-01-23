@@ -1,9 +1,10 @@
-import { Truck, Gift, ShoppingBag } from "lucide-react";
+import { Truck, Gift, ShoppingBag, Loader2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
-import { products } from "@/data/products";
 import { useCart } from "@/contexts/CartContext";
+import { useProducts } from "@/hooks/useProducts";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { useMemo } from "react";
 
 interface FreeShippingGoalProps {
   cartTotal: number;
@@ -16,11 +17,18 @@ export function FreeShippingGoal({ cartTotal, threshold = 500 }: FreeShippingGoa
   const progress = Math.min((cartTotal / threshold) * 100, 100);
   const hasReached = remaining <= 0;
 
-  // Find products that would help reach the threshold
-  const suggestedProducts = products
-    .filter((p) => p.inStock && p.price <= remaining && p.price >= remaining * 0.3)
-    .sort((a, b) => Math.abs(remaining - a.price) - Math.abs(remaining - b.price))
-    .slice(0, 3);
+  const { data: productsData, isLoading } = useProducts({
+    enabled: !hasReached && remaining > 0,
+    top: 50
+  });
+
+  const suggestedProducts = useMemo(() => {
+    if (!productsData?.items) return [];
+    return productsData.items
+      .filter((p) => p.inStock && p.price <= remaining && p.price >= remaining * 0.2)
+      .sort((a, b) => Math.abs(remaining - a.price) - Math.abs(remaining - b.price))
+      .slice(0, 3);
+  }, [productsData, remaining]);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("pt-BR", {
@@ -71,7 +79,11 @@ export function FreeShippingGoal({ cartTotal, threshold = 500 }: FreeShippingGoa
         </div>
       </div>
 
-      {suggestedProducts.length > 0 && (
+      {isLoading ? (
+        <div className="flex justify-center py-4">
+          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+        </div>
+      ) : suggestedProducts.length > 0 && (
         <div className="space-y-2 pt-2 border-t border-border">
           <p className="text-sm font-medium text-foreground">Adicione e ganhe frete grátis:</p>
           <div className="space-y-2">

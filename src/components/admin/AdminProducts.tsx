@@ -1,17 +1,28 @@
-import { Package, Info } from "lucide-react";
+import { Package, Info, Loader2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { products } from "@/data/products";
+import { useProducts } from "@/hooks/useProducts";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export function AdminProducts() {
+  const { data: productsData, isLoading } = useProducts();
+  const products = productsData?.items || [];
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("pt-BR", {
       style: "currency",
       currency: "BRL",
     }).format(value);
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <Card>
@@ -25,8 +36,8 @@ export function AdminProducts() {
         <Alert className="mb-6">
           <Info className="h-4 w-4" />
           <AlertDescription>
-            Os produtos são gerenciados via código. Para adicionar ou editar produtos, 
-            modifique o arquivo <code className="text-primary">src/data/products.ts</code>.
+            Os produtos são gerenciados via banco de dados (Supabase).
+            Em breve você poderá adicionar e editar produtos diretamente por este painel.
           </AlertDescription>
         </Alert>
 
@@ -74,14 +85,14 @@ export function AdminProducts() {
                     <TableCell>
                       <span
                         className={
-                          product.stock < 10
+                          (product.stock || 0) < 10
                             ? "text-destructive"
-                            : product.stock < 50
-                            ? "text-yellow-600"
-                            : "text-green-600"
+                            : (product.stock || 0) < 50
+                              ? "text-yellow-600"
+                              : "text-green-600"
                         }
                       >
-                        {product.stock} un.
+                        {product.stock || 0} un.
                       </span>
                     </TableCell>
                     <TableCell>

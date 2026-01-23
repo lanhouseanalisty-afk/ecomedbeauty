@@ -16,7 +16,7 @@ export function useContracts() {
         .from('legal_contracts')
         .select('*')
         .order('created_at', { ascending: false });
-      
+
       if (error) throw error;
       return data;
     },
@@ -29,7 +29,7 @@ export function useContracts() {
         .insert(contract)
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },
@@ -42,7 +42,27 @@ export function useContracts() {
     },
   });
 
-  return { contracts, isLoading, error, createContract };
+  const updateContract = useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<Database['public']['Tables']['legal_contracts']['Update']> }) => {
+      const { data, error } = await supabase
+        .from('legal_contracts')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['legal_contracts'] });
+    },
+    onError: (error) => {
+      toast.error('Erro ao atualizar contrato: ' + error.message);
+    },
+  });
+
+  return { contracts, isLoading, error, createContract, updateContract };
 }
 
 export function useLegalCases() {
@@ -53,7 +73,7 @@ export function useLegalCases() {
         .from('legal_cases')
         .select('*')
         .order('created_at', { ascending: false });
-      
+
       if (error) throw error;
       return data;
     },
@@ -70,7 +90,7 @@ export function useComplianceItems() {
         .from('compliance_items')
         .select('*')
         .order('due_date');
-      
+
       if (error) throw error;
       return data;
     },
