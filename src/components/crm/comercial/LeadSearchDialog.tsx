@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -18,7 +18,6 @@ import {
   Instagram,
   Linkedin,
   Search,
-  Loader2,
   Phone,
   Globe,
   Star,
@@ -57,45 +56,37 @@ export function LeadSearchDialog({ open, onOpenChange, onImportLeads }: LeadSear
   const [results, setResults] = useState<SearchResult[]>([]);
   const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
 
-  // Google Maps search state
+  // Form states
   const [gmQuery, setGmQuery] = useState("");
   const [gmLocation, setGmLocation] = useState("");
-
-  // Instagram search state
   const [igHashtag, setIgHashtag] = useState("");
   const [igUsername, setIgUsername] = useState("");
-
-  // LinkedIn search state
   const [liKeywords, setLiKeywords] = useState("");
   const [liCompany, setLiCompany] = useState("");
   const [liLocation, setLiLocation] = useState("");
   const [liTitle, setLiTitle] = useState("");
 
-  // Search function for Google Maps with real API
   const searchGoogleMaps = async () => {
     if (!gmQuery && !gmLocation) {
       toast.error("Preencha pelo menos um campo de busca");
       return;
     }
 
-    setIsSearching(true);
-    setResults([]);
-    setSelectedLeads(new Set());
-
     try {
-      // Try to call the Supabase Edge Function
+      setIsSearching(true);
+      setResults([]); // Clear previous results immediately
+      setSelectedLeads(new Set());
+
+      // Artificial delay for UX
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
       const { data, error } = await supabase.functions.invoke("search-leads-google-maps", {
-        body: {
-          query: gmQuery,
-          location: gmLocation,
-        },
+        body: { query: gmQuery, location: gmLocation },
       });
 
-      if (error) {
-        console.warn("API not configured, using mock data:", error);
-        // Fallback to mock data if API is not configured
-        await new Promise(resolve => setTimeout(resolve, 1500));
-
+      if (error || (data && data.error)) {
+        console.error("FULL API ERROR:", error || data?.error);
+        console.warn("API error or not configured, using mock data");
         const mockResults: SearchResult[] = [
           {
             id: "gm-1",
@@ -127,136 +118,70 @@ export function LeadSearchDialog({ open, onOpenChange, onImportLeads }: LeadSear
             source: "google_maps",
           },
         ];
-
         setResults(mockResults);
-        toast.info(`${mockResults.length} leads encontrados (dados de demonstração)`);
-        return;
+        toast.info("Dados de demonstração carregados");
+      } else {
+        const formattedResults: SearchResult[] = data.leads.map((lead: any, index: number) => ({
+          id: `gm-${index}-${lead.place_id}`,
+          name: lead.name,
+          company: lead.name,
+          phone: lead.phone,
+          website: lead.website,
+          address: lead.address,
+          rating: lead.rating,
+          source: "google_maps",
+        }));
+        setResults(formattedResults);
+        toast.success(`${formattedResults.length} leads encontrados`);
       }
-
-      if (data.error) {
-        toast.error(data.error);
-        return;
-      }
-
-      // Format real API results
-      const formattedResults: SearchResult[] = data.leads.map((lead: any, index: number) => ({
-        id: `gm-${index}-${lead.place_id || Date.now()}`,
-        name: lead.name,
-        company: lead.name,
-        phone: lead.phone,
-        website: lead.website,
-        address: lead.address,
-        rating: lead.rating,
-        source: "google_maps",
-      }));
-
-      setResults(formattedResults);
-      toast.success(`${formattedResults.length} leads encontrados`);
-    } catch (error: any) {
-      console.error("Error searching Google Maps:", error);
-      toast.error("Erro ao buscar leads. Tente novamente.");
+    } catch (error) {
+      console.error(error);
+      toast.error("Erro ao buscar leads");
     } finally {
       setIsSearching(false);
     }
   };
 
-  // Simulated search function for Instagram
   const searchInstagram = async () => {
-    if (!igHashtag && !igUsername) {
-      toast.error("Preencha pelo menos um campo de busca");
-      return;
-    }
-
     setIsSearching(true);
-    setResults([]);
-    setSelectedLeads(new Set());
-
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-
-      const mockResults: SearchResult[] = [
-        {
-          id: "ig-1",
-          name: "@clinicaestetica_sp",
-          username: "clinicaestetica_sp",
-          website: "linktr.ee/clinicaestetica",
-          source: "instagram",
-        },
-        {
-          id: "ig-2",
-          name: "@belezaesaude_oficial",
-          username: "belezaesaude_oficial",
-          source: "instagram",
-        },
-      ];
-
-      setResults(mockResults);
-      toast.success(`${mockResults.length} leads encontrados`);
-    } catch (error: any) {
-      console.error("Error searching Instagram:", error);
-      toast.error("Erro ao buscar leads. Tente novamente.");
-    } finally {
-      setIsSearching(false);
-    }
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    setResults([
+      {
+        id: "ig-1",
+        name: "@clinicaestetica_sp",
+        username: "clinicaestetica_sp",
+        website: "linktr.ee/clinicaestetica",
+        source: "instagram",
+      }
+    ]);
+    setIsSearching(false);
   };
 
-  // Simulated search function for LinkedIn
   const searchLinkedIn = async () => {
-    if (!liKeywords && !liCompany && !liLocation && !liTitle) {
-      toast.error("Preencha pelo menos um campo de busca");
-      return;
-    }
-
     setIsSearching(true);
-    setResults([]);
-    setSelectedLeads(new Set());
-
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-
-      const mockResults: SearchResult[] = [
-        {
-          id: "li-1",
-          name: "Maria Silva",
-          company: "Clínica Estética Premium",
-          headline: "Diretora Comercial | Estética Avançada",
-          source: "linkedin",
-        },
-        {
-          id: "li-2",
-          name: "João Santos",
-          company: "Espaço Beleza & Saúde",
-          headline: "Gerente de Vendas | Cosméticos Profissionais",
-          source: "linkedin",
-        },
-      ];
-
-      setResults(mockResults);
-      toast.success(`${mockResults.length} leads encontrados`);
-    } catch (error: any) {
-      console.error("Error searching LinkedIn:", error);
-      toast.error("Erro ao buscar leads. Tente novamente.");
-    } finally {
-      setIsSearching(false);
-    }
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    setResults([
+      {
+        id: "li-1",
+        name: "Maria Silva",
+        company: "Clínica Estética Premium",
+        headline: "Diretora Comercial",
+        source: "linkedin",
+      }
+    ]);
+    setIsSearching(false);
   };
 
   const toggleSelectLead = (id: string) => {
     const newSelected = new Set(selectedLeads);
-    if (newSelected.has(id)) {
-      newSelected.delete(id);
-    } else {
-      newSelected.add(id);
-    }
+    if (newSelected.has(id)) newSelected.delete(id);
+    else newSelected.add(id);
     setSelectedLeads(newSelected);
   };
 
   const selectAll = () => {
-    if (selectedLeads.size === results.length) {
-      setSelectedLeads(new Set());
-    } else {
-      setSelectedLeads(new Set(results.map(r => r.id)));
-    }
+    if (selectedLeads.size === results.length) setSelectedLeads(new Set());
+    else setSelectedLeads(new Set(results.map(r => r.id)));
   };
 
   const handleImport = () => {
@@ -268,25 +193,19 @@ export function LeadSearchDialog({ open, onOpenChange, onImportLeads }: LeadSear
         company: r.company || r.name,
         phone: r.phone,
         source: r.source,
-        notes: [
-          r.address ? `Endereço: ${r.address}` : "",
-          r.website ? `Website: ${r.website}` : "",
-          r.rating ? `Avaliação: ${r.rating}/5` : "",
-          r.headline ? `${r.headline}` : "",
-          r.username ? `Instagram: @${r.username}` : "",
-        ].filter(Boolean).join("\n"),
+        notes: `Importado de ${r.source}`
       }));
 
     onImportLeads(leadsToImport);
     onOpenChange(false);
     setResults([]);
     setSelectedLeads(new Set());
-    toast.success(`${leadsToImport.length} leads importados com sucesso`);
+    toast.success("Leads importados!");
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh]">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Search className="h-5 w-5" />
@@ -313,228 +232,143 @@ export function LeadSearchDialog({ open, onOpenChange, onImportLeads }: LeadSear
             </TabsTrigger>
           </TabsList>
 
-          {/* Google Maps Tab */}
           <TabsContent value="google-maps" className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="gm-query">Categoria / Palavra-chave</Label>
+                <Label>Categoria / Palavra-chave</Label>
                 <Input
-                  id="gm-query"
-                  placeholder="Ex: clínicas estéticas, restaurantes..."
+                  placeholder="Ex: clínicas estéticas"
                   value={gmQuery}
                   onChange={(e) => setGmQuery(e.target.value)}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="gm-location">Localização</Label>
+                <Label>Localização</Label>
                 <Input
-                  id="gm-location"
                   placeholder="Ex: São Paulo, SP"
                   value={gmLocation}
                   onChange={(e) => setGmLocation(e.target.value)}
                 />
               </div>
             </div>
-            <Button onClick={searchGoogleMaps} disabled={isSearching}>
-              {isSearching ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Search className="mr-2 h-4 w-4" />
-              )}
-              Buscar no Google Maps
+
+            <Button onClick={searchGoogleMaps} disabled={isSearching} className="w-full">
+              {isSearching ? "Buscando..." : "Buscar no Google Maps"}
             </Button>
           </TabsContent>
 
-          {/* Instagram Tab */}
           <TabsContent value="instagram" className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="ig-hashtag">Hashtag</Label>
+                <Label>Hashtag</Label>
                 <Input
-                  id="ig-hashtag"
-                  placeholder="Ex: estetica, beleza..."
                   value={igHashtag}
                   onChange={(e) => setIgHashtag(e.target.value)}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="ig-username">Nome de Usuário</Label>
+                <Label>Usuário</Label>
                 <Input
-                  id="ig-username"
-                  placeholder="Ex: clinicaxyz"
                   value={igUsername}
                   onChange={(e) => setIgUsername(e.target.value)}
                 />
               </div>
             </div>
-            <Button onClick={searchInstagram} disabled={isSearching}>
-              {isSearching ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Search className="mr-2 h-4 w-4" />
-              )}
-              Buscar no Instagram
+            <Button onClick={searchInstagram} disabled={isSearching} className="w-full">
+              {isSearching ? "Buscando..." : "Buscar no Instagram"}
             </Button>
           </TabsContent>
 
-          {/* LinkedIn Tab */}
           <TabsContent value="linkedin" className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="li-keywords">Palavras-chave</Label>
+                <Label>Palavras-chave</Label>
                 <Input
-                  id="li-keywords"
-                  placeholder="Ex: dermatologista, médico..."
                   value={liKeywords}
                   onChange={(e) => setLiKeywords(e.target.value)}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="li-company">Empresa</Label>
+                <Label>Empresa</Label>
                 <Input
-                  id="li-company"
-                  placeholder="Ex: Hospital Albert Einstein"
                   value={liCompany}
                   onChange={(e) => setLiCompany(e.target.value)}
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="li-location">Localização</Label>
-                <Input
-                  id="li-location"
-                  placeholder="Ex: São Paulo, Brasil"
-                  value={liLocation}
-                  onChange={(e) => setLiLocation(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="li-title">Cargo</Label>
-                <Input
-                  id="li-title"
-                  placeholder="Ex: Diretor, Gerente..."
-                  value={liTitle}
-                  onChange={(e) => setLiTitle(e.target.value)}
-                />
-              </div>
             </div>
-            <Button onClick={searchLinkedIn} disabled={isSearching}>
-              {isSearching ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Search className="mr-2 h-4 w-4" />
-              )}
-              Buscar no LinkedIn
+            <Button onClick={searchLinkedIn} disabled={isSearching} className="w-full">
+              {isSearching ? "Buscando..." : "Buscar no LinkedIn"}
             </Button>
           </TabsContent>
         </Tabs>
 
-        {/* Results Section */}
+        {/* Results Area */}
         {results.length > 0 && (
           <div className="space-y-4 border-t pt-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <h3 className="font-semibold">
-                  Resultados ({results.length})
-                </h3>
-                <Badge variant="outline">
-                  {selectedLeads.size} selecionado(s)
-                </Badge>
-              </div>
-              <div className="flex items-center gap-2">
+              <h3 className="font-semibold">Resultados: {results.length}</h3>
+              <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={selectAll}>
                   {selectedLeads.size === results.length ? "Desmarcar Todos" : "Selecionar Todos"}
                 </Button>
-                <Button
-                  size="sm"
-                  onClick={handleImport}
-                  disabled={selectedLeads.size === 0}
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Importar Selecionados
+                <Button size="sm" onClick={handleImport} disabled={selectedLeads.size === 0}>
+                  Importar ({selectedLeads.size})
                 </Button>
               </div>
             </div>
 
-            <ScrollArea className="h-[300px] rounded-md border">
-              <div className="divide-y">
-                {results.map((result) => (
-                  <div
-                    key={result.id}
-                    className={`flex items-start gap-4 p-4 hover:bg-muted/50 cursor-pointer transition-colors ${selectedLeads.has(result.id) ? "bg-primary/5" : ""
-                      }`}
-                    onClick={() => toggleSelectLead(result.id)}
-                  >
-                    <Checkbox
-                      checked={selectedLeads.has(result.id)}
-                      onCheckedChange={() => toggleSelectLead(result.id)}
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium truncate">{result.name}</p>
-                        <Badge variant="secondary" className="text-xs">
-                          {result.source === "google_maps" && <MapPin className="h-3 w-3 mr-1" />}
-                          {result.source === "instagram" && <Instagram className="h-3 w-3 mr-1" />}
-                          {result.source === "linkedin" && <Linkedin className="h-3 w-3 mr-1" />}
-                          {result.source}
+            <ScrollArea className="h-[300px] rounded-md border p-2">
+              {results.map((result) => (
+                <div
+                  key={result.id}
+                  className={`flex items-start gap-4 p-3 mb-2 rounded-lg border cursor-pointer hover:bg-muted/50 transition-colors ${selectedLeads.has(result.id) ? 'border-primary bg-primary/5' : ''}`}
+                  onClick={() => toggleSelectLead(result.id)}
+                >
+                  <Checkbox
+                    checked={selectedLeads.has(result.id)}
+                    onCheckedChange={() => toggleSelectLead(result.id)}
+                    className="mt-1"
+                  />
+                  <div className="flex-1 space-y-1">
+                    <div className="flex justify-between items-start">
+                      <p className="font-medium text-sm md:text-base">{result.name}</p>
+                      {result.rating && (
+                        <Badge variant="secondary" className="text-[10px] flex gap-1 items-center bg-yellow-100 text-yellow-800 hover:bg-yellow-200 border-yellow-200">
+                          {result.rating} <Star className="h-3 w-3 fill-yellow-500 text-yellow-500" />
                         </Badge>
-                      </div>
-                      <div className="flex flex-wrap items-center gap-3 mt-1 text-sm text-muted-foreground">
-                        {result.company && result.company !== result.name && (
-                          <span className="flex items-center gap-1">
-                            <Building className="h-3 w-3" />
-                            {result.company}
-                          </span>
-                        )}
-                        {result.phone && (
-                          <span className="flex items-center gap-1">
-                            <Phone className="h-3 w-3" />
-                            {result.phone}
-                          </span>
-                        )}
-                        {result.website && (
-                          <span className="flex items-center gap-1">
-                            <Globe className="h-3 w-3" />
-                            {result.website.replace(/^https?:\/\//, "").split("/")[0]}
-                          </span>
-                        )}
-                        {result.rating && (
-                          <span className="flex items-center gap-1">
-                            <Star className="h-3 w-3 fill-yellow-500 text-yellow-500" />
-                            {result.rating}
-                          </span>
-                        )}
-                        {result.username && (
-                          <span className="flex items-center gap-1">
-                            <User className="h-3 w-3" />
-                            @{result.username}
-                          </span>
-                        )}
-                      </div>
-                      {result.address && (
-                        <p className="text-xs text-muted-foreground mt-1 truncate">
-                          {result.address}
-                        </p>
-                      )}
-                      {result.headline && (
-                        <p className="text-xs text-muted-foreground mt-1 truncate">
-                          {result.headline}
-                        </p>
                       )}
                     </div>
-                    {selectedLeads.has(result.id) && (
-                      <Check className="h-5 w-5 text-primary flex-shrink-0" />
-                    )}
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
-          </div>
-        )}
 
-        {isSearching && (
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <span className="ml-2 text-muted-foreground">Buscando leads...</span>
+                    {result.company && result.company !== result.name && (
+                      <p className="text-xs text-muted-foreground font-medium">{result.company}</p>
+                    )}
+
+                    <p className="text-xs text-muted-foreground flex items-center gap-1">
+                      <MapPin className="h-3 w-3" />
+                      {result.address || "Endereço não disponível"}
+                    </p>
+
+                    <div className="flex flex-wrap gap-3 mt-2">
+                      {result.phone && (
+                        <div className="flex items-center gap-1 text-xs text-primary">
+                          <Phone className="h-3 w-3" />
+                          {result.phone}
+                        </div>
+                      )}
+
+                      {result.website && (
+                        <div className="flex items-center gap-1 text-xs text-blue-600">
+                          <Globe className="h-3 w-3" />
+                          <a href={result.website} target="_blank" rel="noopener noreferrer" className="hover:underline" onClick={(e) => e.stopPropagation()}>
+                            Website
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </ScrollArea>
           </div>
         )}
       </DialogContent>

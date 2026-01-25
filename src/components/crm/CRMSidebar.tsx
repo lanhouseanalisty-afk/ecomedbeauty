@@ -1,8 +1,8 @@
-import { 
-  LayoutDashboard, 
-  Users, 
-  DollarSign, 
-  Megaphone, 
+import {
+  LayoutDashboard,
+  Users,
+  DollarSign,
+  Megaphone,
   Handshake,
   Truck,
   Scale,
@@ -16,7 +16,8 @@ import {
   Package,
   FileText,
   TicketCheck,
-  Store
+  Store,
+  Wrench
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
@@ -83,7 +84,107 @@ const menuSections: MenuSection[] = [
           { title: "Permissões", url: "/crm/admin/permissoes" },
           { title: "Auditoria", url: "/crm/admin/auditoria" },
           { title: "Configurações", url: "/crm/admin/configuracoes" },
-          { title: "DocuSign", url: "/crm/admin/docusign" },
+
+        ],
+      },
+      {
+        title: "Comercial",
+        icon: Handshake,
+        url: "/crm/comercial",
+        subitems: [
+          { title: "Leads", url: "/crm/comercial" },
+          { title: "Admissão", url: "/crm/comercial/admissao" },
+          { title: "Inside Sales", url: "/crm/comercial/inside-sales" },
+          { title: "Sudeste", url: "/crm/comercial/sudeste" },
+          { title: "Sul", url: "/crm/comercial/sul" },
+          { title: "Centro", url: "/crm/comercial/centro" },
+          { title: "Norte", url: "/crm/comercial/norte" },
+
+        ],
+      },
+      {
+        title: "Compras",
+        icon: Package,
+        url: "/crm/compras",
+        subitems: [
+          { title: "Dashboard", url: "/crm/compras" },
+        ],
+      },
+      {
+        title: "E-commerce",
+        icon: ShoppingCart,
+        url: "/crm/ecommerce",
+        subitems: [
+          { title: "Dashboard", url: "/crm/ecommerce" },
+          { title: "Produtos", url: "/crm/ecommerce/produtos" },
+          { title: "Categorias", url: "/crm/ecommerce/categorias" },
+          { title: "Pedidos", url: "/crm/ecommerce/pedidos" },
+          { title: "Cupons", url: "/crm/ecommerce/cupons" },
+        ],
+      },
+      {
+        title: "Financeiro",
+        icon: DollarSign,
+        url: "/crm/financeiro",
+        subitems: [
+          { title: "Dashboard", url: "/crm/financeiro" },
+          { title: "Admissão", url: "/crm/financeiro/admissao" },
+          { title: "Faturas", url: "/crm/financeiro/faturas" },
+          { title: "Pagamentos", url: "/crm/financeiro/pagamentos" },
+          { title: "Contas", url: "/crm/financeiro/contas" },
+          { title: "Centros de Custo", url: "/crm/financeiro/centros-custo" },
+          { title: "Relatórios", url: "/crm/financeiro/relatorios" },
+
+        ],
+      },
+      {
+        title: "Jurídico",
+        icon: Scale,
+        url: "/crm/juridico",
+        subitems: [
+          { title: "Dashboard", url: "/crm/juridico" },
+          { title: "Admissão", url: "/crm/juridico/admissao" },
+          { title: "Contratos", url: "/crm/juridico/contratos" },
+          { title: "Casos", url: "/crm/juridico/casos" },
+          { title: "Compliance", url: "/crm/juridico/compliance" },
+
+        ],
+      },
+      {
+        title: "Logística",
+        icon: Truck,
+        url: "/crm/logistica",
+        subitems: [
+          { title: "Dashboard", url: "/crm/logistica" },
+          { title: "Admissão", url: "/crm/logistica/admissao" },
+          { title: "Pedidos", url: "/crm/logistica/pedidos" },
+          { title: "Envios", url: "/crm/logistica/envios" },
+          { title: "Estoque", url: "/crm/logistica/estoque" },
+          { title: "Transportadoras", url: "/crm/logistica/transportadoras" },
+          { title: "Depósitos", url: "/crm/logistica/depositos" },
+
+        ],
+      },
+      {
+        title: "Manutenção",
+        icon: Wrench,
+        url: "/crm/manutencao",
+        subitems: [
+          { title: "Dashboard", url: "/crm/manutencao" },
+        ],
+      },
+      {
+        title: "Marketing",
+        icon: Megaphone,
+        url: "/crm/marketing",
+        subitems: [
+          { title: "Dashboard", url: "/crm/marketing" },
+          { title: "Admissão", url: "/crm/marketing/admissao" },
+          { title: "Campanhas", url: "/crm/marketing/campanhas" },
+          { title: "Promoções", url: "/crm/marketing/promocoes" },
+          { title: "Assets", url: "/crm/marketing/assets" },
+          { title: "Performance", url: "/crm/marketing/performance" },
+
         ],
       },
       {
@@ -99,79 +200,7 @@ const menuSections: MenuSection[] = [
           { title: "Ponto", url: "/crm/rh/ponto" },
           { title: "Férias", url: "/crm/rh/ferias" },
           { title: "Treinamentos", url: "/crm/rh/treinamentos" },
-          { title: "DocuSign", url: "/crm/rh/docusign" },
-        ],
-      },
-      {
-        title: "Financeiro",
-        icon: DollarSign,
-        url: "/crm/financeiro",
-        subitems: [
-          { title: "Dashboard", url: "/crm/financeiro" },
-          { title: "Admissão", url: "/crm/financeiro/admissao" },
-          { title: "Faturas", url: "/crm/financeiro/faturas" },
-          { title: "Pagamentos", url: "/crm/financeiro/pagamentos" },
-          { title: "Contas", url: "/crm/financeiro/contas" },
-          { title: "Centros de Custo", url: "/crm/financeiro/centros-custo" },
-          { title: "Relatórios", url: "/crm/financeiro/relatorios" },
-          { title: "DocuSign", url: "/crm/financeiro/docusign" },
-        ],
-      },
-      {
-        title: "Marketing",
-        icon: Megaphone,
-        url: "/crm/marketing",
-        subitems: [
-          { title: "Dashboard", url: "/crm/marketing" },
-          { title: "Admissão", url: "/crm/marketing/admissao" },
-          { title: "Campanhas", url: "/crm/marketing/campanhas" },
-          { title: "Promoções", url: "/crm/marketing/promocoes" },
-          { title: "Assets", url: "/crm/marketing/assets" },
-          { title: "Performance", url: "/crm/marketing/performance" },
-          { title: "DocuSign", url: "/crm/marketing/docusign" },
-        ],
-      },
-      {
-        title: "Comercial",
-        icon: Handshake,
-        url: "/crm/comercial",
-        subitems: [
-          { title: "Dashboard", url: "/crm/comercial" },
-          { title: "Admissão", url: "/crm/comercial/admissao" },
-          { title: "Leads", url: "/crm/comercial/leads" },
-          { title: "Contatos", url: "/crm/comercial/contatos" },
-          { title: "Contas", url: "/crm/comercial/contas" },
-          { title: "Oportunidades", url: "/crm/comercial/oportunidades" },
-          { title: "Pipeline", url: "/crm/comercial/pipeline" },
-          { title: "DocuSign", url: "/crm/comercial/docusign" },
-        ],
-      },
-      {
-        title: "Logística",
-        icon: Truck,
-        url: "/crm/logistica",
-        subitems: [
-          { title: "Dashboard", url: "/crm/logistica" },
-          { title: "Admissão", url: "/crm/logistica/admissao" },
-          { title: "Pedidos", url: "/crm/logistica/pedidos" },
-          { title: "Envios", url: "/crm/logistica/envios" },
-          { title: "Estoque", url: "/crm/logistica/estoque" },
-          { title: "Transportadoras", url: "/crm/logistica/transportadoras" },
-          { title: "Depósitos", url: "/crm/logistica/depositos" },
-          { title: "DocuSign", url: "/crm/logistica/docusign" },
-        ],
-      },
-      {
-        title: "Jurídico",
-        icon: Scale,
-        url: "/crm/juridico",
-        subitems: [
-          { title: "Dashboard", url: "/crm/juridico" },
-          { title: "Admissão", url: "/crm/juridico/admissao" },
-          { title: "Contratos", url: "/crm/juridico/contratos" },
-          { title: "Casos", url: "/crm/juridico/casos" },
-          { title: "Compliance", url: "/crm/juridico/compliance" },
-          { title: "DocuSign", url: "/crm/juridico/docusign" },
+
         ],
       },
       {
@@ -182,21 +211,10 @@ const menuSections: MenuSection[] = [
           { title: "Dashboard", url: "/crm/tech" },
           { title: "Admissão", url: "/crm/tech/admissao" },
           { title: "Tickets", url: "/crm/tech/tickets" },
+          { title: "Ativos / Inventário", url: "/crm/tech/ativos" },
           { title: "Base de Conhecimento", url: "/crm/tech/kb" },
           { title: "SLAs", url: "/crm/tech/slas" },
-          { title: "DocuSign", url: "/crm/tech/docusign" },
-        ],
-      },
-      {
-        title: "E-commerce",
-        icon: ShoppingCart,
-        url: "/crm/ecommerce",
-        subitems: [
-          { title: "Dashboard", url: "/crm/ecommerce" },
-          { title: "Produtos", url: "/crm/ecommerce/produtos" },
-          { title: "Categorias", url: "/crm/ecommerce/categorias" },
-          { title: "Pedidos", url: "/crm/ecommerce/pedidos" },
-          { title: "Cupons", url: "/crm/ecommerce/cupons" },
+
         ],
       },
     ],
@@ -252,7 +270,7 @@ export function CRMSidebar() {
                         <CollapsibleTrigger asChild>
                           <SidebarMenuButton
                             className={cn(
-                              "w-full justify-between",
+                              "w-full justify-between group",
                               isParentActive(item) && "bg-sidebar-accent text-sidebar-accent-foreground"
                             )}
                           >

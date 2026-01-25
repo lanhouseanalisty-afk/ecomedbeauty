@@ -7,7 +7,8 @@ import {
   TrendingUp,
   Users,
   MoreHorizontal,
-  Loader2
+  Loader2,
+  Layout
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -29,24 +30,55 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useOrders } from "@/hooks/useEcommerce";
 import { Link } from "react-router-dom";
+import { EcommerceLiveEditor } from "@/components/crm/ecommerce/EcommerceLiveEditor";
+
+// Define strict types to avoid inference errors
+interface OrderItem {
+  id: string;
+  order_id: string;
+  product_id: string;
+  quantity: number;
+  unit_price: number;
+  total_price: number;
+}
+
+interface Profile {
+  full_name?: string;
+  email?: string;
+}
+
+interface Order {
+  id: string;
+  user_id: string;
+  status: string;
+  total: number;
+  payment_status: string;
+  payment_method?: string;
+  created_at: string;
+  updated_at: string;
+  order_items?: OrderItem[];
+  profile?: Profile; // The alias from the query
+  profiles?: Profile; // Fallback if alias fails
+}
 
 export default function EcommerceDashboard() {
-  const { data: ordersData, isLoading } = useOrders();
-  const orders = ordersData || [];
+  const { data: rawOrdersData, isLoading } = useOrders();
+  // Safe cast to avoid TS errors with Supabase relations
+  const orders = (rawOrdersData as unknown as Order[]) || [];
 
   const stats = useMemo(() => {
-    if (!ordersData) return [];
+    if (!orders) return [];
 
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
 
-    const ordersToday = ordersData.filter(o => new Date(o.created_at).getTime() >= today);
+    const ordersToday = orders.filter(o => new Date(o.created_at).getTime() >= today);
     const revenueToday = ordersToday.reduce((acc, o) => acc + (Number(o.total) || 0), 0);
-    const totalRevenue = ordersData.reduce((acc, o) => acc + (Number(o.total) || 0), 0);
-    const avgTicket = ordersData.length > 0 ? totalRevenue / ordersData.length : 0;
+    const totalRevenue = orders.reduce((acc, o) => acc + (Number(o.total) || 0), 0);
+    const avgTicket = orders.length > 0 ? totalRevenue / orders.length : 0;
 
     // Unique customers (from profiles)
-    const uniqueCustomers = new Set(ordersData.map(o => o.user_id)).size;
+    const uniqueCustomers = new Set(orders.map(o => o.user_id)).size;
 
     return [
       { title: "Pedidos Hoje", value: ordersToday.length.toString(), icon: ShoppingCart, color: "text-primary" },
@@ -54,7 +86,7 @@ export default function EcommerceDashboard() {
       { title: "Ticket Médio", value: avgTicket.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }), icon: TrendingUp, color: "text-info" },
       { title: "Clientes Ativos", value: uniqueCustomers.toString(), icon: Users, color: "text-warning" },
     ];
-  }, [ordersData]);
+  }, [orders]);
 
   const getStatusBadge = (status: string) => {
     const statusMap: Record<string, { label: string; className: string }> = {
@@ -108,7 +140,7 @@ export default function EcommerceDashboard() {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="font-serif text-3xl font-bold">E-commerce</h1>
-          <p className="text-muted-foreground">Gestão de produtos, pedidos e vendas</p>
+          <p className="text-muted-foreground">Gestão de produtos, pedidos e loja virtual</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" asChild>
@@ -126,92 +158,95 @@ export default function EcommerceDashboard() {
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-4">
-        {stats.map((stat) => (
-          <Card key={stat.title}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                {stat.title}
-              </CardTitle>
-              <stat.icon className={`h-4 w-4 ${stat.color}`} />
+      <Tabs defaultValue="overview" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="overview">Visão Geral</TabsTrigger>
+          <TabsTrigger value="editor">Editor da Loja</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="overview" className="space-y-6">
+          <div className="grid gap-4 md:grid-cols-4">
+            {stats.map((stat) => (
+              <Card key={stat.title}>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    {stat.title}
+                  </CardTitle>
+                  <stat.icon className={`h-4 w-4 ${stat.color}`} />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stat.value}</div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Pedidos Recentes</CardTitle>
+              <CardDescription>Últimos pedidos da loja</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Pedidos Recentes</CardTitle>
-          <CardDescription>Últimos pedidos da loja</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="all">
-            <TabsList className="mb-4">
-              <TabsTrigger value="all">Todos</TabsTrigger>
-              <TabsTrigger value="pending">Pendentes</TabsTrigger>
-              <TabsTrigger value="processing">Processando</TabsTrigger>
-              <TabsTrigger value="shipped">Enviados</TabsTrigger>
-              <TabsTrigger value="delivered">Entregues</TabsTrigger>
-            </TabsList>
-
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Pedido</TableHead>
-                  <TableHead>Cliente</TableHead>
-                  <TableHead>Itens</TableHead>
-                  <TableHead>Total</TableHead>
-                  <TableHead>Pagamento</TableHead>
-                  <TableHead>Data</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="w-10"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {orders.length === 0 ? (
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                      Nenhum pedido encontrado.
-                    </TableCell>
+                    <TableHead>Pedido</TableHead>
+                    <TableHead>Cliente</TableHead>
+                    <TableHead>Itens</TableHead>
+                    <TableHead>Total</TableHead>
+                    <TableHead>Pagamento</TableHead>
+                    <TableHead>Data</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="w-10"></TableHead>
                   </TableRow>
-                ) : (
-                  orders.slice(0, 10).map((order) => (
-                    <TableRow key={order.id}>
-                      <TableCell className="font-medium">#{order.id.slice(0, 8)}</TableCell>
-                      <TableCell>{order.profile?.full_name || order.profile?.email || "N/A"}</TableCell>
-                      <TableCell>{(order.order_items as any[])?.length || 0} itens</TableCell>
-                      <TableCell>{formatCurrency(Number(order.total))}</TableCell>
-                      <TableCell>{getPaymentBadge(order.payment_status)}</TableCell>
-                      <TableCell>{formatDate(order.created_at)}</TableCell>
-                      <TableCell>{getStatusBadge(order.status)}</TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem asChild>
-                              <Link to={`/admin/rastreamento/${order.id}`}>Ver Detalhes</Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>Atualizar Status</DropdownMenuItem>
-                            <DropdownMenuItem>Enviar Nota</DropdownMenuItem>
-                            <DropdownMenuItem className="text-destructive">Cancelar</DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                </TableHeader>
+                <TableBody>
+                  {orders.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                        Nenhum pedido encontrado.
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </Tabs>
-        </CardContent>
-      </Card>
+                  ) : (
+                    orders.slice(0, 10).map((order) => (
+                      <TableRow key={order.id}>
+                        <TableCell className="font-medium">#{order.id.slice(0, 8)}</TableCell>
+                        <TableCell>{order.profile?.full_name || order.profile?.email || "N/A"}</TableCell>
+                        <TableCell>{(order.order_items as any[])?.length || 0} itens</TableCell>
+                        <TableCell>{formatCurrency(Number(order.total))}</TableCell>
+                        <TableCell>{getPaymentBadge(order.payment_status)}</TableCell>
+                        <TableCell>{formatDate(order.created_at)}</TableCell>
+                        <TableCell>{getStatusBadge(order.status)}</TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem asChild>
+                                <Link to={`/admin/rastreamento/${order.id}`}>Ver Detalhes</Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem>Atualizar Status</DropdownMenuItem>
+                              <DropdownMenuItem>Enviar Nota</DropdownMenuItem>
+                              <DropdownMenuItem className="text-destructive">Cancelar</DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="editor">
+          <EcommerceLiveEditor />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

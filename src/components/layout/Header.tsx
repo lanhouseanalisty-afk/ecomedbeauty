@@ -1,222 +1,173 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import { ShoppingBag, Menu, X, Search, Heart, User, LogOut, LayoutDashboard } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom"; // Added useLocation
+import { Search, ShoppingBag, Heart, User, Menu, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { Button } from "@/components/ui/button";
+import { useCMS } from "@/contexts/CMSContext";
+import { CMSText } from "@/components/cms/CMSText";
 import { ProductSearch } from "@/components/products/ProductSearch";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { cn } from "@/lib/utils";
-
-const navigation = [
-  { name: "Início", href: "/" },
-  { name: "Produtos", href: "/produtos" },
-  { name: "Sobre", href: "/sobre" },
-  { name: "Contato", href: "/contato" },
-];
 
 export function Header() {
+  const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const { totalItems } = useCart();
   const { totalItems: wishlistItems } = useWishlist();
   const { user, signOut, isEmployee } = useAuth();
+  const { content, isEditing } = useCMS();
+  const location = useLocation(); // Hook for active route
+
+  // If editing, links should be disabled or prevented to allow text selection
+  const LinkComponent = isEditing ? "div" : Link;
+  const linkProps = (to: string) => isEditing ? {} : { to };
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 0);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const isActive = (path: string) => {
+    return location.pathname === path;
+  };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 lg:px-8">
-        {/* Logo */}
-        <Link to="/" className="flex items-center gap-2 group">
-          <span className="font-serif text-2xl font-bold text-primary transition-all group-hover:text-primary/80">
-            MedBeauty
-          </span>
-        </Link>
+    <header className="sticky top-0 z-50 w-full" style={{ backgroundColor: '#2b0f54' }}> {/* Deep Purple Background */}
+      <nav className="mx-auto flex w-full max-w-[1400px] items-center justify-between px-4 py-3 lg:px-8">
 
-        {/* Desktop Navigation */}
-        <div className="hidden lg:flex lg:gap-x-8">
-          {navigation.map((item) => (
-            <Link
-              key={item.name}
-              to={item.href}
-              className="relative text-sm font-medium text-muted-foreground transition-colors hover:text-primary after:absolute after:-bottom-1 after:left-0 after:h-0.5 after:w-0 after:bg-primary after:transition-all hover:after:w-full"
+        {/* Left Section: Logo & Divider */}
+        <div className="flex items-center gap-6">
+          <LinkComponent {...linkProps("/")} className="group cursor-pointer flex items-center">
+            {/* Recreating the Logo Text style if image doesn't work well on dark */}
+            <span className="font-sans text-2xl font-medium tracking-wide text-white uppercase flex items-center gap-1">
+              <span className="w-1 h-1 rounded-full bg-[#ECB546] self-baseline mt-2"></span> {/* Dot */}
+              MEDBEAUTY
+              <span className="w-1 h-1 rounded-full bg-[#ECB546] self-start mb-2"></span> {/* Dot */}
+            </span>
+          </LinkComponent>
+
+          {/* Vertical Gold Divider */}
+          <div className="hidden lg:block h-8 w-[1px] bg-[#ECB546]"></div>
+
+          {/* Desktop Navigation - Integrated on the left/center */}
+          <div className="hidden lg:flex items-center gap-x-8 ml-2">
+            {[
+              { label: "Home", path: "/" },
+              { label: "Sobre Nós", path: "/sobre" },
+              { label: "Produtos", path: "/produtos" },
+              { label: "Onde Comprar", path: "/onde-comprar" },
+              { label: "Contatos", path: "/contatos" },
+              { label: "Blog", path: "/blog" },
+            ].map(item => (
+              <LinkComponent
+                key={item.label}
+                {...linkProps(item.path)}
+                className={`text-[15px] font-normal transition-colors cursor-pointer text-center tracking-wide
+                            ${isActive(item.path) ? 'text-[#ECB546]' : 'text-white hover:text-[#ECB546]'}
+                        `}
+              >
+                {item.label}
+              </LinkComponent>
+            ))}
+            <LinkComponent
+              {...linkProps("/area-do-aluno")}
+              className={`text-[15px] font-normal transition-colors cursor-pointer text-center tracking-wide text-white hover:text-[#ECB546]`}
             >
-              {item.name}
-            </Link>
-          ))}
+              Área do Aluno
+            </LinkComponent>
+          </div>
         </div>
 
-        {/* Actions */}
-        <div className="flex items-center gap-2">
-          {/* Search - Desktop */}
-          <Sheet open={searchOpen} onOpenChange={setSearchOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="hidden lg:flex">
-                <Search className="h-5 w-5" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="top" className="h-auto">
-              <SheetHeader>
-                <SheetTitle className="sr-only">Buscar produtos</SheetTitle>
-              </SheetHeader>
-              <div className="mx-auto max-w-2xl py-8">
-                <ProductSearch onClose={() => setSearchOpen(false)} />
-              </div>
-            </SheetContent>
-          </Sheet>
 
-          {/* Wishlist */}
-          <Link to="/produtos" className="relative hidden lg:block">
-            <Button variant="ghost" size="icon">
-              <Heart className="h-5 w-5" />
-              {wishlistItems > 0 && (
-                <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-xs font-bold text-destructive-foreground">
-                  {wishlistItems}
-                </span>
-              )}
-            </Button>
-          </Link>
-          
-          {/* User menu */}
-          {user ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="hidden lg:flex">
-                  <User className="h-5 w-5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <div className="px-2 py-1.5">
-                  <p className="text-sm font-medium text-foreground truncate">
-                    {user.email}
-                  </p>
-                </div>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link to="/perfil" className="w-full">
-                    <User className="mr-2 h-4 w-4" />
-                    Meu Perfil
-                  </Link>
-                </DropdownMenuItem>
-                {isEmployee && (
-                  <DropdownMenuItem asChild>
-                    <Link to="/crm" className="w-full">
-                      <LayoutDashboard className="mr-2 h-4 w-4" />
-                      Acessar CRM
-                    </Link>
-                  </DropdownMenuItem>
-                )}
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={signOut} className="text-destructive">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Sair
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ) : (
-            <Link to="/auth" className="hidden lg:block">
-              <Button variant="ghost" size="icon">
-                <User className="h-5 w-5" />
-              </Button>
-            </Link>
-          )}
-
-          {/* Cart */}
-          <Link to="/carrinho" className="relative">
-            <Button variant="ghost" size="icon">
-              <ShoppingBag className="h-5 w-5" />
-              {totalItems > 0 && (
-                <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground animate-scale-in">
-                  {totalItems}
-                </span>
-              )}
-            </Button>
-          </Link>
-
-          {/* Mobile menu button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="lg:hidden"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? (
-              <X className="h-6 w-6" />
-            ) : (
-              <Menu className="h-6 w-6" />
-            )}
-          </Button>
-        </div>
-      </nav>
-
-      {/* Mobile menu */}
-      <div
-        className={cn(
-          "lg:hidden overflow-hidden transition-all duration-300",
-          mobileMenuOpen ? "max-h-[500px]" : "max-h-0"
-        )}
-      >
-        <div className="space-y-1 border-t border-border px-4 pb-4 pt-2">
-          {/* Mobile Search */}
-          <div className="py-2">
-            <ProductSearch onClose={() => setMobileMenuOpen(false)} />
+        {/* Right Section: Flags & Tools */}
+        <div className="flex items-center gap-6">
+          {/* Flags */}
+          <div className="hidden lg:flex flex-col gap-1 items-center justify-center mr-4">
+            <img src="/medbeauty/en-us.png" alt="US" className="w-5 h-auto opacity-80 hover:opacity-100 cursor-pointer" />
+            <img src="/medbeauty/pt-br.png" alt="BR" className="w-5 h-auto opacity-100 hover:opacity-100 cursor-pointer shadow-sm" />
+            <img src="/medbeauty/es.png" alt="ES" className="w-5 h-auto opacity-80 hover:opacity-100 cursor-pointer" />
           </div>
 
-          {navigation.map((item) => (
-            <Link
-              key={item.name}
-              to={item.href}
-              className="block rounded-lg px-3 py-2.5 text-base font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-primary"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              {item.name}
-            </Link>
-          ))}
+          {/* Actions Icons (White) */}
+          <div className="flex items-center gap-3 text-white">
+            {/* Search */}
+            <Sheet open={searchOpen} onOpenChange={setSearchOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="hidden lg:flex text-white hover:text-[#ECB546] hover:bg-white/10">
+                  <Search className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="top" className="h-auto">
+                <SheetHeader>
+                  <SheetTitle className="sr-only">Buscar produtos</SheetTitle>
+                </SheetHeader>
+                <div className="mx-auto max-w-2xl py-8">
+                  <ProductSearch onClose={() => setSearchOpen(false)} />
+                </div>
+              </SheetContent>
+            </Sheet>
 
-          {user ? (
-            <>
-              <Link
-                to="/perfil"
-                className="block rounded-lg px-3 py-2.5 text-base font-medium text-muted-foreground hover:bg-muted hover:text-primary"
+            <LinkComponent {...linkProps("/conta")}>
+              <Button variant="ghost" size="icon" className="hidden lg:flex text-white hover:text-[#ECB546] hover:bg-white/10">
+                <User className="h-5 w-5" />
+              </Button>
+            </LinkComponent>
+
+            <LinkComponent {...linkProps("/carrinho")} className="relative">
+              <Button variant="ghost" size="icon" className="text-white hover:text-[#ECB546] hover:bg-white/10">
+                <ShoppingBag className="h-5 w-5" />
+                {totalItems > 0 && (
+                  <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#ECB546] text-[10px] font-bold text-[#2b0f54]">
+                    {totalItems}
+                  </span>
+                )}
+              </Button>
+            </LinkComponent>
+
+            {/* Mobile Menu Button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="lg:hidden text-white"
+              onClick={() => setMobileMenuOpen(true)}
+            >
+              <Menu className="h-6 w-6" />
+            </Button>
+          </div>
+        </div>
+
+      </nav>
+
+      {/* Mobile Menu Sheet */}
+      <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+        <SheetContent side="right" className="bg-[#2b0f54] border-none text-white w-[300px]">
+          <div className="flex flex-col gap-6 mt-8">
+            {[
+              { label: "Home", path: "/" },
+              { label: "Sobre Nós", path: "/sobre" },
+              { label: "Produtos", path: "/produtos" },
+              { label: "Onde Comprar", path: "/onde-comprar" },
+              { label: "Contatos", path: "/contatos" },
+              { label: "Blog", path: "/blog" },
+              { label: "Área do Aluno", path: "/area-do-aluno" },
+            ].map(item => (
+              <LinkComponent
+                key={item.label}
+                {...linkProps(item.path)}
+                className={`text-lg font-medium transition-colors ${isActive(item.path) ? 'text-[#ECB546]' : 'text-white'}`}
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Meu Perfil
-              </Link>
-              <button
-                onClick={() => {
-                  signOut();
-                  setMobileMenuOpen(false);
-                }}
-                className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-base font-medium text-destructive hover:bg-muted"
-              >
-                <LogOut className="h-4 w-4" />
-                Sair ({user.email})
-              </button>
-            </>
-          ) : (
-            <Link
-              to="/auth"
-              className="block rounded-lg px-3 py-2.5 text-base font-medium text-primary hover:bg-muted"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Entrar / Cadastrar
-            </Link>
-          )}
-        </div>
-      </div>
+                {item.label}
+              </LinkComponent>
+            ))}
+          </div>
+        </SheetContent>
+      </Sheet>
     </header>
   );
 }

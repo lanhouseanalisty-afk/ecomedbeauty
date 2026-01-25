@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { 
-  Headphones, 
-  Plus, 
+import {
+  Headphones,
+  Plus,
   TicketCheck,
   Clock,
   AlertCircle,
@@ -65,13 +65,12 @@ export default function TechDashboard() {
 
   const handleCreateTicket = () => {
     if (!user) return;
-    
+
     createTicket.mutate({
       ...newTicket,
-      ticket_number: `TKT-${Date.now()}`,
       requester_id: user.id,
       status: 'open',
-    }, {
+    } as any, {
       onSuccess: () => {
         setIsDialogOpen(false);
         setNewTicket({

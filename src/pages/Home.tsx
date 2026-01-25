@@ -1,40 +1,34 @@
 import { Helmet } from "react-helmet-async";
 import { HeroSection } from "@/components/home/HeroSection";
-import { FeaturesSection } from "@/components/home/FeaturesSection";
-import { CategoriesSection } from "@/components/home/CategoriesSection";
-import { FeaturedProducts } from "@/components/home/FeaturedProducts";
+import {
+  RealResultsSection,
+  BrandLogosSection,
+  ProductHighlightsSection
+} from "@/components/home/HomeSections";
 import { TestimonialsSection } from "@/components/home/TestimonialsSection";
 import { NewsletterSection } from "@/components/home/NewsletterSection";
-import { CTASection } from "@/components/home/CTASection";
-import { TrustBadges } from "@/components/ui/trust-badges";
 
 export default function Home() {
   return (
     <>
       <Helmet>
-        <title>MedBeauty - Produtos Premium para Estética Profissional</title>
+        <title>MedBeauty – Você Naturalmente Beauty</title>
         <meta
           name="description"
-          content="Descubra a linha completa MedBeauty de produtos para estética profissional. Fios de PDO, preenchedores, skincare e instrumentais. Naturalmente beauty, definitivamente tech."
+          content="A Medbeauty é especializada em soluções estéticas de alta performance, desenvolvidas com tecnologia e foco em resultados naturais e seguros."
         />
         <link rel="canonical" href="https://medbeauty.com.br" />
       </Helmet>
 
       <HeroSection />
-      <FeaturesSection />
-      <CategoriesSection />
-      <FeaturedProducts />
-      <TestimonialsSection />
-      
-      {/* Trust Badges */}
-      <section className="py-12 border-y border-border bg-card">
-        <div className="mx-auto max-w-7xl px-4 lg:px-8">
-          <TrustBadges variant="grid" />
-        </div>
-      </section>
+      <RealResultsSection />
+      <BrandLogosSection />
+      <ProductHighlightsSection />
 
+      {/* Keeping some original sections as additional content lower on the page */}
+      {/* <FeaturesSection /> */}
+      <TestimonialsSection />
       <NewsletterSection />
-      <CTASection />
     </>
   );
 }

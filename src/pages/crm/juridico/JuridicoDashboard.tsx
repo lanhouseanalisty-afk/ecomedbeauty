@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation } from "react-router-dom";
 import {
   Scale,
   Plus,
@@ -246,6 +247,9 @@ Este contrato de ${contract.type.toUpperCase()} entre a MEDBEAUTY e ${contract.p
       (contract.party_name?.toLowerCase() || "").includes(searchTerm.toLowerCase());
   }) || [];
 
+  const location = useLocation();
+  const isContractsPage = location.pathname.includes('/contratos');
+
   if (isLoading) {
     return (
       <div className="flex h-full min-h-[400px] items-center justify-center">
@@ -255,236 +259,422 @@ Este contrato de ${contract.type.toUpperCase()} entre a MEDBEAUTY e ${contract.p
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in-up">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="font-serif text-3xl font-bold">Jurídico</h1>
-          <p className="text-muted-foreground">Contratos, casos e compliance</p>
+          <h1 className="font-serif text-3xl font-bold">
+            {isContractsPage ? "Gestão de Contratos" : "Jurídico"}
+          </h1>
+          <p className="text-muted-foreground">
+            {isContractsPage ? "Visualize e gerencie todos os contratos da empresa" : "Contratos, casos e compliance"}
+          </p>
         </div>
-        <div className="flex gap-2">
-          <DataExport
-            data={filteredContracts}
-            filename="contratos"
-            columns={[
-              { key: 'contract_number', label: 'Número' },
-              { key: 'title', label: 'Título' },
-              { key: 'party_name', label: 'Parte' },
-              { key: 'type', label: 'Tipo' },
-              { key: 'status', label: 'Status' },
-              { key: 'value', label: 'Valor' },
-            ]}
-          />
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Novo Contrato
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px]">
-              <DialogHeader>
-                <DialogTitle>Novo Contrato</DialogTitle>
-                <DialogDescription>
-                  Registre um novo contrato no sistema.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="title">Título do Contrato</Label>
-                  <Input
-                    id="title"
-                    value={newContract.title}
-                    onChange={(e) => setNewContract({ ...newContract, title: e.target.value })}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="contract_number">Número</Label>
-                    <Input
-                      id="contract_number"
-                      placeholder="CTR-001"
-                      value={newContract.contract_number}
-                      onChange={(e) => setNewContract({ ...newContract, contract_number: e.target.value })}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label>Tipo</Label>
-                    <Select
-                      value={newContract.type}
-                      onValueChange={(value) => setNewContract({ ...newContract, type: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="service">Serviço</SelectItem>
-                        <SelectItem value="supplier">Fornecedor</SelectItem>
-                        <SelectItem value="client">Cliente</SelectItem>
-                        <SelectItem value="nda">NDA</SelectItem>
-                        <SelectItem value="lease">Aluguel</SelectItem>
-                        <SelectItem value="employment">Trabalho</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="party_name">Parte Contratante</Label>
-                    <Input
-                      id="party_name"
-                      value={newContract.party_name}
-                      onChange={(e) => setNewContract({ ...newContract, party_name: e.target.value })}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="value">Valor (R$)</Label>
-                    <Input
-                      id="value"
-                      type="number"
-                      value={newContract.value}
-                      onChange={(e) => setNewContract({ ...newContract, value: Number(e.target.value) })}
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="start_date">Data Início</Label>
-                    <Input
-                      id="start_date"
-                      type="date"
-                      value={newContract.start_date}
-                      onChange={(e) => setNewContract({ ...newContract, start_date: e.target.value })}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="end_date">Data Fim</Label>
-                    <Input
-                      id="end_date"
-                      type="date"
-                      value={newContract.end_date}
-                      onChange={(e) => setNewContract({ ...newContract, end_date: e.target.value })}
-                    />
-                  </div>
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="document">Documento do Contrato (Arquivo)</Label>
-                  <div className="flex flex-col gap-2">
-                    <Input
-                      id="document"
-                      type="file"
-                      className="cursor-pointer"
-                      onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-                      accept=".pdf,.doc,.docx"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Aceita PDF, DOC e DOCX. Tamanho máximo 10MB.
-                    </p>
-                  </div>
-                </div>
+        {!isContractsPage && (
+          <div className="flex gap-2">
+            <DataExport
+              data={filteredContracts}
+              filename="contratos"
+              columns={[
+                { key: 'contract_number', label: 'Número' },
+                { key: 'title', label: 'Título' },
+                { key: 'party_name', label: 'Parte' },
+                { key: 'type', label: 'Tipo' },
+                { key: 'status', label: 'Status' },
+                { key: 'value', label: 'Valor' },
+              ]}
+            />
+            <Button onClick={() => setIsDialogOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Novo Contrato
+            </Button>
 
-                <div className="space-y-4 pt-4 border-t">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label className="text-base flex items-center gap-2">
-                        <Bell className="h-4 w-4 text-primary" />
-                        Lembrete de Vencimento
-                      </Label>
-                      <p className="text-sm text-muted-foreground">
-                        Notificar automaticamente antes do encerramento
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogContent className="sm:max-w-[500px]">
+                <DialogHeader>
+                  <DialogTitle>Novo Contrato</DialogTitle>
+                  <DialogDescription>
+                    Registre um novo contrato no sistema.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="title">Título do Contrato</Label>
+                    <Input
+                      id="title"
+                      value={newContract.title}
+                      onChange={(e) => setNewContract({ ...newContract, title: e.target.value })}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="contract_number">Número</Label>
+                      <Input
+                        id="contract_number"
+                        placeholder="CTR-001"
+                        value={newContract.contract_number}
+                        onChange={(e) => setNewContract({ ...newContract, contract_number: e.target.value })}
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label>Tipo</Label>
+                      <Select
+                        value={newContract.type}
+                        onValueChange={(value) => setNewContract({ ...newContract, type: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="service">Serviço</SelectItem>
+                          <SelectItem value="supplier">Fornecedor</SelectItem>
+                          <SelectItem value="client">Cliente</SelectItem>
+                          <SelectItem value="nda">NDA</SelectItem>
+                          <SelectItem value="lease">Aluguel</SelectItem>
+                          <SelectItem value="employment">Trabalho</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="party_name">Parte Contratante</Label>
+                      <Input
+                        id="party_name"
+                        value={newContract.party_name}
+                        onChange={(e) => setNewContract({ ...newContract, party_name: e.target.value })}
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="value">Valor (R$)</Label>
+                      <Input
+                        id="value"
+                        type="number"
+                        value={newContract.value}
+                        onChange={(e) => setNewContract({ ...newContract, value: Number(e.target.value) })}
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="start_date">Data Início</Label>
+                      <Input
+                        id="start_date"
+                        type="date"
+                        value={newContract.start_date}
+                        onChange={(e) => setNewContract({ ...newContract, start_date: e.target.value })}
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="end_date">Data Fim</Label>
+                      <Input
+                        id="end_date"
+                        type="date"
+                        value={newContract.end_date}
+                        onChange={(e) => setNewContract({ ...newContract, end_date: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="document">Documento do Contrato (Arquivo)</Label>
+                    <div className="flex flex-col gap-2">
+                      <Input
+                        id="document"
+                        type="file"
+                        className="cursor-pointer"
+                        onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                        accept=".pdf,.doc,.docx"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Aceita PDF, DOC e DOCX. Tamanho máximo 10MB.
                       </p>
                     </div>
-                    <Switch
-                      checked={newContract.reminder_enabled}
-                      onCheckedChange={(checked) => setNewContract({ ...newContract, reminder_enabled: checked })}
-                    />
                   </div>
 
-                  {newContract.reminder_enabled && (
-                    <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2">
-                      <div className="grid gap-2">
-                        <Label htmlFor="reminder_email" className="flex items-center gap-2">
-                          <Mail className="h-3 w-3" />
-                          Email para Aviso
+                  <div className="space-y-4 pt-4 border-t">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label className="text-base flex items-center gap-2">
+                          <Bell className="h-4 w-4 text-primary" />
+                          Lembrete de Vencimento
                         </Label>
-                        <Input
-                          id="reminder_email"
-                          type="email"
-                          placeholder="juridico@empresa.com"
-                          value={newContract.reminder_email}
-                          onChange={(e) => setNewContract({ ...newContract, reminder_email: e.target.value })}
-                        />
+                        <p className="text-sm text-muted-foreground">
+                          Notificar automaticamente antes do encerramento
+                        </p>
                       </div>
-                      <div className="grid gap-2">
-                        <Label htmlFor="notice_days">Avisar com (dias)</Label>
-                        <Input
-                          id="notice_days"
-                          type="number"
-                          value={newContract.renewal_notice_days}
-                          onChange={(e) => setNewContract({ ...newContract, renewal_notice_days: Number(e.target.value) })}
-                        />
-                      </div>
+                      <Switch
+                        checked={newContract.reminder_enabled}
+                        onCheckedChange={(checked) => setNewContract({ ...newContract, reminder_enabled: checked })}
+                      />
                     </div>
-                  )}
+
+                    {newContract.reminder_enabled && (
+                      <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2">
+                        <div className="grid gap-2">
+                          <Label htmlFor="reminder_email" className="flex items-center gap-2">
+                            <Mail className="h-3 w-3" />
+                            Email para Aviso
+                          </Label>
+                          <Input
+                            id="reminder_email"
+                            type="email"
+                            placeholder="juridico@empresa.com"
+                            value={newContract.reminder_email}
+                            onChange={(e) => setNewContract({ ...newContract, reminder_email: e.target.value })}
+                          />
+                        </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="notice_days">Avisar com (dias)</Label>
+                          <Input
+                            id="notice_days"
+                            type="number"
+                            value={newContract.renewal_notice_days}
+                            onChange={(e) => setNewContract({ ...newContract, renewal_notice_days: Number(e.target.value) })}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  Cancelar
-                </Button>
-                <Button onClick={handleCreateContract} disabled={createContract.isPending || isUploading}>
-                  {(createContract.isPending || isUploading) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {isUploading ? "Enviando arquivo..." : "Criar Contrato"}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                    Cancelar
+                  </Button>
+                  <Button onClick={handleCreateContract} disabled={createContract.isPending || isUploading}>
+                    {(createContract.isPending || isUploading) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isUploading ? "Enviando arquivo..." : "Criar Contrato"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+        )}
+
+        {isContractsPage && (
+          <div className="flex gap-2">
+            <DataExport
+              data={filteredContracts}
+              filename="contratos"
+              columns={[
+                { key: 'contract_number', label: 'Número' },
+                { key: 'title', label: 'Título' },
+                { key: 'party_name', label: 'Parte' },
+                { key: 'type', label: 'Tipo' },
+                { key: 'status', label: 'Status' },
+                { key: 'value', label: 'Valor' },
+              ]}
+            />
+            <Button onClick={() => setIsDialogOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Novo Contrato
+            </Button>
+            {/* Replicated dialog trigger and content for contracts page scope */}
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogContent className="sm:max-w-[500px]">
+                <DialogHeader>
+                  <DialogTitle>Novo Contrato</DialogTitle>
+                  <DialogDescription>
+                    Registre um novo contrato no sistema.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="title">Título do Contrato</Label>
+                    <Input
+                      id="title"
+                      value={newContract.title}
+                      onChange={(e) => setNewContract({ ...newContract, title: e.target.value })}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="contract_number">Número</Label>
+                      <Input
+                        id="contract_number"
+                        placeholder="CTR-001"
+                        value={newContract.contract_number}
+                        onChange={(e) => setNewContract({ ...newContract, contract_number: e.target.value })}
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label>Tipo</Label>
+                      <Select
+                        value={newContract.type}
+                        onValueChange={(value) => setNewContract({ ...newContract, type: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="service">Serviço</SelectItem>
+                          <SelectItem value="supplier">Fornecedor</SelectItem>
+                          <SelectItem value="client">Cliente</SelectItem>
+                          <SelectItem value="nda">NDA</SelectItem>
+                          <SelectItem value="lease">Aluguel</SelectItem>
+                          <SelectItem value="employment">Trabalho</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="party_name">Parte Contratante</Label>
+                      <Input
+                        id="party_name"
+                        value={newContract.party_name}
+                        onChange={(e) => setNewContract({ ...newContract, party_name: e.target.value })}
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="value">Valor (R$)</Label>
+                      <Input
+                        id="value"
+                        type="number"
+                        value={newContract.value}
+                        onChange={(e) => setNewContract({ ...newContract, value: Number(e.target.value) })}
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="start_date">Data Início</Label>
+                      <Input
+                        id="start_date"
+                        type="date"
+                        value={newContract.start_date}
+                        onChange={(e) => setNewContract({ ...newContract, start_date: e.target.value })}
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="end_date">Data Fim</Label>
+                      <Input
+                        id="end_date"
+                        type="date"
+                        value={newContract.end_date}
+                        onChange={(e) => setNewContract({ ...newContract, end_date: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="document">Documento do Contrato (Arquivo)</Label>
+                    <div className="flex flex-col gap-2">
+                      <Input
+                        id="document"
+                        type="file"
+                        className="cursor-pointer"
+                        onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                        accept=".pdf,.doc,.docx"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Aceita PDF, DOC e DOCX. Tamanho máximo 10MB.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="space-y-4 pt-4 border-t">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label className="text-base flex items-center gap-2">
+                          <Bell className="h-4 w-4 text-primary" />
+                          Lembrete de Vencimento
+                        </Label>
+                        <p className="text-sm text-muted-foreground">
+                          Notificar automaticamente antes do encerramento
+                        </p>
+                      </div>
+                      <Switch
+                        checked={newContract.reminder_enabled}
+                        onCheckedChange={(checked) => setNewContract({ ...newContract, reminder_enabled: checked })}
+                      />
+                    </div>
+                    {newContract.reminder_enabled && (
+                      <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2">
+                        <div className="grid gap-2">
+                          <Label htmlFor="reminder_email" className="flex items-center gap-2">
+                            <Mail className="h-3 w-3" />
+                            Email para Aviso
+                          </Label>
+                          <Input
+                            id="reminder_email"
+                            type="email"
+                            placeholder="juridico@empresa.com"
+                            value={newContract.reminder_email}
+                            onChange={(e) => setNewContract({ ...newContract, reminder_email: e.target.value })}
+                          />
+                        </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="notice_days">Avisar com (dias)</Label>
+                          <Input
+                            id="notice_days"
+                            type="number"
+                            value={newContract.renewal_notice_days}
+                            onChange={(e) => setNewContract({ ...newContract, renewal_notice_days: Number(e.target.value) })}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                    Cancelar
+                  </Button>
+                  <Button onClick={handleCreateContract} disabled={createContract.isPending || isUploading}>
+                    {(createContract.isPending || isUploading) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isUploading ? "Enviando arquivo..." : "Criar Contrato"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+        )}
       </div>
 
-      <QuickStats stats={quickStats} />
+      {!isContractsPage && (
+        <>
+          <QuickStats stats={quickStats} />
+          <div className="grid gap-6 lg:grid-cols-2">
+            <KPIChart
+              title="Status de Compliance"
+              description="Distribuição por status de conformidade"
+              data={complianceData}
+              type="pie"
+            />
+            <Card>
+              <CardHeader>
+                <CardTitle>Alertas Jurídicos</CardTitle>
+                <CardDescription>Itens que requerem atenção</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-3 p-3 bg-warning/5 rounded-lg border border-warning/20">
+                  <AlertTriangle className="h-5 w-5 text-warning flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">Contratos a vencer</p>
+                    <p className="text-xs text-muted-foreground">3 contratos vencem nos próximos 30 dias</p>
+                  </div>
+                  <Button variant="outline" size="sm">Ver</Button>
+                </div>
+                <div className="flex items-center gap-3 p-3 bg-destructive/5 rounded-lg border border-destructive/20">
+                  <Clock className="h-5 w-5 text-destructive flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">Prazos próximos</p>
+                    <p className="text-xs text-muted-foreground">2 casos com prazo judicial esta semana</p>
+                  </div>
+                  <Button variant="outline" size="sm">Ver</Button>
+                </div>
+                <div className="flex items-center gap-3 p-3 bg-info/5 rounded-lg border border-info/20">
+                  <FileSignature className="h-5 w-5 text-info flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">Assinaturas pendentes</p>
+                    <p className="text-xs text-muted-foreground">5 contratos aguardando assinatura</p>
+                  </div>
+                  <Button variant="outline" size="sm">Ver</Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </>
+      )}
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <KPIChart
-          title="Status de Compliance"
-          description="Distribuição por status de conformidade"
-          data={complianceData}
-          type="pie"
-        />
-        <Card>
-          <CardHeader>
-            <CardTitle>Alertas Jurídicos</CardTitle>
-            <CardDescription>Itens que requerem atenção</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center gap-3 p-3 bg-warning/5 rounded-lg border border-warning/20">
-              <AlertTriangle className="h-5 w-5 text-warning flex-shrink-0" />
-              <div className="flex-1">
-                <p className="text-sm font-medium">Contratos a vencer</p>
-                <p className="text-xs text-muted-foreground">3 contratos vencem nos próximos 30 dias</p>
-              </div>
-              <Button variant="outline" size="sm">Ver</Button>
-            </div>
-            <div className="flex items-center gap-3 p-3 bg-destructive/5 rounded-lg border border-destructive/20">
-              <Clock className="h-5 w-5 text-destructive flex-shrink-0" />
-              <div className="flex-1">
-                <p className="text-sm font-medium">Prazos próximos</p>
-                <p className="text-xs text-muted-foreground">2 casos com prazo judicial esta semana</p>
-              </div>
-              <Button variant="outline" size="sm">Ver</Button>
-            </div>
-            <div className="flex items-center gap-3 p-3 bg-info/5 rounded-lg border border-info/20">
-              <FileSignature className="h-5 w-5 text-info flex-shrink-0" />
-              <div className="flex-1">
-                <p className="text-sm font-medium">Assinaturas pendentes</p>
-                <p className="text-xs text-muted-foreground">5 contratos aguardando assinatura</p>
-              </div>
-              <Button variant="outline" size="sm">Ver</Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
+      <Card className={isContractsPage ? "border-t-4 border-t-primary/20 shadow-md" : ""}>
         <CardHeader>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>

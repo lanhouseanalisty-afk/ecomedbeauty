@@ -16,10 +16,11 @@ export function useTickets() {
         .from('tickets')
         .select(`
           *,
-          category:ticket_categories(name)
+          category:ticket_categories(name),
+          requester:profiles(full_name, email, avatar_url)
         `)
         .order('created_at', { ascending: false });
-      
+
       if (error) throw error;
       return data;
     },
@@ -32,7 +33,7 @@ export function useTickets() {
         .insert(ticket)
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },
@@ -46,14 +47,15 @@ export function useTickets() {
   });
 
   const updateTicket = useMutation({
-    mutationFn: async ({ id, ...data }: Partial<Ticket> & { id: string }) => {
+    mutationFn: async ({ id, status, ...data }: Partial<Ticket> & { id: string }) => {
+      // 1. Update the ticket
       const { data: updated, error } = await supabase
         .from('tickets')
-        .update(data)
+        .update({ ...data, ...(status ? { status } : {}) })
         .eq('id', id)
         .select()
         .single();
-      
+
       if (error) throw error;
       return updated;
     },
@@ -78,7 +80,7 @@ export function useTicketCategories() {
         .select('*')
         .eq('is_active', true)
         .order('name');
-      
+
       if (error) throw error;
       return data;
     },
@@ -94,7 +96,7 @@ export function useKBArticles() {
         .select('*')
         .eq('is_public', true)
         .order('created_at', { ascending: false });
-      
+
       if (error) throw error;
       return data;
     },
@@ -119,4 +121,127 @@ export function useTicketStats() {
       return { open, inProgress, resolved, critical, total: tickets?.length || 0 };
     },
   });
+}
+
+export function useTicketMessages(ticketId: string | null) {
+  return useQuery({
+    queryKey: ['ticket_messages', ticketId],
+    queryFn: async () => {
+      if (!ticketId) return [];
+      const { data, error } = await supabase
+        .from('ticket_messages')
+        .select('*')
+        .eq('ticket_id', ticketId)
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!ticketId,
+    refetchInterval: 5000, // Polling for real-time for now
+  });
+}
+
+export function useSendMessage() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ ticket_id, content, user_id }: { ticket_id: string, content: string, user_id: string }) => {
+      const { error } = await supabase
+        .from('ticket_messages')
+        .insert({
+          ticket_id,
+          content,
+          user_id
+        });
+
+      if (error) throw error;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['ticket_messages', variables.ticket_id] });
+      toast.success('Mensagem enviada');
+    },
+    onError: (error) => {
+      toast.error('Erro ao enviar mensagem: ' + error.message);
+    }
+  });
+}
+
+// --- TECH ASSETS (Controle de Ativos) ---
+
+export interface TechAsset {
+  id: string;
+  asset_tag: string;
+  serial_number?: string;
+  model: string;
+  brand: string;
+  device_type: 'notebook' | 'tablet' | 'smartphone' | 'monitor' | 'peripherals' | 'other';
+  status: 'available' | 'in_use' | 'maintenance' | 'broken' | 'retired' | 'lost';
+  assigned_to?: string;
+  assigned_to_name?: string;
+  location?: string;
+  purchase_date?: string;
+  warranty_expiration?: string;
+  specifications?: Record<string, any>;
+  notes?: string;
+  created_at?: string;
+}
+
+export function useTechAssets() {
+  const queryClient = useQueryClient();
+
+  const { data: assets, isLoading } = useQuery({
+    queryKey: ['tech_assets'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('tech_assets')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data as unknown as TechAsset[];
+    },
+  });
+
+  const createAsset = useMutation({
+    mutationFn: async (asset: Omit<TechAsset, 'id' | 'created_at'>) => {
+      const { data, error } = await supabase
+        .from('tech_assets')
+        .upsert(asset as any, { onConflict: 'asset_tag' })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tech_assets'] });
+      toast.success('Ativo salvo com sucesso');
+    },
+    onError: (error) => {
+      toast.error('Erro ao salvar ativo: ' + error.message);
+    },
+  });
+
+  const updateAsset = useMutation({
+    mutationFn: async ({ id, ...data }: Partial<TechAsset> & { id: string }) => {
+      const { data: updated, error } = await supabase
+        .from('tech_assets')
+        .update(data as any)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return updated;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tech_assets'] });
+      toast.success('Ativo atualizado');
+    },
+    onError: (error) => {
+      toast.error('Erro ao atualizar ativo: ' + error.message);
+    },
+  });
+
+  return { assets, isLoading, createAsset, updateAsset };
 }

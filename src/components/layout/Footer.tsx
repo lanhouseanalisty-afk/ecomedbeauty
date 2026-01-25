@@ -1,137 +1,119 @@
 import { Link } from "react-router-dom";
-import { Mail, Phone, MapPin, Instagram, Facebook, Linkedin } from "lucide-react";
+import { Mail, Phone, MapPin, Instagram, Facebook, Linkedin, Youtube, ArrowRight } from "lucide-react";
 
 export function Footer() {
   return (
-    <footer className="border-t border-border bg-card">
-      <div className="mx-auto max-w-7xl px-4 py-12 lg:px-8">
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
-          {/* Brand */}
-          <div className="space-y-4">
-            <span className="font-serif text-2xl font-bold text-primary">
-              MedBeauty
-            </span>
-            <p className="text-sm text-muted-foreground">
-              Naturalmente beauty, definitivamente tech. Produtos premium para estética profissional.
+    <footer className="bg-[#2b0f54] text-white pt-16 pb-8 relative overflow-hidden">
+      {/* Background Pattern/Overlay */}
+      <div className="absolute inset-0 bg-[url('/medbeauty/footer-bg.jpg')] opacity-10 bg-cover bg-center mix-blend-overlay"></div>
+
+      <div className="mx-auto max-w-[1400px] px-6 lg:px-8 relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+
+          {/* Column 1: Brand Info */}
+          <div className="space-y-6">
+            <div className="mb-6">
+              {/* Recreating logo in white for footer */}
+              <Link to="/" className="group cursor-pointer flex items-center">
+                <span className="font-sans text-3xl font-medium tracking-wide text-white uppercase flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#ECB546] self-baseline mt-2"></span>
+                  MEDBEAUTY
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#ECB546] self-start mb-2"></span>
+                </span>
+              </Link>
+            </div>
+            <p className="text-gray-300 leading-relaxed text-sm">
+              A Medbeauty é especializada em soluções estéticas de alta performance, desenvolvidas com tecnologia e foco em resultados naturais e seguros.
             </p>
-            <div className="flex gap-4">
-              <a
-                href="https://instagram.com/medbeauty"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-muted-foreground transition-colors hover:text-primary"
-              >
-                <Instagram className="h-5 w-5" />
-              </a>
-              <a
-                href="https://facebook.com/medbeauty"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-muted-foreground transition-colors hover:text-primary"
-              >
-                <Facebook className="h-5 w-5" />
-              </a>
-              <a
-                href="https://linkedin.com/company/medbeauty"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-muted-foreground transition-colors hover:text-primary"
-              >
-                <Linkedin className="h-5 w-5" />
-              </a>
+            <div className="flex gap-4 pt-2">
+              {[
+                { icon: Instagram, href: "https://instagram.com/medbeauty" },
+                { icon: Facebook, href: "https://facebook.com/medbeauty" },
+                { icon: Linkedin, href: "https://linkedin.com/company/medbeauty" },
+                { icon: Youtube, href: "https://youtube.com/medbeauty" },
+              ].map((social, idx) => (
+                <a
+                  key={idx}
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-white/10 hover:bg-[#ECB546] hover:text-[#2b0f54] p-2 rounded-full transition-all duration-300"
+                >
+                  <social.icon className="h-5 w-5" />
+                </a>
+              ))}
             </div>
           </div>
 
-          {/* Links */}
+          {/* Column 2: Quick Links */}
           <div>
-            <h3 className="font-serif text-lg font-semibold text-foreground">
-              Navegação
-            </h3>
-            <ul className="mt-4 space-y-2">
-              <li>
-                <Link
-                  to="/produtos"
-                  className="text-sm text-muted-foreground transition-colors hover:text-primary"
-                >
-                  Produtos
-                </Link>
+            <h3 className="text-lg font-bold uppercase tracking-wider mb-6 text-[#ECB546]">Navegação</h3>
+            <ul className="space-y-3">
+              {[
+                { label: "Home", path: "/" },
+                { label: "Sobre Nós", path: "/sobre" },
+                { label: "Produtos", path: "/produtos" },
+                { label: "Onde Comprar", path: "/onde-comprar" },
+                { label: "Blog", path: "/blog" },
+                { label: "Área do Aluno", path: "/area-do-aluno" },
+              ].map((item, idx) => (
+                <li key={idx}>
+                  <Link to={item.path} className="text-gray-300 hover:text-[#ECB546] transition-colors flex items-center gap-2 group">
+                    <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity text-[#ECB546]" />
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Column 3: Contact Info */}
+          <div>
+            <h3 className="text-lg font-bold uppercase tracking-wider mb-6 text-[#ECB546]">Fale Conosco</h3>
+            <ul className="space-y-4">
+              <li className="flex items-start gap-3 text-gray-300">
+                <MapPin className="h-5 w-5 text-[#ECB546] shrink-0 mt-1" />
+                <span className="text-sm">
+                  Rua Surubim, 577 - 7º Andar<br />
+                  Brooklin Novo - São Paulo/SP<br />
+                  CEP: 04571-050
+                </span>
               </li>
-              <li>
-                <Link
-                  to="/sobre"
-                  className="text-sm text-muted-foreground transition-colors hover:text-primary"
-                >
-                  Sobre Nós
-                </Link>
+              <li className="flex items-center gap-3 text-gray-300">
+                <Phone className="h-5 w-5 text-[#ECB546] shrink-0" />
+                <span className="text-sm">(11) 4551-3513</span>
               </li>
-              <li>
-                <Link
-                  to="/contato"
-                  className="text-sm text-muted-foreground transition-colors hover:text-primary"
-                >
-                  Contato
-                </Link>
+              <li className="flex items-center gap-3 text-gray-300">
+                <Mail className="h-5 w-5 text-[#ECB546] shrink-0" />
+                <span className="text-sm">contato@medbeauty.com.br</span>
               </li>
             </ul>
           </div>
 
-          {/* Support */}
+          {/* Column 4: Newsletter/Stamp */}
           <div>
-            <h3 className="font-serif text-lg font-semibold text-foreground">
-              Suporte
-            </h3>
-            <ul className="mt-4 space-y-2">
-              <li>
-                <Link
-                  to="/faq"
-                  className="text-sm text-muted-foreground transition-colors hover:text-primary"
-                >
-                  Perguntas Frequentes
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/trocas"
-                  className="text-sm text-muted-foreground transition-colors hover:text-primary"
-                >
-                  Trocas e Devoluções
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/privacidade"
-                  className="text-sm text-muted-foreground transition-colors hover:text-primary"
-                >
-                  Política de Privacidade
-                </Link>
-              </li>
-            </ul>
+            <h3 className="text-lg font-bold uppercase tracking-wider mb-6 text-[#ECB546]">Certificação</h3>
+            <div className="bg-white/5 p-6 rounded-lg border border-white/10 text-center">
+              <p className="text-sm text-gray-300 mb-4">
+                Empresa certificada com os principais selos de qualidade e segurança do mercado.
+              </p>
+              {/* Placeholder for Trust Badges image if available, otherwise stylized text */}
+              <div className="flex justify-center gap-3 opacity-70 grayscale">
+                <div className="border border-gray-500 p-2 rounded text-xs font-bold">ANVISA</div>
+                <div className="border border-gray-500 p-2 rounded text-xs font-bold">ISO 9001</div>
+              </div>
+            </div>
           </div>
 
-          {/* Contact */}
-          <div>
-            <h3 className="font-serif text-lg font-semibold text-foreground">
-              Contato
-            </h3>
-            <ul className="mt-4 space-y-3">
-              <li className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Phone className="h-4 w-4 text-primary" />
-                (11) 4551-3513
-              </li>
-              <li className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Mail className="h-4 w-4 text-primary" />
-                sac@medbeauty.com.br
-              </li>
-              <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                <MapPin className="h-4 w-4 shrink-0 text-primary" />
-                São Paulo, SP - Brasil
-              </li>
-            </ul>
-          </div>
         </div>
 
-        <div className="mt-12 border-t border-border pt-8 text-center text-sm text-muted-foreground">
+        {/* Bottom Bar */}
+        <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-400">
           <p>© {new Date().getFullYear()} MedBeauty. Todos os direitos reservados.</p>
+          <div className="flex gap-6">
+            <Link to="/privacidade" className="hover:text-white transition-colors">Política de Privacidade</Link>
+            <Link to="/termos" className="hover:text-white transition-colors">Termos de Uso</Link>
+          </div>
         </div>
       </div>
     </footer>

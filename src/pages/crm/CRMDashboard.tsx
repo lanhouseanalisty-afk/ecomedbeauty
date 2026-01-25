@@ -1,7 +1,7 @@
-import { 
-  Users, 
-  DollarSign, 
-  ShoppingCart, 
+import {
+  Users,
+  DollarSign,
+  ShoppingCart,
   TrendingUp,
   Package,
   TicketCheck,
@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { CRMOrgChart } from "@/components/crm/CRMOrgChart";
 
 const stats = [
   {
@@ -136,9 +137,9 @@ export default function CRMDashboard() {
                     {moduleMetrics[1].entregues} entregues, {moduleMetrics[1].pendentes} pendentes
                   </span>
                 </div>
-                <Progress 
-                  value={(moduleMetrics[1].entregues / moduleMetrics[1].pedidos) * 100} 
-                  className="h-2" 
+                <Progress
+                  value={(moduleMetrics[1].entregues / moduleMetrics[1].pedidos) * 100}
+                  className="h-2"
                 />
               </div>
 
@@ -206,6 +207,9 @@ export default function CRMDashboard() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Org Chart */}
+        <CRMOrgChart />
       </div>
 
       {/* Quick Actions */}
