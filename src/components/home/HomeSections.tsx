@@ -4,12 +4,12 @@ import { Button } from "@/components/ui/button";
 // Section: "Você é naturalmente beauty"
 export function BrandStatementSection() {
     return (
-        <section className="py-20 bg-gray-50 text-center">
+        <section className="py-20 bg-[#fdfbf7] text-center">
             <div className="max-w-4xl mx-auto px-4">
                 <h2 className="text-[#cfa79d] font-bold text-3xl md:text-4xl font-serif mb-4 uppercase tracking-widest">
                     MEDBEAUTY
                 </h2>
-                <p className="text-gray-600 text-lg md:text-xl font-light italic">
+                <p className="text-[#5a4b66] text-lg md:text-xl font-light italic">
                     Você é naturalmente beauty!
                 </p>
             </div>
@@ -25,8 +25,8 @@ export function RealResultsSection() {
         <section className="relative w-full overflow-hidden bg-[#7e6c92] min-h-[500px] flex items-center py-12 lg:py-0">
             <div className="mx-auto w-full max-w-[1400px] flex flex-col lg:flex-row relative z-10 px-4 lg:px-0">
 
-                {/* Left Card - White with Custom Shape */}
-                <div className="bg-white lg:w-[65%] w-full rounded-r-[50px] lg:rounded-r-[80px] rounded-l-[20px] lg:rounded-l-none flex flex-col md:flex-row shadow-2xl overflow-hidden relative min-h-[450px]">
+                {/* Left Card - Glassmorphism Effect */}
+                <div className="bg-white/90 backdrop-blur-xl border border-white/20 lg:w-[65%] w-full rounded-r-[50px] lg:rounded-r-[80px] rounded-l-[20px] lg:rounded-l-none flex flex-col md:flex-row shadow-2xl overflow-hidden relative min-h-[450px]">
                     {/* Image Side */}
                     <div className="w-full md:w-1/2 relative h-[300px] md:h-auto">
                         <img
@@ -91,12 +91,17 @@ export function BrandLogosSection() {
     ];
 
     return (
-        <section className="py-12 border-t border-b border-gray-100">
+        <section className="py-12 border-t border-b border-[#eee0d9] bg-[#fcfaf7]">
             <div className="max-w-7xl mx-auto px-4">
                 <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16 opacity-70 grayscale hover:grayscale-0 transition-all duration-500">
                     {brands.map((brand, idx) => (
-                        <Link key={idx} to={brand.link} className="hover:opacity-100 transition-opacity">
-                            <img src={brand.img} alt="Brand" className="h-8 md:h-12 object-contain" />
+                        <Link
+                            key={idx}
+                            to={brand.link}
+                            className="hover:opacity-100 transition-opacity animate-float"
+                            style={{ animationDelay: `${idx * 0.5}s` }}
+                        >
+                            <img src={brand.img} alt="Brand" className="h-8 md:h-12 object-contain mix-blend-multiply" />
                         </Link>
                     ))}
                 </div>
@@ -110,11 +115,11 @@ export function ProductHighlightsSection() {
     return (
         <div className="flex flex-col">
             {/* i-Thread */}
-            <section className="bg-gradient-to-br from-white via-[#fcfbff] to-[#f4f1f9] py-16 lg:py-24">
+            <section className="bg-gradient-to-br from-[#fdfbf7] via-[#f7f4fc] to-[#efeaf6] py-16 lg:py-24">
                 <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                     <div className="space-y-6 order-2 lg:order-1">
-                        <h2 className="text-4xl font-serif font-bold text-gray-900">i-THREAD</h2>
-                        <p className="text-gray-600 text-lg leading-relaxed">
+                        <h2 className="text-4xl font-serif font-bold text-[#2b0f54]">i-THREAD</h2>
+                        <p className="text-[#5a4b66] text-lg leading-relaxed">
                             O i-Thread foi o primeiro fio de PDO a ser introduzido no mercado brasileiro e, desde então, consolidou-se como referência em excelência e confiança.
                         </p>
                         <Button asChild className="bg-[#cfa79d] hover:bg-[#b08d85] text-white uppercase tracking-wider px-8 rounded-none shadow-md">
@@ -128,14 +133,14 @@ export function ProductHighlightsSection() {
             </section>
 
             {/* e.p.t.q. */}
-            <section className="bg-gradient-to-bl from-[#f4f1f9] via-[#fcfbff] to-white py-16 lg:py-24">
+            <section className="bg-gradient-to-bl from-[#efeaf6] via-[#f7f4fc] to-[#fdfbf7] py-16 lg:py-24">
                 <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                     <div className="order-1 lg:order-1 flex justify-center">
                         <img src="/medbeauty/eptq.webp" alt="e.p.t.q." className="max-w-full max-h-[500px] object-contain drop-shadow-xl hover:scale-105 transition-transform duration-500" />
                     </div>
                     <div className="space-y-6 order-2 lg:order-2 lg:pl-12">
-                        <h2 className="text-4xl font-serif font-bold text-gray-900">e.p.t.q.</h2>
-                        <p className="text-gray-600 text-lg leading-relaxed">
+                        <h2 className="text-4xl font-serif font-bold text-[#2b0f54]">e.p.t.q.</h2>
+                        <p className="text-[#5a4b66] text-lg leading-relaxed">
                             O e.p.t.q. é um preenchedor de ácido hialurônico reconhecido em mais de 60 países pela sua pureza e qualidade superior.
                         </p>
                         <Button asChild className="bg-[#cfa79d] hover:bg-[#b08d85] text-white uppercase tracking-wider px-8 rounded-none shadow-md">
@@ -146,11 +151,11 @@ export function ProductHighlightsSection() {
             </section>
 
             {/* Idebenone */}
-            <section className="bg-gradient-to-br from-white via-[#fcfbff] to-[#f4f1f9] py-16 lg:py-24">
+            <section className="bg-gradient-to-br from-[#fdfbf7] via-[#f7f4fc] to-[#efeaf6] py-16 lg:py-24">
                 <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                     <div className="space-y-6 order-2 lg:order-1">
-                        <h2 className="text-4xl font-serif font-bold text-gray-900">Idebenone Ampoule</h2>
-                        <p className="text-gray-600 text-lg leading-relaxed">
+                        <h2 className="text-4xl font-serif font-bold text-[#2b0f54]">Idebenone Ampoule</h2>
+                        <p className="text-[#5a4b66] text-lg leading-relaxed">
                             Idebenone Ampoule é o antioxidante mais potente do mercado. Com eficácia superior a outros princípios ativos e resultados 4x mais potentes que o da Vitamina C.
                         </p>
                         <Button asChild className="bg-[#cfa79d] hover:bg-[#b08d85] text-white uppercase tracking-wider px-8 rounded-none shadow-md">

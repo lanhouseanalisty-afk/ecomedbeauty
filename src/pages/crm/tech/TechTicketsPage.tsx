@@ -231,6 +231,64 @@ export default function TechTicketsPage() {
             <Download className="mr-2 h-4 w-4" />
             Exportar
           </Button>
+
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="border-indigo-200 text-indigo-700 hover:bg-indigo-50">
+                <MessageSquare className="mr-2 h-4 w-4" />
+                Integração Teams
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <MessageSquare className="h-5 w-5 text-indigo-600" />
+                  Integração Microsoft Teams
+                </DialogTitle>
+                <DialogDescription>
+                  Permita que seus funcionários abram chamados diretamente pelo Microsoft Teams.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4 text-sm">
+                <div className="bg-slate-50 p-4 rounded-lg border">
+                  <h4 className="font-semibold mb-2 text-indigo-900">Como funciona?</h4>
+                  <p className="text-muted-foreground mb-2">
+                    Você pode configurar um <strong>Workflow no Power Automate</strong> (no Teams) para enviar um formulário para nosso sistema.
+                  </p>
+                  <ol className="list-decimal list-inside space-y-1 text-slate-700">
+                    <li>Crie um "Adaptive Card" no Teams com campos: Título, Descrição e Prioridade.</li>
+                    <li>Configure o Workflow para enviar uma requisição <strong>POST</strong> para nossa URL de Webhook.</li>
+                    <li>O sistema identificará o funcionário pelo e-mail e criará o ticket automaticamente.</li>
+                  </ol>
+                </div>
+
+                <div>
+                  <Label>URL do Webhook (Endpoint)</Label>
+                  <div className="flex gap-2 mt-1">
+                    <Input readOnly value="https://[PROJECT_REF].supabase.co/functions/v1/teams-webhook" className="font-mono bg-slate-100" />
+                    <Button variant="secondary" onClick={() => {
+                      navigator.clipboard.writeText("https://[PROJECT_REF].supabase.co/functions/v1/teams-webhook");
+                      toast.success("URL copiada!");
+                    }}>Copiar</Button>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground mt-1">Substitua [PROJECT_REF] pelo ID do seu projeto Supabase.</p>
+                </div>
+
+                <div>
+                  <Label>Exemplo de Payload (JSON)</Label>
+                  <pre className="bg-slate-900 text-slate-50 p-3 rounded-md mt-1 overflow-x-auto text-xs font-mono">
+                    {`{
+  "email": "funcionario@empresa.com",
+  "title": "Computador não liga",
+  "description": "Ao tentar ligar, faz bip e desliga.",
+  "priority": "high",
+  "department": "Comercial"
+}`}
+                  </pre>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
           <Dialog open={isNewTicketOpen} onOpenChange={setIsNewTicketOpen}>
             <DialogTrigger asChild>
               <Button className="bg-primary hover:bg-primary/90">

@@ -48,68 +48,70 @@ export default function Products() {
         />
       </Helmet>
 
-      <div className="mx-auto max-w-7xl px-4 py-8 lg:px-8">
-        {/* Breadcrumb */}
-        <BreadcrumbNav
-          items={[{ label: "Produtos" }]}
-          className="mb-6"
-        />
-
-        {/* Header */}
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="font-serif text-3xl font-bold text-foreground lg:text-4xl">
-              Nossos Produtos
-            </h1>
-            <p className="mt-1 text-muted-foreground">
-              Soluções premium para profissionais de estética
-            </p>
-          </div>
-
-          {/* Search */}
-          <div className="w-full sm:w-72">
-            <ProductSearch />
-          </div>
-        </div>
-
-        {/* Main content */}
-        <div className="flex gap-8">
-          {/* Filters */}
-          <ProductFilters
-            activeCategory={activeCategory}
-            onCategoryChange={setActiveCategory}
-            priceRange={priceRange}
-            onPriceRangeChange={setPriceRange}
-            sortBy={sortBy}
-            onSortChange={setSortBy}
-            inStockOnly={inStockOnly}
-            onInStockChange={setInStockOnly}
+      <div className="min-h-screen bg-gradient-to-br from-[#fff0f5] via-[#f3e6ff] to-[#e0f2fe]">
+        <div className="mx-auto max-w-7xl px-4 py-8 lg:px-8">
+          {/* Breadcrumb */}
+          <BreadcrumbNav
+            items={[{ label: "Produtos" }]}
+            className="mb-6"
           />
 
-          {/* Products */}
-          <div className="flex-1">
-            {isLoading ? (
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {[...Array(6)].map((_, i) => (
-                  <div key={i} className="space-y-3">
-                    <Skeleton className="h-48 w-full rounded-lg" />
-                    <Skeleton className="h-4 w-3/4" />
-                    <Skeleton className="h-4 w-1/2" />
-                  </div>
-                ))}
-              </div>
-            ) : error ? (
-              <div className="flex h-48 items-center justify-center text-muted-foreground">
-                Erro ao carregar produtos. Tente novamente.
-              </div>
-            ) : (
-              <ProductGrid products={filteredProducts} />
-            )}
+          {/* Header */}
+          <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 className="font-serif text-3xl font-bold text-[#2b0f54] lg:text-4xl">
+                Nossos Produtos
+              </h1>
+              <p className="mt-1 text-[#5a4b66]">
+                Soluções premium para profissionais de estética
+              </p>
+            </div>
 
-            {/* Results count */}
-            <p className="mt-8 text-center text-sm text-muted-foreground">
-              Mostrando {filteredProducts.length} de {productsData?.total || products.length} produtos
-            </p>
+            {/* Search */}
+            <div className="w-full sm:w-72">
+              <ProductSearch />
+            </div>
+          </div>
+
+          {/* Main content */}
+          <div className="flex gap-8">
+            {/* Filters */}
+            <ProductFilters
+              activeCategory={activeCategory}
+              onCategoryChange={setActiveCategory}
+              priceRange={priceRange}
+              onPriceRangeChange={setPriceRange}
+              sortBy={sortBy}
+              onSortChange={setSortBy}
+              inStockOnly={inStockOnly}
+              onInStockChange={setInStockOnly}
+            />
+
+            {/* Products */}
+            <div className="flex-1">
+              {isLoading ? (
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                  {[...Array(6)].map((_, i) => (
+                    <div key={i} className="space-y-3">
+                      <Skeleton className="h-48 w-full rounded-lg" />
+                      <Skeleton className="h-4 w-3/4" />
+                      <Skeleton className="h-4 w-1/2" />
+                    </div>
+                  ))}
+                </div>
+              ) : error ? (
+                <div className="flex h-48 items-center justify-center text-[#5a4b66]">
+                  Erro ao carregar produtos. Tente novamente.
+                </div>
+              ) : (
+                <ProductGrid products={filteredProducts} />
+              )}
+
+              {/* Results count */}
+              <p className="mt-8 text-center text-sm text-[#8e809c]">
+                Mostrando {filteredProducts.length} de {productsData?.total || products.length} produtos
+              </p>
+            </div>
           </div>
         </div>
       </div>

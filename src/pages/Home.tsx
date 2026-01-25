@@ -2,9 +2,9 @@ import { Helmet } from "react-helmet-async";
 import { HeroSection } from "@/components/home/HeroSection";
 import {
   RealResultsSection,
-  BrandLogosSection,
-  ProductHighlightsSection
+  BrandLogosSection
 } from "@/components/home/HomeSections";
+import { FeaturedProductsCarousel } from "@/components/home/FeaturedProductsCarousel";
 import { TestimonialsSection } from "@/components/home/TestimonialsSection";
 import { NewsletterSection } from "@/components/home/NewsletterSection";
 
@@ -23,7 +23,7 @@ export default function Home() {
       <HeroSection />
       <RealResultsSection />
       <BrandLogosSection />
-      <ProductHighlightsSection />
+      <FeaturedProductsCarousel />
 
       {/* Keeping some original sections as additional content lower on the page */}
       {/* <FeaturesSection /> */}

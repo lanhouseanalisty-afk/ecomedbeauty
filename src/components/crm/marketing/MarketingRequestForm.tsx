@@ -124,7 +124,7 @@ export function MarketingRequestForm() {
             </CardHeader>
             <CardContent className="pt-6">
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 notranslate" translate="no">
                         {/* Dados do Evento & Solicitante */}
                         <div className="space-y-4">
                             <h3 className="text-lg font-semibold text-white border-b border-slate-700 pb-2">
@@ -298,20 +298,23 @@ export function MarketingRequestForm() {
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel className="text-slate-300">CEP (Preenchimento Automático)</FormLabel>
-                                        <FormControl>
-                                            <div className="relative">
+                                        <div className="relative">
+                                            <FormControl>
                                                 <Input
                                                     placeholder="00000-000"
                                                     className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
                                                     {...field}
-                                                    onBlur={handleCepBlur}
+                                                    onBlur={(e) => {
+                                                        field.onBlur();
+                                                        handleCepBlur();
+                                                    }}
                                                     maxLength={9}
                                                 />
-                                                {loadingCep && (
-                                                    <Loader2 className="absolute right-3 top-3 h-4 w-4 animate-spin text-purple-600" />
-                                                )}
-                                            </div>
-                                        </FormControl>
+                                            </FormControl>
+                                            {loadingCep && (
+                                                <Loader2 className="absolute right-3 top-3 h-4 w-4 animate-spin text-purple-600" />
+                                            )}
+                                        </div>
                                         <FormMessage />
                                     </FormItem>
                                 )}

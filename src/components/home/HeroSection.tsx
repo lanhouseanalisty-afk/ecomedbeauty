@@ -42,7 +42,7 @@ export function HeroSection() {
 
       {/* Overlay Content */}
       <div className="relative z-10 mx-auto h-full max-w-7xl px-4 flex items-center lg:px-8">
-        <div className="max-w-xl animate-fade-in-up">
+        <div className="max-w-2xl animate-fade-in-up bg-black/30 backdrop-blur-md p-8 md:p-12 rounded-3xl border border-white/10 shadow-2xl">
           <h2 className="text-4xl font-bold tracking-tight text-white sm:text-6xl font-serif leading-tight drop-shadow-lg">
             Beleza
             <br />
@@ -54,7 +54,7 @@ export function HeroSection() {
           <div className="mt-8">
             <Button
               asChild={!isEditing}
-              className="bg-[#cfa79d] hover:bg-[#b08d85] text-white rounded-none px-8 py-6 text-sm uppercase tracking-wider font-semibold"
+              className="bg-[#cfa79d] hover:bg-[#b08d85] text-white rounded-none px-8 py-6 text-sm uppercase tracking-wider font-semibold shadow-lg hover:shadow-xl transition-all"
             >
               <LinkComponent {...linkProps("/onde-comprar")}>
                 Onde Comprar

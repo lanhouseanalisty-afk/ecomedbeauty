@@ -13,11 +13,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { 
-  UserMinus, 
-  ClipboardCheck, 
-  Settings, 
-  Plus, 
+import {
+  UserMinus,
+  ClipboardCheck,
+  Settings,
+  Plus,
   GripVertical,
   Trash2,
   Edit,
@@ -99,12 +99,11 @@ export default function DemissaoPage() {
 
   // Fetch employees for termination process
   const { data: employees } = useQuery({
-    queryKey: ["employees-active"],
+    queryKey: ["employees-all"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("employees")
         .select("id, full_name, employee_code")
-        .eq("status", "active")
         .order("full_name");
       if (error) throw error;
       return data;
@@ -235,7 +234,7 @@ export default function DemissaoPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 notranslate" translate="no">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -254,7 +253,7 @@ export default function DemissaoPage() {
               Iniciar Demissão
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="notranslate" translate="no">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <AlertTriangle className="h-5 w-5 text-destructive" />
@@ -273,19 +272,25 @@ export default function DemissaoPage() {
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione o funcionário" />
                   </SelectTrigger>
-                  <SelectContent>
-                    {employees?.map(emp => (
-                      <SelectItem key={emp.id} value={emp.id}>
-                        {emp.full_name} ({emp.employee_code})
+                  <SelectContent className="notranslate" translate="no">
+                    {employees?.length ? (
+                      employees.map(emp => (
+                        <SelectItem key={emp.id} value={emp.id}>
+                          {emp.full_name} ({emp.employee_code})
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem value="none" disabled>
+                        Nenhum funcionário encontrado
                       </SelectItem>
-                    ))}
+                    )}
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
                 <Label>Checklist</Label>
-                <Select 
-                  value={selectedChecklist || ""} 
+                <Select
+                  value={selectedChecklist || ""}
                   onValueChange={setSelectedChecklist}
                 >
                   <SelectTrigger>
@@ -300,14 +305,14 @@ export default function DemissaoPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <Button 
-                className="w-full" 
+              <Button
+                className="w-full"
                 variant="destructive"
                 onClick={() => {
                   if (selectedEmployee && selectedChecklist) {
-                    startProcessMutation.mutate({ 
-                      employeeId: selectedEmployee, 
-                      checklistId: selectedChecklist 
+                    startProcessMutation.mutate({
+                      employeeId: selectedEmployee,
+                      checklistId: selectedChecklist
                     });
                   }
                 }}
@@ -446,19 +451,17 @@ export default function DemissaoPage() {
                     <div
                       key={checklist.id}
                       onClick={() => setSelectedChecklist(checklist.id)}
-                      className={`p-3 rounded-lg cursor-pointer transition-colors ${
-                        selectedChecklist === checklist.id
-                          ? "bg-destructive text-destructive-foreground"
-                          : "bg-muted hover:bg-muted/80"
-                      }`}
+                      className={`p-3 rounded-lg cursor-pointer transition-colors ${selectedChecklist === checklist.id
+                        ? "bg-destructive text-destructive-foreground"
+                        : "bg-muted hover:bg-muted/80"
+                        }`}
                     >
                       <p className="font-medium">{checklist.title}</p>
                       {checklist.description && (
-                        <p className={`text-sm ${
-                          selectedChecklist === checklist.id 
-                            ? "text-destructive-foreground/80" 
-                            : "text-muted-foreground"
-                        }`}>
+                        <p className={`text-sm ${selectedChecklist === checklist.id
+                          ? "text-destructive-foreground/80"
+                          : "text-muted-foreground"
+                          }`}>
                           {checklist.description}
                         </p>
                       )}
@@ -474,8 +477,8 @@ export default function DemissaoPage() {
                 <div>
                   <CardTitle className="text-lg">Itens do Checklist</CardTitle>
                   <CardDescription>
-                    {selectedChecklist 
-                      ? `${checklistItems?.length || 0} itens` 
+                    {selectedChecklist
+                      ? `${checklistItems?.length || 0} itens`
                       : "Selecione um checklist"
                     }
                   </CardDescription>
@@ -517,9 +520,9 @@ export default function DemissaoPage() {
                           <Button variant="ghost" size="icon" className="h-8 w-8">
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             className="h-8 w-8 text-destructive"
                             onClick={() => deleteItemMutation.mutate(item.id)}
                           >

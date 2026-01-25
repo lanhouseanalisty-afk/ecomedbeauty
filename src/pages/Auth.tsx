@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const signInSchema = z.object({
@@ -55,6 +56,21 @@ export default function Auth() {
     resolver: zodResolver(signUpSchema),
   });
 
+  const handleADLogin = async () => {
+    setIsLoading(true);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'azure',
+      options: {
+        redirectTo: `${window.location.origin}/crm`,
+        scopes: 'email profile openid',
+      },
+    });
+    if (error) {
+      toast.error(error.message);
+      setIsLoading(false);
+    }
+  };
+
   const handleSignIn = async (data: SignInData) => {
     setIsLoading(true);
     const { error, isEmployee: isEmployeeUser } = await signIn(data.email, data.password);
@@ -70,7 +86,7 @@ export default function Auth() {
     }
 
     toast.success("Login realizado com sucesso!");
-    
+
     // Redirect based on role
     if (isEmployeeUser) {
       navigate("/crm");
@@ -292,6 +308,22 @@ export default function Auth() {
                 <Button type="submit" className="w-full gap-2" disabled={isLoading}>
                   {isLoading ? "Entrando..." : "Entrar"}
                   <ArrowRight className="h-4 w-4" />
+                </Button>
+
+                <div className="relative my-4">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-card px-2 text-muted-foreground">
+                      Ou continuar com
+                    </span>
+                  </div>
+                </div>
+
+                <Button variant="outline" type="button" className="w-full gap-2" onClick={handleADLogin} disabled={isLoading}>
+                  <Building2 className="h-4 w-4" />
+                  Entrar com AD (Corporativo)
                 </Button>
               </form>
             )}

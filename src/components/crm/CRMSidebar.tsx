@@ -181,9 +181,7 @@ const menuSections: MenuSection[] = [
           { title: "Dashboard", url: "/crm/marketing" },
           { title: "Admissão", url: "/crm/marketing/admissao" },
           { title: "Campanhas", url: "/crm/marketing/campanhas" },
-          { title: "Promoções", url: "/crm/marketing/promocoes" },
-          { title: "Assets", url: "/crm/marketing/assets" },
-          { title: "Performance", url: "/crm/marketing/performance" },
+          { title: "Insumos", url: "/crm/marketing/solicitacoes" },
 
         ],
       },

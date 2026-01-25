@@ -35,6 +35,7 @@ import FinanceiroDashboard from "./pages/crm/financeiro/FinanceiroDashboard";
 import FinanceiroAdmissaoPage from "./pages/crm/financeiro/FinanceiroAdmissaoPage";
 import MarketingDashboard from "./pages/crm/marketing/MarketingDashboard";
 import MarketingAdmissaoPage from "./pages/crm/marketing/MarketingAdmissaoPage";
+import MarketingCampaignsPage from "./pages/crm/marketing/MarketingCampaignsPage";
 import MarketingSolicitacaoPage from "./pages/crm/marketing/MarketingSolicitacaoPage";
 import MarketingRequestsListPage from "./pages/crm/marketing/MarketingRequestsListPage";
 import MarketingRequestsManagementPage from "./pages/crm/marketing/MarketingRequestsManagementPage";
@@ -61,6 +62,8 @@ import EcommerceCuponsPage from "./pages/crm/ecommerce/EcommerceCuponsPage";
 import EcommerceCMSPage from "./pages/crm/ecommerce/EcommerceCMSPage";
 
 import SystemSettingsPage from "./pages/admin/SystemSettingsPage";
+import AdminUsersPage from "./pages/crm/admin/AdminUsersPage";
+import AdminPermissionsPage from "./pages/crm/admin/AdminPermissionsPage";
 
 const queryClient = new QueryClient();
 
@@ -111,6 +114,16 @@ const App = () => (
                           <SystemSettingsPage />
                         </ProtectedRoute>
                       } />
+                      <Route path="admin/usuarios" element={
+                        <ProtectedRoute requiredModule="admin">
+                          <AdminUsersPage />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="admin/permissoes" element={
+                        <ProtectedRoute requiredModule="admin">
+                          <AdminPermissionsPage />
+                        </ProtectedRoute>
+                      } />
                       <Route path="admin/*" element={
                         <ProtectedRoute requiredModule="admin">
                           <AdminCRMDashboard />
@@ -156,6 +169,11 @@ const App = () => (
                       <Route path="marketing" element={
                         <ProtectedRoute requiredModule="marketing">
                           <MarketingDashboard />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="marketing/campanhas" element={
+                        <ProtectedRoute requiredModule="marketing">
+                          <MarketingCampaignsPage />
                         </ProtectedRoute>
                       } />
                       <Route path="marketing/admissao" element={
