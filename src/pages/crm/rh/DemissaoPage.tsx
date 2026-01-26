@@ -1,6 +1,9 @@
 import { useState } from "react";
+import { useLocation } from "react-router-dom";
+import { format } from "date-fns";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useSectorRequests } from "@/hooks/useSectorRequests";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -25,7 +28,8 @@ import {
   CheckCircle2,
   Clock,
   AlertCircle,
-  AlertTriangle
+  AlertTriangle,
+  Monitor
 } from "lucide-react";
 
 interface ChecklistItem {
@@ -60,12 +64,21 @@ interface EmployeeChecklist {
 
 export default function DemissaoPage() {
   const queryClient = useQueryClient();
+  const location = useLocation();
+  const isTechView = location.pathname.includes("/tech");
+
   const [selectedChecklist, setSelectedChecklist] = useState<string | null>(null);
   const [isAddingItem, setIsAddingItem] = useState(false);
   const [editingItem, setEditingItem] = useState<ChecklistItem | null>(null);
   const [newItem, setNewItem] = useState({ title: "", description: "", responsible_role: "", is_required: true });
   const [isStartingProcess, setIsStartingProcess] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<string>("");
+
+  // New state for details dialog
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [selectedProcessDetails, setSelectedProcessDetails] = useState<EmployeeChecklist | null>(null);
+
+  const { createRequest } = useSectorRequests(isTechView ? "tech" : "rh");
 
   // Fetch termination checklists
   const { data: checklists, isLoading: loadingChecklists } = useQuery({
@@ -118,7 +131,8 @@ export default function DemissaoPage() {
         .from("hr_employee_checklists")
         .select(`
           *,
-          employees (full_name, employee_code),
+          *,
+          employees (*),
           hr_checklists!inner (type)
         `)
         .eq("hr_checklists.type", "demissao")
@@ -246,6 +260,8 @@ export default function DemissaoPage() {
             Gerencie checklists e processos de desligamento
           </p>
         </div>
+      </div>
+      {!isTechView && (
         <Dialog open={isStartingProcess} onOpenChange={setIsStartingProcess}>
           <DialogTrigger asChild>
             <Button variant="destructive">
@@ -323,10 +339,11 @@ export default function DemissaoPage() {
             </div>
           </DialogContent>
         </Dialog>
-      </div>
+      )}
+
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      < div className="grid grid-cols-1 md:grid-cols-4 gap-4" >
         <Card>
           <CardContent className="p-4 flex items-center gap-4">
             <div className="p-3 rounded-lg bg-destructive/10">
@@ -371,19 +388,21 @@ export default function DemissaoPage() {
             </div>
           </CardContent>
         </Card>
-      </div>
+      </div >
 
       {/* Main Content */}
-      <Tabs defaultValue="processos" className="space-y-4">
+      < Tabs defaultValue="processos" className="space-y-4" >
         <TabsList>
           <TabsTrigger value="processos">
             <Users className="h-4 w-4 mr-2" />
             Processos em Andamento
           </TabsTrigger>
-          <TabsTrigger value="checklists">
-            <ClipboardCheck className="h-4 w-4 mr-2" />
-            Gerenciar Checklists
-          </TabsTrigger>
+          {!isTechView && (
+            <TabsTrigger value="checklists">
+              <ClipboardCheck className="h-4 w-4 mr-2" />
+              Gerenciar Checklists
+            </TabsTrigger>
+          )}
         </TabsList>
 
         {/* Ongoing Processes */}
@@ -413,14 +432,108 @@ export default function DemissaoPage() {
                         <Badge variant="destructive">
                           Em Andamento
                         </Badge>
-                        <Button variant="outline" size="sm">
-                          Ver Detalhes
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={async () => {
+                              if (isTechView) {
+                                const confirm = window.confirm(`Confirmar conclusão do processo de TI para ${process.employees?.full_name}? O RH será notificado.`);
+                                if (confirm) {
+                                  await createRequest({
+                                    fromSector: 'tech',
+                                    toSector: 'rh',
+                                    title: `TI Concluído: ${process.employees?.full_name}`,
+                                    description: `Procedimentos de TI e recolhimento de equipamentos finalizados para ${process.employees?.full_name}.`,
+                                    priority: 'high',
+                                    requesterName: 'Tech'
+                                  });
+                                }
+                              } else {
+                                const confirm = window.confirm(`Deseja solicitar o desligamento de ${process.employees?.full_name} para o TI (Tech)?`);
+                                if (confirm) {
+                                  await createRequest({
+                                    fromSector: 'rh',
+                                    toSector: 'tech',
+                                    title: `Desligamento: ${process.employees?.full_name}`,
+                                    description: `Solicitação de desligamento para o funcionário ${process.employees?.full_name} (Código: ${process.employees?.employee_code}). Por favor, providenciar recuo de equipamentos e bloqueio de contas.`,
+                                    priority: 'urgent',
+                                    requesterName: 'RH'
+                                  });
+                                }
+                              }
+                            }}
+                          >
+                            <Monitor className="h-4 w-4 mr-2" />
+                            {isTechView ? "Concluir TI / Notificar RH" : "Notificar TI"}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedProcessDetails(process);
+                              setDetailsOpen(true);
+                            }}
+                          >
+                            Ver Detalhes
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
               ))}
+
+              {/* Employee Details Dialog */}
+              <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
+                <DialogContent className="max-w-3xl">
+                  <DialogHeader>
+                    <DialogTitle>Detalhes do Funcionário</DialogTitle>
+                  </DialogHeader>
+                  {selectedProcessDetails?.employees && (
+                    <div className="grid grid-cols-2 gap-4 py-4">
+                      <div className="space-y-1">
+                        <Label className="text-muted-foreground">Nome Completo</Label>
+                        <p className="font-medium">{selectedProcessDetails.employees.full_name}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-muted-foreground">Código</Label>
+                        <p className="font-medium">{selectedProcessDetails.employees.employee_code}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-muted-foreground">CPF</Label>
+                        <p className="font-medium">{selectedProcessDetails.employees.cpf || '-'}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-muted-foreground">Email</Label>
+                        <p className="font-medium">{selectedProcessDetails.employees.email || '-'}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-muted-foreground">Telefone</Label>
+                        <p className="font-medium">{selectedProcessDetails.employees.phone || '-'}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-muted-foreground">Data de Admissão</Label>
+                        <p className="font-medium">
+                          {selectedProcessDetails.employees.hire_date
+                            ? format(new Date(selectedProcessDetails.employees.hire_date), 'dd/MM/yyyy')
+                            : '-'}
+                        </p>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-muted-foreground">Status</Label>
+                        <Badge>{selectedProcessDetails.employees.status}</Badge>
+                      </div>
+                      <div className="col-span-2 space-y-1 pt-4 border-t">
+                        <Label className="text-muted-foreground">Checklist Atual</Label>
+                        <p className="font-medium">
+                          {(checklists?.find(c => c.id === selectedProcessDetails.checklist_id)?.title)}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </DialogContent>
+              </Dialog>
             </div>
           ) : (
             <Card>
@@ -602,7 +715,7 @@ export default function DemissaoPage() {
             </Card>
           </div>
         </TabsContent>
-      </Tabs>
-    </div>
+      </Tabs >
+    </div >
   );
 }

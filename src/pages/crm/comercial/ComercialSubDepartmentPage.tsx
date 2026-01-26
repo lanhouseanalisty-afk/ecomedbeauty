@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Users, TrendingUp, Target, DollarSign, Loader2, UserPlus } from "lucide-react";
 import { OrganizationChart } from "@/components/crm/comercial/OrganizationChart";
 import { useDepartmentMembers } from "@/hooks/useDepartmentMembers";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SectorRequestsPage } from "../components/SectorRequestsPage";
 
 const subDepartmentData: Record<string, {
     name: string;
@@ -135,102 +137,120 @@ export default function ComercialSubDepartmentPage() {
                 </div>
             </div>
 
-            {/* Regiões (se aplicável) */}
-            {data.regions && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Estados Atendidos</CardTitle>
-                        <CardDescription>Área de cobertura desta regional</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="flex flex-wrap gap-2">
-                            {data.regions.map((region) => (
-                                <Badge key={region} variant="secondary">
-                                    {region}
-                                </Badge>
-                            ))}
+
+            {/* Tabs Navigation */}
+            <Tabs defaultValue="overview" className="space-y-4">
+                <TabsList>
+                    <TabsTrigger value="overview">Visão Geral</TabsTrigger>
+                    <TabsTrigger value="requests">Solicitações</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="overview" className="space-y-6">
+                    <div className="min-h-[500px] space-y-6">
+                        {/* Regiões (se aplicável) */}
+                        {data.regions && (
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Estados Atendidos</CardTitle>
+
+                                    <CardDescription>Área de cobertura desta regional</CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="flex flex-wrap gap-2">
+                                        {data.regions.map((region) => (
+                                            <Badge key={region} variant="secondary">
+                                                {region}
+                                            </Badge>
+                                        ))}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        )}
+
+                        {/* Estatísticas */}
+                        <div className="grid gap-4 md:grid-cols-4">
+                            <Card>
+                                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                                        Equipe
+                                    </CardTitle>
+                                    <Users className="h-4 w-4 text-blue-600" />
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-2xl font-bold">{teamMembers.length}</div>
+                                    <p className="text-xs text-muted-foreground mt-1">Colaboradores ativos</p>
+                                </CardContent>
+                            </Card>
+
+                            <Card>
+                                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                                        Leads Ativos
+                                    </CardTitle>
+                                    <Target className="h-4 w-4 text-purple-600" />
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-2xl font-bold">-</div>
+                                    <p className="text-xs text-muted-foreground mt-1">Em prospecção</p>
+                                </CardContent>
+                            </Card>
+
+                            <Card>
+                                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                                        Taxa Conversão
+                                    </CardTitle>
+                                    <TrendingUp className="h-4 w-4 text-emerald-600" />
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-2xl font-bold">-%</div>
+                                    <p className="text-xs text-muted-foreground mt-1">Últimos 30 dias</p>
+                                </CardContent>
+                            </Card>
+
+                            <Card>
+                                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                                        Pipeline
+                                    </CardTitle>
+                                    <DollarSign className="h-4 w-4 text-amber-600" />
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-2xl font-bold">R$ -</div>
+                                    <p className="text-xs text-muted-foreground mt-1">Valor estimado</p>
+                                </CardContent>
+                            </Card>
                         </div>
-                    </CardContent>
-                </Card>
-            )}
 
-            {/* Estatísticas */}
-            <div className="grid gap-4 md:grid-cols-4">
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium text-muted-foreground">
-                            Equipe
-                        </CardTitle>
-                        <Users className="h-4 w-4 text-blue-600" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{teamMembers.length}</div>
-                        <p className="text-xs text-muted-foreground mt-1">Colaboradores ativos</p>
-                    </CardContent>
-                </Card>
+                        {/* Organograma Hierárquico */}
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Organograma da Equipe</CardTitle>
+                                <CardDescription>
+                                    Estrutura hierárquica do sub-setor {data.name}
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                {isLoading ? (
+                                    <div className="flex items-center justify-center py-12">
+                                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                                        <span className="ml-2 text-muted-foreground">Carregando equipe...</span>
+                                    </div>
+                                ) : (
+                                    <OrganizationChart
+                                        manager={manager}
+                                        members={teamMembers}
+                                    />
+                                )}
+                            </CardContent>
+                        </Card>
+                    </div>
+                </TabsContent>
 
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium text-muted-foreground">
-                            Leads Ativos
-                        </CardTitle>
-                        <Target className="h-4 w-4 text-purple-600" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">-</div>
-                        <p className="text-xs text-muted-foreground mt-1">Em prospecção</p>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium text-muted-foreground">
-                            Taxa Conversão
-                        </CardTitle>
-                        <TrendingUp className="h-4 w-4 text-emerald-600" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">-%</div>
-                        <p className="text-xs text-muted-foreground mt-1">Últimos 30 dias</p>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium text-muted-foreground">
-                            Pipeline
-                        </CardTitle>
-                        <DollarSign className="h-4 w-4 text-amber-600" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">R$ -</div>
-                        <p className="text-xs text-muted-foreground mt-1">Valor estimado</p>
-                    </CardContent>
-                </Card>
-            </div>
-
-            {/* Organograma Hierárquico */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Organograma da Equipe</CardTitle>
-                    <CardDescription>
-                        Estrutura hierárquica do sub-setor {data.name}
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    {isLoading ? (
-                        <div className="flex items-center justify-center py-12">
-                            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                            <span className="ml-2 text-muted-foreground">Carregando equipe...</span>
-                        </div>
-                    ) : (
-                        <OrganizationChart
-                            manager={manager}
-                            members={teamMembers}
-                        />
-                    )}
-                </CardContent>
-            </Card>
+                <TabsContent value="requests">
+                    <SectorRequestsPage currentSector={data.code} sectorName={`${data.name}`} />
+                </TabsContent>
+            </Tabs>
         </div>
     );
 }

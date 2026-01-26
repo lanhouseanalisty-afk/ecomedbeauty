@@ -84,7 +84,7 @@ const menuSections: MenuSection[] = [
           { title: "Permissões", url: "/crm/admin/permissoes" },
           { title: "Auditoria", url: "/crm/admin/auditoria" },
           { title: "Configurações", url: "/crm/admin/configuracoes" },
-
+          { title: "Solicitações entre Setores", url: "/crm/admin/solicitacoes-setores" },
         ],
       },
       {
@@ -108,6 +108,7 @@ const menuSections: MenuSection[] = [
         url: "/crm/compras",
         subitems: [
           { title: "Dashboard", url: "/crm/compras" },
+          { title: "Solicitações entre Setores", url: "/crm/compras/solicitacoes-setores" },
         ],
       },
       {
@@ -120,6 +121,7 @@ const menuSections: MenuSection[] = [
           { title: "Categorias", url: "/crm/ecommerce/categorias" },
           { title: "Pedidos", url: "/crm/ecommerce/pedidos" },
           { title: "Cupons", url: "/crm/ecommerce/cupons" },
+          { title: "Solicitações entre Setores", url: "/crm/ecommerce/solicitacoes-setores" },
         ],
       },
       {
@@ -134,7 +136,7 @@ const menuSections: MenuSection[] = [
           { title: "Contas", url: "/crm/financeiro/contas" },
           { title: "Centros de Custo", url: "/crm/financeiro/centros-custo" },
           { title: "Relatórios", url: "/crm/financeiro/relatorios" },
-
+          { title: "Solicitações entre Setores", url: "/crm/financeiro/solicitacoes-setores" },
         ],
       },
       {
@@ -147,7 +149,7 @@ const menuSections: MenuSection[] = [
           { title: "Contratos", url: "/crm/juridico/contratos" },
           { title: "Casos", url: "/crm/juridico/casos" },
           { title: "Compliance", url: "/crm/juridico/compliance" },
-
+          { title: "Solicitações entre Setores", url: "/crm/juridico/solicitacoes-setores" },
         ],
       },
       {
@@ -162,7 +164,7 @@ const menuSections: MenuSection[] = [
           { title: "Estoque", url: "/crm/logistica/estoque" },
           { title: "Transportadoras", url: "/crm/logistica/transportadoras" },
           { title: "Depósitos", url: "/crm/logistica/depositos" },
-
+          { title: "Solicitações entre Setores", url: "/crm/logistica/solicitacoes-setores" },
         ],
       },
       {
@@ -171,6 +173,7 @@ const menuSections: MenuSection[] = [
         url: "/crm/manutencao",
         subitems: [
           { title: "Dashboard", url: "/crm/manutencao" },
+          { title: "Solicitações entre Setores", url: "/crm/manutencao/solicitacoes-setores" },
         ],
       },
       {
@@ -182,7 +185,7 @@ const menuSections: MenuSection[] = [
           { title: "Admissão", url: "/crm/marketing/admissao" },
           { title: "Campanhas", url: "/crm/marketing/campanhas" },
           { title: "Insumos", url: "/crm/marketing/solicitacoes" },
-
+          { title: "Solicitações entre Setores", url: "/crm/marketing/solicitacoes-setores" },
         ],
       },
       {
@@ -198,7 +201,7 @@ const menuSections: MenuSection[] = [
           { title: "Ponto", url: "/crm/rh/ponto" },
           { title: "Férias", url: "/crm/rh/ferias" },
           { title: "Treinamentos", url: "/crm/rh/treinamentos" },
-
+          { title: "Solicitações entre Setores", url: "/crm/rh/solicitacoes-setores" },
         ],
       },
       {
@@ -206,13 +209,12 @@ const menuSections: MenuSection[] = [
         icon: Headphones,
         url: "/crm/tech",
         subitems: [
-          { title: "Dashboard", url: "/crm/tech" },
           { title: "Admissão", url: "/crm/tech/admissao" },
+          { title: "Demissão / Offboarding", url: "/crm/tech/demissao" },
           { title: "Tickets", url: "/crm/tech/tickets" },
           { title: "Ativos / Inventário", url: "/crm/tech/ativos" },
           { title: "Base de Conhecimento", url: "/crm/tech/kb" },
-          { title: "SLAs", url: "/crm/tech/slas" },
-
+          { title: "Solicitações entre Setores", url: "/crm/tech/solicitacoes-setores" },
         ],
       },
     ],

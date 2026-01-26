@@ -51,6 +51,7 @@ import TechDashboard from "./pages/crm/tech/TechDashboard";
 import TechAdmissaoPage from "./pages/crm/tech/TechAdmissaoPage";
 import TechTicketsPage from "./pages/crm/tech/TechTicketsPage";
 import TechAssetsPage from "./pages/crm/tech/TechAssetsPage";
+import TechKBPage from "./pages/crm/tech/TechKBPage";
 import EcommerceDashboard from "./pages/crm/ecommerce/EcommerceDashboard";
 import ComprasDashboard from "./pages/crm/compras/ComprasDashboard";
 import ManutencaoDashboard from "./pages/crm/manutencao/ManutencaoDashboard";
@@ -60,6 +61,8 @@ import EcommerceCategoriasPage from "./pages/crm/ecommerce/EcommerceCategoriasPa
 import EcommercePedidosPage from "./pages/crm/ecommerce/EcommercePedidosPage";
 import EcommerceCuponsPage from "./pages/crm/ecommerce/EcommerceCuponsPage";
 import EcommerceCMSPage from "./pages/crm/ecommerce/EcommerceCMSPage";
+
+import { SectorRequestsPage } from "./pages/crm/components/SectorRequestsPage";
 
 import SystemSettingsPage from "./pages/admin/SystemSettingsPage";
 import AdminUsersPage from "./pages/crm/admin/AdminUsersPage";
@@ -124,6 +127,11 @@ const App = () => (
                           <AdminPermissionsPage />
                         </ProtectedRoute>
                       } />
+                      <Route path="admin/solicitacoes-setores" element={
+                        <ProtectedRoute requiredModule="admin">
+                          <SectorRequestsPage currentSector="admin" sectorName="Administração" />
+                        </ProtectedRoute>
+                      } />
                       <Route path="admin/*" element={
                         <ProtectedRoute requiredModule="admin">
                           <AdminCRMDashboard />
@@ -145,6 +153,12 @@ const App = () => (
                         </ProtectedRoute>
                       } />
 
+                      <Route path="rh/solicitacoes-setores" element={
+                        <ProtectedRoute requiredModule="rh">
+                          <SectorRequestsPage currentSector="rh" sectorName="Recursos Humanos" />
+                        </ProtectedRoute>
+                      } />
+
                       <Route path="rh/*" element={
                         <ProtectedRoute requiredModule="rh">
                           <RHDashboard />
@@ -158,6 +172,12 @@ const App = () => (
                       <Route path="financeiro/admissao" element={
                         <ProtectedRoute requiredModule="financeiro">
                           <FinanceiroAdmissaoPage />
+                        </ProtectedRoute>
+                      } />
+
+                      <Route path="financeiro/solicitacoes-setores" element={
+                        <ProtectedRoute requiredModule="financeiro">
+                          <SectorRequestsPage currentSector="financeiro" sectorName="Financeiro" />
                         </ProtectedRoute>
                       } />
 
@@ -197,6 +217,12 @@ const App = () => (
                         </ProtectedRoute>
                       } />
 
+                      <Route path="marketing/solicitacoes-setores" element={
+                        <ProtectedRoute requiredModule="marketing">
+                          <SectorRequestsPage currentSector="marketing" sectorName="Marketing" />
+                        </ProtectedRoute>
+                      } />
+
                       <Route path="marketing/*" element={
                         <ProtectedRoute requiredModule="marketing">
                           <MarketingDashboard />
@@ -215,6 +241,12 @@ const App = () => (
                       <Route path="comercial/:subdepartment" element={
                         <ProtectedRoute requiredModule="comercial">
                           <ComercialSubDepartmentPage />
+                        </ProtectedRoute>
+                      } />
+
+                      <Route path="comercial/solicitacoes-setores" element={
+                        <ProtectedRoute requiredModule="comercial">
+                          <SectorRequestsPage currentSector="comercial" sectorName="Comercial" />
                         </ProtectedRoute>
                       } />
 
@@ -239,6 +271,12 @@ const App = () => (
                         </ProtectedRoute>
                       } />
 
+                      <Route path="logistica/solicitacoes-setores" element={
+                        <ProtectedRoute requiredModule="logistica">
+                          <SectorRequestsPage currentSector="logistica" sectorName="Logística" />
+                        </ProtectedRoute>
+                      } />
+
                       <Route path="logistica/*" element={
                         <ProtectedRoute requiredModule="logistica">
                           <LogisticaDashboard />
@@ -255,14 +293,15 @@ const App = () => (
                         </ProtectedRoute>
                       } />
 
+                      <Route path="juridico/solicitacoes-setores" element={
+                        <ProtectedRoute requiredModule="juridico">
+                          <SectorRequestsPage currentSector="juridico" sectorName="Jurídico" />
+                        </ProtectedRoute>
+                      } />
+
                       <Route path="juridico/*" element={
                         <ProtectedRoute requiredModule="juridico">
                           <JuridicoDashboard />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="tech" element={
-                        <ProtectedRoute requiredModule="tech">
-                          <TechDashboard />
                         </ProtectedRoute>
                       } />
                       <Route path="tech/admissao" element={
@@ -270,14 +309,30 @@ const App = () => (
                           <TechAdmissaoPage />
                         </ProtectedRoute>
                       } />
+                      <Route path="tech/demissao" element={
+                        <ProtectedRoute requiredModule="tech">
+                          <DemissaoPage />
+                        </ProtectedRoute>
+                      } />
                       <Route path="tech/tickets" element={
                         <ProtectedRoute requiredModule="tech">
                           <TechTicketsPage />
                         </ProtectedRoute>
                       } />
+                      <Route path="tech/kb" element={
+                        <ProtectedRoute requiredModule="tech">
+                          <TechKBPage />
+                        </ProtectedRoute>
+                      } />
                       <Route path="tech/ativos" element={
                         <ProtectedRoute requiredModule="tech">
                           <TechAssetsPage />
+                        </ProtectedRoute>
+                      } />
+
+                      <Route path="tech/solicitacoes-setores" element={
+                        <ProtectedRoute requiredModule="tech">
+                          <SectorRequestsPage currentSector="tech" sectorName="Tech / Suporte" />
                         </ProtectedRoute>
                       } />
 
@@ -322,6 +377,12 @@ const App = () => (
                         </ProtectedRoute>
                       } />
 
+                      <Route path="ecommerce/solicitacoes-setores" element={
+                        <ProtectedRoute requiredModule="ecommerce">
+                          <SectorRequestsPage currentSector="ecommerce" sectorName="E-commerce" />
+                        </ProtectedRoute>
+                      } />
+
                       <Route path="ecommerce/*" element={
                         <ProtectedRoute requiredModule="ecommerce">
                           <EcommerceDashboard />
@@ -332,9 +393,19 @@ const App = () => (
                           <ComprasDashboard />
                         </ProtectedRoute>
                       } />
+                      <Route path="compras/solicitacoes-setores" element={
+                        <ProtectedRoute requiredModule="admin">
+                          <SectorRequestsPage currentSector="compras" sectorName="Compras" />
+                        </ProtectedRoute>
+                      } />
                       <Route path="manutencao" element={
                         <ProtectedRoute requiredModule="admin">
                           <ManutencaoDashboard />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="manutencao/solicitacoes-setores" element={
+                        <ProtectedRoute requiredModule="admin">
+                          <SectorRequestsPage currentSector="manutencao" sectorName="Manutenção" />
                         </ProtectedRoute>
                       } />
                     </Route>

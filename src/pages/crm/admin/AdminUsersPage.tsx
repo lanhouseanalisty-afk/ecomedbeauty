@@ -61,6 +61,10 @@ export default function AdminUsersPage() {
         }
     });
 
+    const [activeTab, setActiveTab] = useState("users");
+
+    // ... (existing code)
+
     // Create Employee Mutation
     const createEmployeeMutation = useMutation({
         mutationFn: async (emp: typeof newEmployee) => {
@@ -81,29 +85,14 @@ export default function AdminUsersPage() {
             setIsEmployeeDialogOpen(false);
             setNewEmployee({ full_name: "", email: "", cpf: "", employee_code: "", department_id: "" });
             toast.success("Funcionário criado com sucesso!");
+            setActiveTab("employees"); // Switch to employees tab
         },
         onError: (err: any) => {
             toast.error(`Erro ao criar funcionário: ${err.message}`);
         }
     });
 
-    // Update User Role Mutation (Simplistic: upsert role)
-    // Note: Handling multiple roles per user might require more complex UI.
-    // Assuming 1 role per user for simplicity or just updating primary.
-    const updateUserRole = async (userId: string, role: string) => {
-        // This requires backend function usually, but if RLS allows policies on user_roles:
-        try {
-            const { error } = await supabase.from("user_roles").upsert({
-                user_id: userId,
-                role: role as any // cast string to enum
-            });
-            if (error) throw error;
-            queryClient.invalidateQueries({ queryKey: ["admin-users"] });
-            toast.success("Permissão atualizada!");
-        } catch (e: any) {
-            toast.error(`Erro ao atualizar permissão: ${e.message}`);
-        }
-    };
+    // ...
 
     const filteredUsers = users?.filter(u =>
         u.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -117,76 +106,11 @@ export default function AdminUsersPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Gerenciamento de Usuários</h1>
-                    <p className="text-muted-foreground">
-                        Controle de acesso, funcionários e funções do sistema
-                    </p>
-                </div>
-                <Dialog open={isEmployeeDialogOpen} onOpenChange={setIsEmployeeDialogOpen}>
-                    <DialogTrigger asChild>
-                        <Button>
-                            <Plus className="mr-2 h-4 w-4" />
-                            Novo Funcionário
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>Cadastrar Funcionário</DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-4 py-4">
-                            <div className="space-y-2">
-                                <Label>Nome Completo</Label>
-                                <Input value={newEmployee.full_name} onChange={e => setNewEmployee({ ...newEmployee, full_name: e.target.value })} placeholder="Ex: João da Silva" />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Email</Label>
-                                <Input value={newEmployee.email} onChange={e => setNewEmployee({ ...newEmployee, email: e.target.value })} placeholder="email@empresa.com" />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label>CPF</Label>
-                                    <Input value={newEmployee.cpf} onChange={e => setNewEmployee({ ...newEmployee, cpf: e.target.value })} placeholder="000.000.000-00" />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label>Código (Matrícula)</Label>
-                                    <Input value={newEmployee.employee_code} onChange={e => setNewEmployee({ ...newEmployee, employee_code: e.target.value })} placeholder="FUNC-001" />
-                                </div>
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Departamento</Label>
-                                <Select value={newEmployee.department_id} onValueChange={v => setNewEmployee({ ...newEmployee, department_id: v })}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Selecione..." />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {departments?.map(d => (
-                                            <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-                        <DialogFooter>
-                            <Button variant="outline" onClick={() => setIsEmployeeDialogOpen(false)}>Cancelar</Button>
-                            <Button onClick={() => createEmployeeMutation.mutate(newEmployee)} disabled={createEmployeeMutation.isPending}>Salvar</Button>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
-            </div>
+            {/* ... header ... */}
 
-            <div className="flex items-center gap-2 bg-muted/50 p-2 rounded-lg w-full md:w-1/3">
-                <Search className="h-4 w-4 text-muted-foreground" />
-                <Input
-                    placeholder="Buscar por nome, email ou código..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="border-0 bg-transparent focus-visible:ring-0"
-                />
-            </div>
+            {/* ... search ... */}
 
-            <Tabs defaultValue="users" className="space-y-4">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
                 <TabsList>
                     <TabsTrigger value="users">
                         <Shield className="h-4 w-4 mr-2" />
