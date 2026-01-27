@@ -41,7 +41,7 @@ export function CRMHeader() {
   return (
     <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b border-border bg-card px-6">
       <SidebarTrigger className="-ml-2" />
-      
+
       <div className="flex flex-1 items-center gap-4">
         <div className="relative max-w-md flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -75,10 +75,6 @@ export function CRMHeader() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => navigate("/crm/configuracoes")}>
-              <Settings className="mr-2 h-4 w-4" />
-              Configurações
-            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => navigate("/perfil")}>
               <User className="mr-2 h-4 w-4" />
               Perfil

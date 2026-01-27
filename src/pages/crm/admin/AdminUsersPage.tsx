@@ -39,29 +39,42 @@ export default function AdminUsersPage() {
         }
     });
 
-    // Fetch Employees
-    const { data: employees, isLoading: loadingEmployees } = useQuery({
-        queryKey: ["admin-employees"],
-        queryFn: async () => {
-            const { data, error } = await supabase
-                .from("employees")
-                .select("*")
-                .order("full_name");
-            if (error) throw error;
-            return data;
-        }
-    });
+
 
     // Fetch Departments for form
-    const { data: departments } = useQuery({
-        queryKey: ["admin-departments"],
-        queryFn: async () => {
-            const { data } = await supabase.from("departments").select("id, name");
-            return data || [];
+
+
+    const [activeTab, setActiveTab] = useState("users");
+
+    const updateUserRoleMutation = useMutation({
+        mutationFn: async ({ userId, role }: { userId: string, role: string }) => {
+            // First remove existing roles for this user (assuming single role policy for simplicity)
+            const { error: deleteError } = await supabase
+                .from("user_roles")
+                .delete()
+                .eq("user_id", userId);
+
+            if (deleteError) throw deleteError;
+
+            // Then insert new role
+            const { error } = await supabase
+                .from("user_roles")
+                .insert({ user_id: userId, role: role });
+
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+            toast.success("Permissão atualizada com sucesso!");
+        },
+        onError: (err: any) => {
+            toast.error(`Erro ao atualizar permissão: ${err.message}`);
         }
     });
 
-    const [activeTab, setActiveTab] = useState("users");
+    const updateUserRole = (userId: string, role: string) => {
+        updateUserRoleMutation.mutate({ userId, role });
+    };
 
     // ... (existing code)
 
@@ -99,10 +112,7 @@ export default function AdminUsersPage() {
         u.email?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    const filteredEmployees = employees?.filter(e =>
-        e.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        e.employee_code?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+
 
     return (
         <div className="space-y-6">
@@ -116,10 +126,7 @@ export default function AdminUsersPage() {
                         <Shield className="h-4 w-4 mr-2" />
                         Usuários do Sistema
                     </TabsTrigger>
-                    <TabsTrigger value="employees">
-                        <Users className="h-4 w-4 mr-2" />
-                        Funcionários (RH)
-                    </TabsTrigger>
+
                 </TabsList>
 
                 <TabsContent value="users" className="space-y-4">
@@ -183,43 +190,7 @@ export default function AdminUsersPage() {
                     </Card>
                 </TabsContent>
 
-                <TabsContent value="employees" className="space-y-4">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Base de Funcionários</CardTitle>
-                            <CardDescription>Todos os colaboradores cadastrados no RH</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            {loadingEmployees ? <p>Carregando...</p> : (
-                                <div className="space-y-4">
-                                    {filteredEmployees?.map(emp => (
-                                        <div key={emp.id} className="flex items-center justify-between p-4 border rounded-lg">
-                                            <div className="flex items-center gap-4">
-                                                <div className="p-2 bg-green-100 rounded-full">
-                                                    <Briefcase className="h-5 w-5 text-green-700" />
-                                                </div>
-                                                <div>
-                                                    <p className="font-medium">{emp.full_name}</p>
-                                                    <p className="text-sm text-muted-foreground">
-                                                        {emp.employee_code} • {emp.cpf}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <Badge className={emp.status === 'active' ? 'bg-green-500' : 'bg-gray-500'}>
-                                                    {emp.status}
-                                                </Badge>
-                                            </div>
-                                        </div>
-                                    ))}
-                                    {(!filteredEmployees || filteredEmployees.length === 0) && (
-                                        <p className="text-center text-muted-foreground py-8">Nenhum funcionário encontrado.</p>
-                                    )}
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
-                </TabsContent>
+
             </Tabs>
         </div>
     );

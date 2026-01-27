@@ -44,6 +44,14 @@ const DEPARTAMENTOS = [
   { value: "RH", label: "RH / Recursos Humanos" },
 ];
 
+const REGIOES_COMERCIAL = [
+  { value: "Norte", label: "Norte" },
+  { value: "Sul", label: "Sul" },
+  { value: "Sudeste", label: "Sudeste" },
+  { value: "Centro", label: "Centro" },
+  { value: "Inside Sales", label: "Inside Sales" },
+];
+
 // Schema de validação para Seção 1 - RH
 const secaoRHSchema = z.object({
   nome_completo: z.string().min(3, "Nome deve ter pelo menos 3 caracteres"),
@@ -62,6 +70,7 @@ const secaoRHSchema = z.object({
   regime_trabalho: z.enum(["Presencial", "Híbrido", "Remoto"], {
     required_error: "Selecione o regime de trabalho",
   }),
+  regiao_comercial: z.string().optional(),
   observacoes_rh: z.string().optional(),
 });
 
@@ -196,6 +205,7 @@ export default function AdmissaoForm({
       email_gestor: "",
       cargo_funcao: "",
       regime_trabalho: undefined,
+      regiao_comercial: "",
       observacoes_rh: "",
       buddy_mentor: "",
       equipamentos_necessarios: [],
@@ -492,6 +502,36 @@ export default function AdmissaoForm({
                       </FormItem>
                     )}
                   />
+
+                  {form.watch("setor_departamento") === "Comercial" && (
+                    <FormField
+                      control={form.control}
+                      name="regiao_comercial"
+                      render={({ field }) => (
+                        <FormItem className="col-span-1 md:col-span-2 bg-muted/30 p-4 rounded-lg border border-primary/20 animate-in fade-in slide-in-from-top-4">
+                          <FormLabel className="text-primary">
+                            7.1 Região Comercial <span className="text-destructive">*</span>
+                          </FormLabel>
+                          <RadioGroup
+                            onValueChange={field.onChange}
+                            value={field.value || ""}
+                            className="flex flex-wrap gap-4 mt-2"
+                            disabled={isReadOnly}
+                          >
+                            {REGIOES_COMERCIAL.map((regiao) => (
+                              <div key={regiao.value} className="flex items-center space-x-2">
+                                <RadioGroupItem value={regiao.value} id={`regiao-${regiao.value}`} />
+                                <Label htmlFor={`regiao-${regiao.value}`} className="cursor-pointer">
+                                  {regiao.label}
+                                </Label>
+                              </div>
+                            ))}
+                          </RadioGroup>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
 
                   <FormField
                     control={form.control}

@@ -1,8 +1,9 @@
 import { useState, useCallback } from "react";
-import { 
-  Users, 
-  Plus, 
-  Search, 
+import { useNavigate } from "react-router-dom";
+import {
+  Users,
+  Plus,
+  Search,
   Filter,
   MoreHorizontal,
   Calendar,
@@ -63,12 +64,13 @@ import { getInitials } from "@/lib/utils";
 import { toast } from "sonner";
 
 export default function RHDashboard() {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
   const [activeFilters, setActiveFilters] = useState<Record<string, string>>({});
-  
+
   const { employees, isLoading, createEmployee } = useEmployees();
   const { data: departments } = useDepartments();
   const { data: positions } = usePositions();
@@ -121,10 +123,10 @@ export default function RHDashboard() {
   const filteredEmployees = employees?.filter(emp => {
     const matchesSearch = emp.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       emp.email.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     const matchesStatus = !activeFilters.status || emp.status === activeFilters.status;
     const matchesDepartment = !activeFilters.department || (emp as any).department?.id === activeFilters.department;
-    
+
     return matchesSearch && matchesStatus && matchesDepartment;
   }) || [];
 
@@ -137,15 +139,15 @@ export default function RHDashboard() {
   };
 
   const handleToggleSelect = (id: string) => {
-    setSelectedIds(prev => 
+    setSelectedIds(prev =>
       prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
     );
   };
 
-  const selectionState = selectedIds.length === 0 
-    ? 'none' 
-    : selectedIds.length === filteredEmployees.length 
-      ? 'all' 
+  const selectionState = selectedIds.length === 0
+    ? 'none'
+    : selectedIds.length === filteredEmployees.length
+      ? 'all'
       : 'some';
 
   const handleBulkAction = async (actionId: string) => {
@@ -159,12 +161,14 @@ export default function RHDashboard() {
     { title: "Total Funcionários", value: employees?.length || 0, icon: Users, color: "text-primary" },
     { title: "Ativos", value: employees?.filter(e => e.status === 'active').length || 0, icon: Users, color: "text-success" },
     { title: "Em Licença", value: employees?.filter(e => e.status === 'on_leave').length || 0, icon: Calendar, color: "text-warning" },
-    { title: "Novos (30d)", value: employees?.filter(e => {
-      const hireDate = new Date(e.hire_date);
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      return hireDate >= thirtyDaysAgo;
-    }).length || 0, icon: Plus, trend: { value: 5 }, color: "text-info" },
+    {
+      title: "Novos (30d)", value: employees?.filter(e => {
+        const hireDate = new Date(e.hire_date);
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        return hireDate >= thirtyDaysAgo;
+      }).length || 0, icon: Plus, trend: { value: 5 }, color: "text-info"
+    },
   ];
 
   const filters = [
@@ -377,7 +381,7 @@ export default function RHDashboard() {
             <EmptyState
               variant={searchTerm || Object.keys(activeFilters).length > 0 ? 'search' : 'empty'}
               title={searchTerm || Object.keys(activeFilters).length > 0 ? 'Nenhum resultado' : 'Nenhum funcionário'}
-              description={searchTerm || Object.keys(activeFilters).length > 0 
+              description={searchTerm || Object.keys(activeFilters).length > 0
                 ? 'Tente ajustar os filtros ou termo de busca'
                 : 'Comece cadastrando seu primeiro funcionário'
               }
@@ -404,7 +408,7 @@ export default function RHDashboard() {
               </TableHeader>
               <TableBody>
                 {filteredEmployees.map((employee) => (
-                  <TableRow 
+                  <TableRow
                     key={employee.id}
                     className={selectedIds.includes(employee.id) ? 'bg-primary/5' : ''}
                   >
@@ -422,7 +426,12 @@ export default function RHDashboard() {
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <p className="font-medium">{employee.full_name}</p>
+                          <p className="font-medium flex items-center gap-2">
+                            {employee.full_name}
+                            <Badge variant="secondary" className="text-[10px] h-5 px-1.5 font-normal">
+                              ID: {employee.cpf.replace(/\D/g, '').slice(0, 3)}...
+                            </Badge>
+                          </p>
                           <p className="text-xs text-muted-foreground">{employee.employee_code}</p>
                         </div>
                       </div>
@@ -457,14 +466,19 @@ export default function RHDashboard() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => setSelectedEmployee(employee)}>
+                          <DropdownMenuItem onClick={() => navigate(`/crm/rh/funcionario/${employee.id}`)}>
                             <Eye className="h-4 w-4 mr-2" />
                             Ver Perfil
                           </DropdownMenuItem>
                           <DropdownMenuItem>Editar</DropdownMenuItem>
                           <DropdownMenuItem>Solicitar Férias</DropdownMenuItem>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-destructive">Desligar</DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="text-destructive"
+                            onClick={() => navigate("/crm/rh/demissao")}
+                          >
+                            Desligar
+                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>

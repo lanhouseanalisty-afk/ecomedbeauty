@@ -31,6 +31,8 @@ import AdminCRMDashboard from "./pages/crm/admin/AdminCRMDashboard";
 import RHDashboard from "./pages/crm/rh/RHDashboard";
 import RHAdmissaoPage from "./pages/crm/rh/AdmissaoPage";
 import DemissaoPage from "./pages/crm/rh/DemissaoPage";
+import EmployeeProfilePage from "./pages/crm/rh/EmployeeProfilePage";
+
 import FinanceiroDashboard from "./pages/crm/financeiro/FinanceiroDashboard";
 import FinanceiroAdmissaoPage from "./pages/crm/financeiro/FinanceiroAdmissaoPage";
 import MarketingDashboard from "./pages/crm/marketing/MarketingDashboard";
@@ -61,8 +63,10 @@ import EcommerceCategoriasPage from "./pages/crm/ecommerce/EcommerceCategoriasPa
 import EcommercePedidosPage from "./pages/crm/ecommerce/EcommercePedidosPage";
 import EcommerceCuponsPage from "./pages/crm/ecommerce/EcommerceCuponsPage";
 import EcommerceCMSPage from "./pages/crm/ecommerce/EcommerceCMSPage";
+import EcommerceCustomersPage from "./pages/crm/ecommerce/EcommerceCustomersPage";
 
 import { SectorRequestsPage } from "./pages/crm/components/SectorRequestsPage";
+import EmployeeDirectoryPage from "./pages/crm/EmployeeDirectoryPage";
 
 import SystemSettingsPage from "./pages/admin/SystemSettingsPage";
 import AdminUsersPage from "./pages/crm/admin/AdminUsersPage";
@@ -106,13 +110,23 @@ const App = () => (
                       </ProtectedRoute>
                     }>
                       <Route index element={<CRMDashboard />} />
+                      <Route path="colaboradores" element={
+                        <ProtectedRoute requireEmployee={true}>
+                          <EmployeeDirectoryPage />
+                        </ProtectedRoute>
+                      } />
                       <Route path="admin" element={
                         <ProtectedRoute requiredModule="admin">
                           <AdminCRMDashboard />
                         </ProtectedRoute>
                       } />
 
-                      <Route path="admin/settings" element={
+                      <Route path="admin/configuracoes" element={
+                        <ProtectedRoute requiredModule="admin">
+                          <SystemSettingsPage />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="configuracoes" element={
                         <ProtectedRoute requiredModule="admin">
                           <SystemSettingsPage />
                         </ProtectedRoute>
@@ -142,11 +156,17 @@ const App = () => (
                           <RHDashboard />
                         </ProtectedRoute>
                       } />
+                      <Route path="rh/meu-perfil" element={
+                        <ProtectedRoute requireEmployee={true}>
+                          <EmployeeProfilePage />
+                        </ProtectedRoute>
+                      } />
                       <Route path="rh/admissao" element={
                         <ProtectedRoute requiredModule="rh">
                           <RHAdmissaoPage />
                         </ProtectedRoute>
                       } />
+
                       <Route path="rh/demissao" element={
                         <ProtectedRoute requiredModule="rh">
                           <DemissaoPage />
@@ -162,6 +182,11 @@ const App = () => (
                       <Route path="rh/*" element={
                         <ProtectedRoute requiredModule="rh">
                           <RHDashboard />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="rh/funcionario/:id" element={
+                        <ProtectedRoute requiredModule="rh">
+                          <EmployeeProfilePage />
                         </ProtectedRoute>
                       } />
                       <Route path="financeiro" element={
@@ -364,6 +389,11 @@ const App = () => (
                       <Route path="ecommerce/pedidos" element={
                         <ProtectedRoute requiredModule="ecommerce">
                           <EcommercePedidosPage />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="ecommerce/clientes" element={
+                        <ProtectedRoute requiredModule="ecommerce">
+                          <EcommerceCustomersPage />
                         </ProtectedRoute>
                       } />
                       <Route path="ecommerce/cupons" element={

@@ -1,721 +1,409 @@
 import { useState } from "react";
-import { useLocation } from "react-router-dom";
-import { format } from "date-fns";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useSectorRequests } from "@/hooks/useSectorRequests";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { toast } from "sonner";
 import {
   UserMinus,
-  ClipboardCheck,
-  Settings,
-  Plus,
-  GripVertical,
-  Trash2,
-  Edit,
-  Users,
+  RotateCcw,
   CheckCircle2,
   Clock,
   AlertCircle,
-  AlertTriangle,
-  Monitor
+  FileSpreadsheet,
+  Eye,
+  Briefcase,
+  Monitor,
+  User,
+  ArrowRight,
+  Plus
 } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
+import DemissaoForm from "@/components/crm/rh/DemissaoForm";
+import { useEmployees } from "@/hooks/useRH";
+import { useTerminationProcesses, TerminationProcess } from "@/hooks/useTermination";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
-interface ChecklistItem {
-  id: string;
-  title: string;
-  description: string | null;
-  responsible_role: string | null;
-  order_index: number;
-  is_required: boolean;
-}
+const stepLabels: Record<string, string> = {
+  rh: "RH (Início)",
+  gestor: "Gestor",
+  ti: "TI",
+  dp: "DP / Financeiro",
+  concluido: "Concluído",
+};
 
-interface Checklist {
-  id: string;
-  title: string;
-  description: string | null;
-  is_active: boolean;
-}
+const stepColors: Record<string, string> = {
+  rh: "bg-red-500",
+  gestor: "bg-amber-500",
+  ti: "bg-blue-500",
+  dp: "bg-green-600",
+  concluido: "bg-emerald-600",
+};
 
-interface EmployeeChecklist {
-  id: string;
-  employee_id: string;
-  checklist_id: string;
-  status: string;
-  started_at: string | null;
-  completed_at: string | null;
-  notes: string | null;
-  employees: {
-    full_name: string;
-    employee_code: string;
-  };
-}
+const formatDateSafe = (dateString: string | null | undefined) => {
+  if (!dateString) return "—";
+  try {
+    return format(new Date(dateString), "dd/MM/yyyy", { locale: ptBR });
+  } catch (e) {
+    return "—";
+  }
+};
 
 export default function DemissaoPage() {
-  const queryClient = useQueryClient();
-  const location = useLocation();
-  const isTechView = location.pathname.includes("/tech");
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [viewingProcess, setViewingProcess] = useState<string | null>(null);
+  const { employees } = useEmployees();
+  const {
+    processes,
+    isLoading,
+    createTermination,
+    updateManagerStep,
+    updateTIStep,
+    completeTermination
+  } = useTerminationProcesses();
 
-  const [selectedChecklist, setSelectedChecklist] = useState<string | null>(null);
-  const [isAddingItem, setIsAddingItem] = useState(false);
-  const [editingItem, setEditingItem] = useState<ChecklistItem | null>(null);
-  const [newItem, setNewItem] = useState({ title: "", description: "", responsible_role: "", is_required: true });
-  const [isStartingProcess, setIsStartingProcess] = useState(false);
-  const [selectedEmployee, setSelectedEmployee] = useState<string>("");
+  // Mocking current user role - IN REAL APP THIS COMES FROM AUTH CONTEXT
+  // change this to test different views: 'rh', 'gestor', 'ti', 'dp'
+  const [userRole, setUserRole] = useState<'rh' | 'gestor' | 'ti' | 'dp'>('rh');
 
-  // New state for details dialog
-  const [detailsOpen, setDetailsOpen] = useState(false);
-  const [selectedProcessDetails, setSelectedProcessDetails] = useState<EmployeeChecklist | null>(null);
+  const activeProcesses = processes?.filter(p => p.status !== 'completed' && p.status !== 'cancelled') || [];
+  const completedProcesses = processes?.filter(p => p.status === 'completed') || [];
 
-  const { createRequest } = useSectorRequests(isTechView ? "tech" : "rh");
+  // Filter processes pending for the current user's role
+  const myPendingTasks = activeProcesses.filter(p => p.current_step === userRole);
 
-  // Fetch termination checklists
-  const { data: checklists, isLoading: loadingChecklists } = useQuery({
-    queryKey: ["hr-checklists", "demissao"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("hr_checklists")
-        .select("*")
-        .eq("type", "demissao")
-        .eq("is_active", true);
-      if (error) throw error;
-      return data as Checklist[];
-    },
-  });
+  const handleFormSubmit = async (data: any) => {
+    // If we are editing an existing process
+    if (viewingProcess) {
+      const process = processes?.find(p => p.id === viewingProcess);
+      if (!process) return;
 
-  // Fetch checklist items
-  const { data: checklistItems } = useQuery({
-    queryKey: ["hr-checklist-items", selectedChecklist],
-    queryFn: async () => {
-      if (!selectedChecklist) return [];
-      const { data, error } = await supabase
-        .from("hr_checklist_items")
-        .select("*")
-        .eq("checklist_id", selectedChecklist)
-        .order("order_index");
-      if (error) throw error;
-      return data as ChecklistItem[];
-    },
-    enabled: !!selectedChecklist,
-  });
-
-  // Fetch employees for termination process
-  const { data: employees } = useQuery({
-    queryKey: ["employees-all"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("employees")
-        .select("id, full_name, employee_code")
-        .order("full_name");
-      if (error) throw error;
-      return data;
-    },
-  });
-
-  // Fetch ongoing termination processes
-  const { data: ongoingProcesses } = useQuery({
-    queryKey: ["hr-employee-checklists", "demissao"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("hr_employee_checklists")
-        .select(`
-          *,
-          *,
-          employees (*),
-          hr_checklists!inner (type)
-        `)
-        .eq("hr_checklists.type", "demissao")
-        .neq("status", "completed")
-        .neq("status", "cancelled");
-      if (error) throw error;
-      return data as EmployeeChecklist[];
-    },
-  });
-
-  // Add new checklist item
-  const addItemMutation = useMutation({
-    mutationFn: async (item: typeof newItem) => {
-      const maxOrder = checklistItems?.length ? Math.max(...checklistItems.map(i => i.order_index)) : 0;
-      const { error } = await supabase
-        .from("hr_checklist_items")
-        .insert({
-          checklist_id: selectedChecklist,
-          title: item.title,
-          description: item.description || null,
-          responsible_role: item.responsible_role || null,
-          is_required: item.is_required,
-          order_index: maxOrder + 1,
-        });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["hr-checklist-items"] });
-      setIsAddingItem(false);
-      setNewItem({ title: "", description: "", responsible_role: "", is_required: true });
-      toast.success("Item adicionado ao checklist");
-    },
-    onError: () => toast.error("Erro ao adicionar item"),
-  });
-
-  // Delete checklist item
-  const deleteItemMutation = useMutation({
-    mutationFn: async (itemId: string) => {
-      const { error } = await supabase
-        .from("hr_checklist_items")
-        .delete()
-        .eq("id", itemId);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["hr-checklist-items"] });
-      toast.success("Item removido");
-    },
-    onError: () => toast.error("Erro ao remover item"),
-  });
-
-  // Start termination process for employee
-  const startProcessMutation = useMutation({
-    mutationFn: async ({ employeeId, checklistId }: { employeeId: string; checklistId: string }) => {
-      // Create employee checklist
-      const { data: empChecklist, error: checklistError } = await supabase
-        .from("hr_employee_checklists")
-        .insert({
-          employee_id: employeeId,
-          checklist_id: checklistId,
-          status: "in_progress",
-          started_at: new Date().toISOString(),
-        })
-        .select()
-        .single();
-      if (checklistError) throw checklistError;
-
-      // Get checklist items
-      const { data: items, error: itemsError } = await supabase
-        .from("hr_checklist_items")
-        .select("id")
-        .eq("checklist_id", checklistId);
-      if (itemsError) throw itemsError;
-
-      // Create employee checklist items
-      if (items && items.length > 0) {
-        const employeeItems = items.map(item => ({
-          employee_checklist_id: empChecklist.id,
-          checklist_item_id: item.id,
-          is_completed: false,
-        }));
-        const { error: insertError } = await supabase
-          .from("hr_employee_checklist_items")
-          .insert(employeeItems);
-        if (insertError) throw insertError;
+      if (process.current_step === 'gestor') {
+        await updateManagerStep.mutateAsync({ id: process.id, data });
+      } else if (process.current_step === 'ti') {
+        await updateTIStep.mutateAsync({ id: process.id, data });
+      } else if (process.current_step === 'dp') {
+        await completeTermination.mutateAsync({ id: process.id, data });
       }
-
-      // Update employee status to "demitido"
-      const { error: updateError } = await supabase
-        .from("employees")
-        .update({ status: "terminated" })
-        .eq("id", employeeId);
-      if (updateError) throw updateError;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["hr-employee-checklists"] });
-      queryClient.invalidateQueries({ queryKey: ["employees"] });
-      setIsStartingProcess(false);
-      setSelectedEmployee("");
-      toast.success("Processo de demissão iniciado");
-    },
-    onError: () => toast.error("Erro ao iniciar processo"),
-  });
-
-  const getRoleBadgeColor = (role: string | null) => {
-    switch (role) {
-      case "rh": return "bg-blue-100 text-blue-800";
-      case "tech": return "bg-purple-100 text-purple-800";
-      case "juridico": return "bg-amber-100 text-amber-800";
-      case "financeiro": return "bg-green-100 text-green-800";
-      default: return "bg-gray-100 text-gray-800";
+      setViewingProcess(null);
+    } else {
+      // New termination (RH)
+      await createTermination.mutateAsync(data);
+      setIsFormOpen(false);
     }
   };
 
+  const getProgressValue = (step: string) => {
+    const steps = ['rh', 'gestor', 'ti', 'dp', 'concluido'];
+    const index = steps.indexOf(step);
+    if (index === -1) return 0;
+    return ((index + 1) / steps.length) * 100;
+  };
+
+  // Determine section to show based on process step or creator role
+  const getSectionForProcess = (process?: TerminationProcess) => {
+    if (!process) return 1; // Default to RH
+    if (process.current_step === 'rh') return 1;
+    if (process.current_step === 'gestor') return 2;
+    if (process.current_step === 'ti') return 3;
+    if (process.current_step === 'dp') return 4;
+    return 1;
+  };
+
   return (
-    <div className="space-y-6 notranslate" translate="no">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="space-y-6">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <UserMinus className="h-7 w-7 text-destructive" />
-            Demissão
+          <h1 className="text-2xl font-bold flex items-center gap-2 text-red-700 dark:text-red-500">
+            <UserMinus className="h-7 w-7" />
+            Desligamentos
           </h1>
           <p className="text-muted-foreground">
-            Gerencie checklists e processos de desligamento
+            Gestão do processo de desligamento e checklist de saída
           </p>
         </div>
-      </div>
-      {!isTechView && (
-        <Dialog open={isStartingProcess} onOpenChange={setIsStartingProcess}>
-          <DialogTrigger asChild>
-            <Button variant="destructive">
+
+        <div className="flex items-center gap-4">
+          {/* DEV ONLY ROLE SWITCHER */}
+          <div className="flex items-center gap-2 bg-muted p-1 rounded-md text-xs">
+            <span className="px-2">Simular:</span>
+            <select
+              value={userRole}
+              onChange={(e) => setUserRole(e.target.value as any)}
+              className="bg-transparent border-none focus:ring-0 cursor-pointer font-bold"
+            >
+              <option value="rh">RH</option>
+              <option value="gestor">Gestor</option>
+              <option value="ti">TI</option>
+              <option value="dp">DP</option>
+            </select>
+          </div>
+
+          {userRole === 'rh' && (
+            <Button onClick={() => setIsFormOpen(true)} variant="destructive">
               <Plus className="h-4 w-4 mr-2" />
-              Iniciar Demissão
+              Novo Desligamento
             </Button>
-          </DialogTrigger>
-          <DialogContent className="notranslate" translate="no">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-destructive" />
-                Iniciar Processo de Demissão
-              </DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="p-3 bg-destructive/10 rounded-lg border border-destructive/20">
-                <p className="text-sm text-destructive">
-                  Atenção: Ao iniciar este processo, o funcionário será marcado como desligado no sistema.
-                </p>
-              </div>
-              <div className="space-y-2">
-                <Label>Funcionário</Label>
-                <Select value={selectedEmployee} onValueChange={setSelectedEmployee}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o funcionário" />
-                  </SelectTrigger>
-                  <SelectContent className="notranslate" translate="no">
-                    {employees?.length ? (
-                      employees.map(emp => (
-                        <SelectItem key={emp.id} value={emp.id}>
-                          {emp.full_name} ({emp.employee_code})
-                        </SelectItem>
-                      ))
-                    ) : (
-                      <SelectItem value="none" disabled>
-                        Nenhum funcionário encontrado
-                      </SelectItem>
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Checklist</Label>
-                <Select
-                  value={selectedChecklist || ""}
-                  onValueChange={setSelectedChecklist}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o checklist" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {checklists?.map(cl => (
-                      <SelectItem key={cl.id} value={cl.id}>
-                        {cl.title}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button
-                className="w-full"
-                variant="destructive"
-                onClick={() => {
-                  if (selectedEmployee && selectedChecklist) {
-                    startProcessMutation.mutate({
-                      employeeId: selectedEmployee,
-                      checklistId: selectedChecklist
-                    });
-                  }
-                }}
-                disabled={!selectedEmployee || !selectedChecklist}
-              >
-                Confirmar Demissão
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
+          )}
+        </div>
+      </div>
 
-
-      {/* Stats */}
-      < div className="grid grid-cols-1 md:grid-cols-4 gap-4" >
+      {/* Cards de Status */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4 flex items-center gap-4">
-            <div className="p-3 rounded-lg bg-destructive/10">
-              <Users className="h-6 w-6 text-destructive" />
+            <div className="p-3 rounded-lg bg-red-100 dark:bg-red-900/30">
+              <UserMinus className="h-6 w-6 text-red-600" />
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Em Andamento</p>
-              <p className="text-2xl font-bold">{ongoingProcesses?.length || 0}</p>
+              <p className="text-2xl font-bold">{activeProcesses.length}</p>
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-4 flex items-center gap-4">
-            <div className="p-3 rounded-lg bg-green-100">
-              <CheckCircle2 className="h-6 w-6 text-green-600" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Concluídos (mês)</p>
-              <p className="text-2xl font-bold">3</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 flex items-center gap-4">
-            <div className="p-3 rounded-lg bg-amber-100">
-              <Clock className="h-6 w-6 text-amber-600" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Tempo Médio</p>
-              <p className="text-2xl font-bold">7 dias</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 flex items-center gap-4">
-            <div className="p-3 rounded-lg bg-blue-100">
-              <ClipboardCheck className="h-6 w-6 text-blue-600" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Checklists</p>
-              <p className="text-2xl font-bold">{checklists?.length || 0}</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div >
 
-      {/* Main Content */}
-      < Tabs defaultValue="processos" className="space-y-4" >
+        <Card>
+          <CardContent className="p-4 flex items-center gap-4">
+            <div className="p-3 rounded-lg bg-amber-100 dark:bg-amber-900/30">
+              <Briefcase className="h-6 w-6 text-amber-600" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Com Gestor</p>
+              <p className="text-2xl font-bold">
+                {activeProcesses.filter(p => p.current_step === 'gestor').length}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4 flex items-center gap-4">
+            <div className="p-3 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+              <Monitor className="h-6 w-6 text-blue-600" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Com TI</p>
+              <p className="text-2xl font-bold">
+                {activeProcesses.filter(p => p.current_step === 'ti').length}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4 flex items-center gap-4">
+            <div className="p-3 rounded-lg bg-green-100 dark:bg-green-900/30">
+              <FileSpreadsheet className="h-6 w-6 text-green-600" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Com DP</p>
+              <p className="text-2xl font-bold">
+                {activeProcesses.filter(p => p.current_step === 'dp').length}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Tabs defaultValue="todos" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="processos">
-            <Users className="h-4 w-4 mr-2" />
-            Processos em Andamento
+          <TabsTrigger value="todos">
+            <UserMinus className="h-4 w-4 mr-2" />
+            Todos os Processos
           </TabsTrigger>
-          {!isTechView && (
-            <TabsTrigger value="checklists">
-              <ClipboardCheck className="h-4 w-4 mr-2" />
-              Gerenciar Checklists
-            </TabsTrigger>
-          )}
+          <TabsTrigger value="minhas-tarefas" className="relative">
+            <Clock className="h-4 w-4 mr-2" />
+            Minhas Tarefas
+            {myPendingTasks.length > 0 && (
+              <Badge variant="destructive" className="ml-2 h-5 text-[10px] px-1.5">
+                {myPendingTasks.length}
+              </Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="concluidos">
+            <CheckCircle2 className="h-4 w-4 mr-2" />
+            Concluídos
+          </TabsTrigger>
         </TabsList>
 
-        {/* Ongoing Processes */}
-        <TabsContent value="processos" className="space-y-4">
-          {ongoingProcesses && ongoingProcesses.length > 0 ? (
-            <div className="grid gap-4">
-              {ongoingProcesses.map(process => (
-                <Card key={process.id} className="border-destructive/20">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className="p-2 rounded-full bg-destructive/10">
-                          <UserMinus className="h-5 w-5 text-destructive" />
-                        </div>
-                        <div>
-                          <p className="font-medium">{process.employees?.full_name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {process.employees?.employee_code}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <div className="text-right">
-                          <p className="text-sm text-muted-foreground">Progresso</p>
-                          <Progress value={30} className="w-32 h-2" />
-                        </div>
-                        <Badge variant="destructive">
-                          Em Andamento
-                        </Badge>
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={async () => {
-                              if (isTechView) {
-                                const confirm = window.confirm(`Confirmar conclusão do processo de TI para ${process.employees?.full_name}? O RH será notificado.`);
-                                if (confirm) {
-                                  await createRequest({
-                                    fromSector: 'tech',
-                                    toSector: 'rh',
-                                    title: `TI Concluído: ${process.employees?.full_name}`,
-                                    description: `Procedimentos de TI e recolhimento de equipamentos finalizados para ${process.employees?.full_name}.`,
-                                    priority: 'high',
-                                    requesterName: 'Tech'
-                                  });
-                                }
-                              } else {
-                                const confirm = window.confirm(`Deseja solicitar o desligamento de ${process.employees?.full_name} para o TI (Tech)?`);
-                                if (confirm) {
-                                  await createRequest({
-                                    fromSector: 'rh',
-                                    toSector: 'tech',
-                                    title: `Desligamento: ${process.employees?.full_name}`,
-                                    description: `Solicitação de desligamento para o funcionário ${process.employees?.full_name} (Código: ${process.employees?.employee_code}). Por favor, providenciar recuo de equipamentos e bloqueio de contas.`,
-                                    priority: 'urgent',
-                                    requesterName: 'RH'
-                                  });
-                                }
-                              }
-                            }}
-                          >
-                            <Monitor className="h-4 w-4 mr-2" />
-                            {isTechView ? "Concluir TI / Notificar RH" : "Notificar TI"}
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setSelectedProcessDetails(process);
-                              setDetailsOpen(true);
-                            }}
-                          >
-                            Ver Detalhes
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-
-              {/* Employee Details Dialog */}
-              <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
-                <DialogContent className="max-w-3xl">
-                  <DialogHeader>
-                    <DialogTitle>Detalhes do Funcionário</DialogTitle>
-                  </DialogHeader>
-                  {selectedProcessDetails?.employees && (
-                    <div className="grid grid-cols-2 gap-4 py-4">
-                      <div className="space-y-1">
-                        <Label className="text-muted-foreground">Nome Completo</Label>
-                        <p className="font-medium">{selectedProcessDetails.employees.full_name}</p>
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-muted-foreground">Código</Label>
-                        <p className="font-medium">{selectedProcessDetails.employees.employee_code}</p>
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-muted-foreground">CPF</Label>
-                        <p className="font-medium">{selectedProcessDetails.employees.cpf || '-'}</p>
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-muted-foreground">Email</Label>
-                        <p className="font-medium">{selectedProcessDetails.employees.email || '-'}</p>
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-muted-foreground">Telefone</Label>
-                        <p className="font-medium">{selectedProcessDetails.employees.phone || '-'}</p>
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-muted-foreground">Data de Admissão</Label>
-                        <p className="font-medium">
-                          {selectedProcessDetails.employees.hire_date
-                            ? format(new Date(selectedProcessDetails.employees.hire_date), 'dd/MM/yyyy')
-                            : '-'}
-                        </p>
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-muted-foreground">Status</Label>
-                        <Badge>{selectedProcessDetails.employees.status}</Badge>
-                      </div>
-                      <div className="col-span-2 space-y-1 pt-4 border-t">
-                        <Label className="text-muted-foreground">Checklist Atual</Label>
-                        <p className="font-medium">
-                          {(checklists?.find(c => c.id === selectedProcessDetails.checklist_id)?.title)}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </DialogContent>
-              </Dialog>
-            </div>
-          ) : (
+        <TabsContent value="todos" className="space-y-4">
+          {activeProcesses.length === 0 ? (
             <Card>
-              <CardContent className="p-8 text-center">
-                <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground">
-                  Nenhum processo de demissão em andamento
-                </p>
+              <CardContent className="p-8 text-center text-muted-foreground">
+                Nenhum processo de desligamento em andamento.
               </CardContent>
             </Card>
+          ) : (
+            <div className="grid gap-4">
+              {activeProcesses.map(process => {
+                const emp = employees?.find(e => e.id === process.employee_id);
+                const cpfDisplay = emp?.cpf ? `ID: ${emp.cpf.replace(/\D/g, '').slice(0, 3)}...` : '';
+
+                return (
+                  <Card key={process.id} className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => setViewingProcess(process.id)}>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <div className="p-2 rounded-full bg-red-100 dark:bg-red-900/30">
+                            <User className="h-5 w-5 text-red-600" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-lg flex items-center gap-2">
+                              {process.employee_name}
+                              {cpfDisplay && (
+                                <Badge variant="secondary" className="text-[10px] h-5 px-1.5 font-normal">
+                                  {cpfDisplay}
+                                </Badge>
+                              )}
+                            </p>
+                            <div className="flex gap-2 text-sm text-muted-foreground">
+                              <span>{process.position}</span>
+                              <span>•</span>
+                              <span>{process.department}</span>
+                            </div>
+                            <p className="text-xs text-red-600 mt-1 font-medium">
+                              Saída: {formatDateSafe(process.last_day)}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col items-end gap-2">
+                          <Badge className={`${stepColors[process.current_step] || 'bg-muted'} text-white`}>
+                            {stepLabels[process.current_step]}
+                          </Badge>
+                          <div className="flex items-center gap-2 w-48">
+                            <span className="text-xs text-muted-foreground whitespace-nowrap">Progresso</span>
+                            <Progress value={getProgressValue(process.current_step)} className="h-2" />
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )
+              })}
+            </div>
           )}
         </TabsContent>
 
-        {/* Checklist Management */}
-        <TabsContent value="checklists" className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Checklist List */}
+        <TabsContent value="minhas-tarefas">
+          {myPendingTasks.length === 0 ? (
             <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Checklists</CardTitle>
-                <CardDescription>Selecione para editar os itens</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {loadingChecklists ? (
-                  <p className="text-muted-foreground">Carregando...</p>
-                ) : (
-                  checklists?.map(checklist => (
-                    <div
-                      key={checklist.id}
-                      onClick={() => setSelectedChecklist(checklist.id)}
-                      className={`p-3 rounded-lg cursor-pointer transition-colors ${selectedChecklist === checklist.id
-                        ? "bg-destructive text-destructive-foreground"
-                        : "bg-muted hover:bg-muted/80"
-                        }`}
-                    >
-                      <p className="font-medium">{checklist.title}</p>
-                      {checklist.description && (
-                        <p className={`text-sm ${selectedChecklist === checklist.id
-                          ? "text-destructive-foreground/80"
-                          : "text-muted-foreground"
-                          }`}>
-                          {checklist.description}
-                        </p>
-                      )}
-                    </div>
-                  ))
-                )}
+              <CardContent className="p-8 text-center text-muted-foreground">
+                Você não tem tarefas pendentes de desligamento.
               </CardContent>
             </Card>
+          ) : (
+            <div className="grid gap-4">
+              {myPendingTasks.map(process => {
+                const emp = employees?.find(e => e.id === process.employee_id);
+                const cpfDisplay = emp?.cpf ? `ID: ${emp.cpf.replace(/\D/g, '').slice(0, 3)}...` : '';
 
-            {/* Checklist Items */}
-            <Card className="lg:col-span-2">
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle className="text-lg">Itens do Checklist</CardTitle>
-                  <CardDescription>
-                    {selectedChecklist
-                      ? `${checklistItems?.length || 0} itens`
-                      : "Selecione um checklist"
-                    }
-                  </CardDescription>
-                </div>
-                {selectedChecklist && (
-                  <Button size="sm" onClick={() => setIsAddingItem(true)}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Adicionar Item
-                  </Button>
-                )}
-              </CardHeader>
-              <CardContent>
-                {selectedChecklist ? (
-                  <div className="space-y-2">
-                    {checklistItems?.map((item, index) => (
-                      <div
-                        key={item.id}
-                        className="flex items-center gap-3 p-3 bg-muted rounded-lg group"
-                      >
-                        <GripVertical className="h-4 w-4 text-muted-foreground cursor-move" />
-                        <span className="text-sm text-muted-foreground w-6">{index + 1}.</span>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <p className="font-medium">{item.title}</p>
-                            {item.is_required && (
-                              <Badge variant="outline" className="text-xs">Obrigatório</Badge>
-                            )}
-                          </div>
-                          {item.description && (
-                            <p className="text-sm text-muted-foreground">{item.description}</p>
+                return (
+                  <Card key={process.id} className="border-red-200 bg-red-50/20 dark:border-red-900/50">
+                    <CardContent className="p-4 flex justify-between items-center">
+                      <div>
+                        <p className="font-bold flex items-center gap-2">
+                          {process.employee_name}
+                          {cpfDisplay && (
+                            <Badge variant="secondary" className="text-[10px] h-5 px-1.5 font-normal">
+                              {cpfDisplay}
+                            </Badge>
                           )}
-                        </div>
-                        {item.responsible_role && (
-                          <Badge className={getRoleBadgeColor(item.responsible_role)}>
-                            {item.responsible_role.toUpperCase()}
+                        </p>
+                        <p className="text-sm text-muted-foreground">Aguardando sua validação</p>
+                      </div>
+                      <Button onClick={() => setViewingProcess(process.id)}>
+                        Resolver Agora
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )
+              })}
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="concluidos">
+          {completedProcesses.length === 0 ? (
+            <Card>
+              <CardContent className="p-8 text-center text-muted-foreground">
+                Nenhum histórico encontrado.
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-4">
+              {completedProcesses.map(p => {
+                const emp = employees?.find(e => e.id === p.employee_id);
+                const cpfDisplay = emp?.cpf ? `ID: ${emp.cpf.replace(/\D/g, '').slice(0, 3)}...` : '';
+
+                return (
+                  <Card key={p.id}>
+                    <CardContent className="p-4 flex justify-between">
+                      <span className="font-medium flex items-center gap-2">
+                        {p.employee_name}
+                        {cpfDisplay && (
+                          <Badge variant="secondary" className="text-[10px] h-5 px-1.5 font-normal">
+                            {cpfDisplay}
                           </Badge>
                         )}
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-destructive"
-                            onClick={() => deleteItemMutation.mutate(item.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-
-                    {/* Add Item Form */}
-                    {isAddingItem && (
-                      <div className="p-4 border rounded-lg space-y-4 bg-background">
-                        <div className="space-y-2">
-                          <Label>Título *</Label>
-                          <Input
-                            value={newItem.title}
-                            onChange={(e) => setNewItem({ ...newItem, title: e.target.value })}
-                            placeholder="Ex: Recolher equipamentos"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Descrição</Label>
-                          <Textarea
-                            value={newItem.description}
-                            onChange={(e) => setNewItem({ ...newItem, description: e.target.value })}
-                            placeholder="Detalhes do item..."
-                          />
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label>Responsável</Label>
-                            <Select
-                              value={newItem.responsible_role}
-                              onValueChange={(v) => setNewItem({ ...newItem, responsible_role: v })}
-                            >
-                              <SelectTrigger>
-                                <SelectValue placeholder="Selecione" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="rh">RH</SelectItem>
-                                <SelectItem value="tech">Tech</SelectItem>
-                                <SelectItem value="juridico">Jurídico</SelectItem>
-                                <SelectItem value="financeiro">Financeiro</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div className="flex items-center gap-2 pt-6">
-                            <Checkbox
-                              id="required"
-                              checked={newItem.is_required}
-                              onCheckedChange={(c) => setNewItem({ ...newItem, is_required: !!c })}
-                            />
-                            <Label htmlFor="required">Item obrigatório</Label>
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button
-                            onClick={() => addItemMutation.mutate(newItem)}
-                            disabled={!newItem.title}
-                          >
-                            Salvar
-                          </Button>
-                          <Button variant="outline" onClick={() => setIsAddingItem(false)}>
-                            Cancelar
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <ClipboardCheck className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>Selecione um checklist para ver os itens</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+                      </span>
+                      <Badge variant="outline" className="text-green-600 border-green-600">Finalizado</Badge>
+                    </CardContent>
+                  </Card>
+                )
+              })}
+            </div>
+          )}
         </TabsContent>
-      </Tabs >
-    </div >
+
+      </Tabs>
+
+      {/* Dialog para INICIAR PROCESSO (RH) */}
+      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Iniciar Desligamento</DialogTitle>
+          </DialogHeader>
+          <DemissaoForm
+            employees={employees || []}
+            onSubmit={handleFormSubmit}
+            currentSection={1}
+            isReadOnly={false}
+            userRole="rh"
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog para ACOMPANHAR/EDITAR PROCESSO */}
+      <Dialog open={!!viewingProcess} onOpenChange={() => setViewingProcess(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            {(() => {
+              const process = processes?.find(p => p.id === viewingProcess);
+              return (
+                <DialogTitle>
+                  {process ? `Desligamento: ${process.employee_name}` : 'Detalhes do Processo'}
+                </DialogTitle>
+              );
+            })()}
+          </DialogHeader>
+
+          {viewingProcess && processes?.find(p => p.id === viewingProcess) && (
+            <DemissaoForm
+              initialData={processes.find(p => p.id === viewingProcess) as any}
+              employees={employees || []}
+              onSubmit={handleFormSubmit}
+              // Determine logic: if I am the owner of the current step, allow edit. Else read-only.
+              userRole={userRole as any} // In real app, this is dynamic
+              currentSection={getSectionForProcess(processes.find(p => p.id === viewingProcess))}
+              isReadOnly={processes.find(p => p.id === viewingProcess)?.current_step !== userRole}
+            />
+          )}
+
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }

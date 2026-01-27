@@ -251,7 +251,12 @@ export default function AdmissaoPage() {
                           <FileText className="h-5 w-5 text-cyan-600" />
                         </div>
                         <div>
-                          <p className="font-medium">{process.employee_name}</p>
+                          <p className="font-medium flex items-center gap-2">
+                            {process.employee_name}
+                            <Badge variant="secondary" className="text-[10px] h-5 px-1.5 font-normal">
+                              ID: {process.cpf.replace(/\D/g, '').slice(0, 3)}...
+                            </Badge>
+                          </p>
                           <p className="text-sm text-muted-foreground">
                             {process.position} • {process.department}
                           </p>
@@ -324,7 +329,12 @@ export default function AdmissaoPage() {
                           <UserPlus className="h-5 w-5 text-primary" />
                         </div>
                         <div>
-                          <p className="font-medium">{process.employee_name}</p>
+                          <p className="font-medium flex items-center gap-2">
+                            {process.employee_name}
+                            <Badge variant="secondary" className="text-[10px] h-5 px-1.5 font-normal">
+                              ID: {process.cpf.replace(/\D/g, '').slice(0, 3)}...
+                            </Badge>
+                          </p>
                           <p className="text-sm text-muted-foreground">
                             {process.position} • {process.department}
                           </p>
@@ -385,7 +395,12 @@ export default function AdmissaoPage() {
                           <CheckCircle2 className="h-5 w-5 text-green-600" />
                         </div>
                         <div>
-                          <p className="font-medium">{process.employee_name}</p>
+                          <p className="font-medium flex items-center gap-2">
+                            {process.employee_name}
+                            <Badge variant="secondary" className="text-[10px] h-5 px-1.5 font-normal">
+                              ID: {process.cpf.replace(/\D/g, '').slice(0, 3)}...
+                            </Badge>
+                          </p>
                           <p className="text-sm text-muted-foreground">
                             {process.position} • {process.department}
                           </p>

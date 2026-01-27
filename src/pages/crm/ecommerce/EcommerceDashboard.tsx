@@ -142,20 +142,7 @@ export default function EcommerceDashboard() {
           <h1 className="font-serif text-3xl font-bold">E-commerce</h1>
           <p className="text-muted-foreground">Gestão de produtos, pedidos e loja virtual</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" asChild>
-            <Link to="/crm/ecommerce/produtos">
-              <Package className="mr-2 h-4 w-4" />
-              Produtos
-            </Link>
-          </Button>
-          <Button asChild>
-            <Link to="/crm/ecommerce/produtos">
-              <Plus className="mr-2 h-4 w-4" />
-              Novo Produto
-            </Link>
-          </Button>
-        </div>
+
       </div>
 
       <Tabs defaultValue="overview" className="space-y-6">

@@ -215,6 +215,29 @@ export function useAdmissionProcesses(department?: string, fetchAll?: boolean) {
       // Determine target department based on the selected department
       const targetDepartment = getDepartmentSlug(data.department);
 
+      // Check for existing employee with this CPF
+      const { data: existingEmployee } = await supabase
+        .from('employees')
+        .select('id')
+        .eq('cpf', data.cpf)
+        .maybeSingle();
+
+      if (existingEmployee) {
+        throw new Error('Já existe um funcionário cadastrado com este CPF.');
+      }
+
+      // Check for existing admission process with this CPF (excluding cancelled ones)
+      const { data: existingProcess } = await supabase
+        .from('admission_processes')
+        .select('id')
+        .eq('cpf', data.cpf)
+        .neq('status', 'cancelled')
+        .maybeSingle();
+
+      if (existingProcess) {
+        throw new Error('Já existe um processo de admissão ativo ou concluído para este CPF.');
+      }
+
       const { data: result, error } = await supabase
         .from('admission_processes')
         .insert({

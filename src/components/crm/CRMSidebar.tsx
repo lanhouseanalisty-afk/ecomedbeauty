@@ -69,6 +69,16 @@ const menuSections: MenuSection[] = [
         icon: LayoutDashboard,
         url: "/crm",
       },
+      {
+        title: "Meu Perfil",
+        icon: UserCircle,
+        url: "/crm/rh/meu-perfil",
+      },
+      {
+        title: "Colaboradores",
+        icon: Users,
+        url: "/crm/colaboradores",
+      },
     ],
   },
   {
@@ -120,6 +130,7 @@ const menuSections: MenuSection[] = [
           { title: "Produtos", url: "/crm/ecommerce/produtos" },
           { title: "Categorias", url: "/crm/ecommerce/categorias" },
           { title: "Pedidos", url: "/crm/ecommerce/pedidos" },
+          { title: "Clientes", url: "/crm/ecommerce/clientes" },
           { title: "Cupons", url: "/crm/ecommerce/cupons" },
           { title: "Solicitações entre Setores", url: "/crm/ecommerce/solicitacoes-setores" },
         ],
@@ -194,7 +205,7 @@ const menuSections: MenuSection[] = [
         url: "/crm/rh",
         subitems: [
           { title: "Dashboard", url: "/crm/rh" },
-          { title: "Funcionários", url: "/crm/rh/funcionarios" },
+
           { title: "Admissão", url: "/crm/rh/admissao" },
           { title: "Demissão", url: "/crm/rh/demissao" },
           { title: "Cargos", url: "/crm/rh/cargos" },
@@ -291,6 +302,7 @@ export function CRMSidebar() {
                                   <SidebarMenuSubButton
                                     asChild
                                     isActive={isActive(subitem.url)}
+                                    className="h-auto whitespace-normal py-1.5"
                                   >
                                     <NavLink to={subitem.url}>
                                       {subitem.title}

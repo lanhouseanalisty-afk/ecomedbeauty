@@ -39,8 +39,23 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+
 export default function TechAssetsPage() {
     const { assets, isLoading, createAsset } = useTechAssets();
+
+    // Fetch employees to map names to CPFs
+    const { data: employees } = useQuery({
+        queryKey: ['employees-basic-list'],
+        queryFn: async () => {
+            const { data } = await supabase
+                .from('employees')
+                .select('id, full_name, cpf');
+            return data || [];
+        }
+    });
+
     const [searchTerm, setSearchTerm] = useState("");
     const [activeTab, setActiveTab] = useState("all");
     const [isNewAssetOpen, setIsNewAssetOpen] = useState(false);
@@ -61,6 +76,9 @@ export default function TechAssetsPage() {
         assigned_to_name: ''
     });
 
+    // ... (Keep handleFileUpload logic exactly as is, it's long so I'll reference it or copy it if I must. Since I'm replacing the whole file content effectively in this block, I must include it.)
+    // For brevity in this replace block, I will re-include the handleFileUpload logic.
+
     const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
@@ -76,14 +94,12 @@ export default function TechAssetsPage() {
                 const lines = text.split(/\r?\n/);
                 if (lines.length === 0) return;
 
-                // Better CSV parsing detecting separator from FIRST LINE
                 let separator = ',';
                 if (lines[0].indexOf(';') > -1) {
                     separator = ';';
                 }
 
                 const headers = lines[0].toLowerCase().split(separator).map(h => h.trim().replace(/"/g, ''));
-                console.log('Detected headers:', headers, 'Separator:', separator);
 
                 let successCount = 0;
                 let errorCount = 0;
@@ -94,13 +110,11 @@ export default function TechAssetsPage() {
                     if (!line) continue;
 
                     const values = line.split(separator).map(v => v.trim().replace(/"/g, ''));
-
                     const getVal = (keyPart: string) => {
                         const index = headers.findIndex(h => h.includes(keyPart));
                         return index !== -1 ? values[index] : '';
                     };
 
-                    // Flexible Column Matching
                     const tag = getVal('tag') || getVal('patrimonio') || getVal('asset') || (values.length > 0 ? values[0] : '');
                     const typeRaw = getVal('tipo') || getVal('device') || getVal('categoria');
                     const brand = getVal('marca') || getVal('fabricante');
@@ -110,12 +124,10 @@ export default function TechAssetsPage() {
                     const local = getVal('local') || getVal('depto') || getVal('departamento');
 
                     if (!tag) {
-                        console.warn(`Skipping line ${i}: Missing tag. Values:`, values);
                         skippedCount++;
                         continue;
                     }
 
-                    // Normalize type
                     let type: any = 'other';
                     const t = (typeRaw || '').toLowerCase();
                     const mUpper = (model || '').toUpperCase();
@@ -130,7 +142,6 @@ export default function TechAssetsPage() {
                         type = 'monitor';
                     }
 
-                    // Normalize status
                     let status: any = 'available';
                     const statusRaw = (getVal('status') || '').toLowerCase();
                     if (statusRaw.includes('uso') || user) status = 'in_use';
@@ -161,7 +172,7 @@ export default function TechAssetsPage() {
                 if (successCount > 0) {
                     toast.success(`${successCount} importados com sucesso! (${skippedCount} pulados)`);
                 } else {
-                    toast.warning(`Nenhum item importado. Headers: ${headers.join(', ')}`);
+                    toast.warning(`Nenhum item importado.`);
                 }
 
             } catch (error) {
@@ -199,6 +210,7 @@ export default function TechAssetsPage() {
         });
     };
 
+    // Filter Logic
     const filteredAssets = assets?.filter(asset => {
         const matchesSearch =
             asset.asset_tag?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -206,33 +218,29 @@ export default function TechAssetsPage() {
             asset.assigned_to_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             asset.serial_number?.toLowerCase().includes(searchTerm.toLowerCase());
 
-        // Tab Logic
         if (activeTab === 'all') return matchesSearch;
-
-        // Custom logic for misclassified items (optional, but good for UI consistency if backend data is messy)
-        if (activeTab === 'notebook' && (asset.device_type === 'notebook' || asset.device_type === 'other')) return matchesSearch; // Show 'other' in notebooks if needed? No, strict filtering is better.
-
         return matchesSearch && asset.device_type === activeTab;
     });
 
-    const statusMap: Record<string, { label: string; className: string }> = {
-        available: { label: "Disponível", className: "bg-green-100 text-green-800" },
-        in_use: { label: "Em Uso", className: "bg-blue-100 text-blue-800" },
-        maintenance: { label: "Manutenção", className: "bg-yellow-100 text-yellow-800" },
-        broken: { label: "Quebrado", className: "bg-red-100 text-red-800" },
-        lost: { label: "Perdido", className: "bg-gray-100 text-gray-800" },
-        retired: { label: "Aposentado", className: "bg-gray-200 text-gray-500" },
-    };
-
-    const typeIcon = (type: string) => {
-        switch (type) {
-            case 'notebook': return <Laptop className="h-4 w-4" />;
-            case 'smartphone': return <Smartphone className="h-4 w-4" />;
-            case 'tablet': return <Tablet className="h-4 w-4" />;
-            case 'monitor': return <Monitor className="h-4 w-4" />;
-            default: return <Box className="h-4 w-4" />;
+    // Grouping Logic
+    const groupedAssets = filteredAssets?.reduce((acc, asset) => {
+        const key = asset.assigned_to_name || "Estoque / Disponível";
+        if (!acc[key]) {
+            acc[key] = {
+                name: key,
+                location: asset.location || "",
+                items: []
+            };
         }
-    };
+        acc[key].items.push(asset);
+        // Update location if we found one and previous was empty
+        if (!acc[key].location && asset.location) {
+            acc[key].location = asset.location;
+        }
+        return acc;
+    }, {} as Record<string, { name: string, location: string, items: TechAsset[] }>);
+
+    const groupedList = Object.values(groupedAssets || {}).sort((a, b) => a.name.localeCompare(b.name));
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
@@ -240,7 +248,7 @@ export default function TechAssetsPage() {
                 <div>
                     <h1 className="font-serif text-3xl font-bold tracking-tight">Controle de Ativos</h1>
                     <p className="text-muted-foreground">
-                        Gerencie o inventário de TI: Notebooks, Tablets e Celulares.
+                        Gestão de equipamentos por colaborador.
                     </p>
                 </div>
 
@@ -277,6 +285,7 @@ export default function TechAssetsPage() {
                                 </DialogDescription>
                             </DialogHeader>
                             <div className="grid gap-6 py-4">
+                                {/* Form fields same as before... re-implementing for completeness */}
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="grid gap-2">
                                         <Label>Tipo de Dispositivo *</Label>
@@ -310,7 +319,6 @@ export default function TechAssetsPage() {
                                         </Select>
                                     </div>
                                 </div>
-
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="grid gap-2">
                                         <Label>Patrimônio (Tag) *</Label>
@@ -329,7 +337,6 @@ export default function TechAssetsPage() {
                                         />
                                     </div>
                                 </div>
-
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="grid gap-2">
                                         <Label>Marca *</Label>
@@ -348,7 +355,6 @@ export default function TechAssetsPage() {
                                         />
                                     </div>
                                 </div>
-
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="grid gap-2">
                                         <Label>Localização</Label>
@@ -383,11 +389,11 @@ export default function TechAssetsPage() {
             <Card>
                 <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
-                        <CardTitle>Inventário</CardTitle>
+                        <CardTitle>Inventário por Colaborador</CardTitle>
                         <div className="relative w-[300px]">
                             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                             <Input
-                                placeholder="Buscar por tag, modelo ou usuário..."
+                                placeholder="Buscar..."
                                 className="pl-9"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -396,77 +402,64 @@ export default function TechAssetsPage() {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab} className="w-full">
-                        <TabsList className="mb-4">
-                            <TabsTrigger value="all">Todos</TabsTrigger>
-                            <TabsTrigger value="notebook" className="gap-2"><Laptop className="h-3 w-3" /> Notebooks</TabsTrigger>
-                            <TabsTrigger value="tablet" className="gap-2"><Tablet className="h-3 w-3" /> Tablets</TabsTrigger>
-                            <TabsTrigger value="smartphone" className="gap-2"><Smartphone className="h-3 w-3" /> Celulares</TabsTrigger>
-                        </TabsList>
-
-                        <Table>
-                            <TableHeader>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead className="w-[200px]">Nome</TableHead>
+                                <TableHead className="w-[150px]">Setor</TableHead>
+                                <TableHead>Equipamentos</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {isLoading ? (
                                 <TableRow>
-                                    <TableHead>Tag</TableHead>
-                                    <TableHead>Equipamento</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead>Responsável / Local</TableHead>
-                                    <TableHead>Ações</TableHead>
+                                    <TableCell colSpan={3} className="h-24 text-center">
+                                        <Loader2 className="h-4 w-4 animate-spin mx-auto text-primary" />
+                                    </TableCell>
                                 </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {isLoading ? (
-                                    <TableRow>
-                                        <TableCell colSpan={5} className="h-24 text-center">
-                                            <Loader2 className="h-4 w-4 animate-spin mx-auto text-primary" />
-                                        </TableCell>
-                                    </TableRow>
-                                ) : filteredAssets?.length === 0 ? (
-                                    <TableRow>
-                                        <TableCell colSpan={5} className="h-32 text-center text-muted-foreground">
-                                            Nenhum ativo encontrado.
-                                        </TableCell>
-                                    </TableRow>
-                                ) : (
-                                    filteredAssets?.map((asset) => (
-                                        <TableRow key={asset.id}>
-                                            <TableCell className="font-mono font-medium text-xs">
-                                                <div className="flex items-center gap-2">
-                                                    <QrCode className="h-3 w-3 text-muted-foreground" />
-                                                    {asset.asset_tag}
+                            ) : groupedList.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={3} className="h-32 text-center text-muted-foreground">
+                                        Nenhum registro encontrado.
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                groupedList.map((group, idx) => {
+                                    // Try to match employee by name to show ID
+                                    const employee = employees?.find(e => e.full_name === group.name);
+                                    const cpfDisplay = employee?.cpf ? `ID: ${employee.cpf.replace(/\D/g, '').slice(0, 3)}...` : '';
+
+                                    return (
+                                        <TableRow key={idx}>
+                                            <TableCell className="font-medium flex items-center gap-2">
+                                                {group.name}
+                                                {cpfDisplay && (
+                                                    <Badge variant="secondary" className="text-[10px] h-5 px-1.5 font-normal">
+                                                        {cpfDisplay}
+                                                    </Badge>
+                                                )}
+                                            </TableCell>
+                                            <TableCell>
+                                                {group.location || "-"}
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="flex flex-wrap gap-1">
+                                                    {group.items.map((item, i) => (
+                                                        <span key={item.id} className="text-sm text-muted-foreground">
+                                                            {item.device_type === 'notebook' && <Laptop className="inline h-3 w-3 mr-1" />}
+                                                            {item.device_type === 'smartphone' && <Smartphone className="inline h-3 w-3 mr-1" />}
+                                                            {item.model} <span className="font-mono text-xs">({item.asset_tag})</span>
+                                                            {i < group.items.length - 1 ? ", " : ""}
+                                                        </span>
+                                                    ))}
                                                 </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="flex flex-col">
-                                                    <span className="font-medium flex items-center gap-2">
-                                                        {typeIcon(asset.device_type)}
-                                                        {asset.model}
-                                                    </span>
-                                                    <span className="text-xs text-muted-foreground">{asset.brand} - {asset.serial_number || 'S/N N/A'}</span>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge variant="outline" className={statusMap[asset.status]?.className}>
-                                                    {statusMap[asset.status]?.label}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="flex flex-col text-sm">
-                                                    <span className="font-medium">{asset.assigned_to_name || '-'}</span>
-                                                    <span className="text-xs text-muted-foreground">{asset.location}</span>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Button variant="ghost" size="icon">
-                                                    <MoreHorizontal className="h-4 w-4" />
-                                                </Button>
                                             </TableCell>
                                         </TableRow>
-                                    ))
-                                )}
-                            </TableBody>
-                        </Table>
-                    </Tabs>
+                                    );
+                                })
+                            )}
+                        </TableBody>
+                    </Table>
                 </CardContent>
             </Card>
         </div>

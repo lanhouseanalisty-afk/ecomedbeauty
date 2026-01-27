@@ -16,12 +16,20 @@ import {
   CheckCircle2,
   Clock,
   AlertCircle,
-  Eye,
   ArrowRight,
   Monitor,
-  Send
+  Send,
+  X,
+  PlusCircle,
+  Loader2,
+  RefreshCw,
+  Eye
 } from "lucide-react";
 import { useDepartmentAdmissions } from "@/hooks/useAdmission";
+import { useTechAssets } from "@/hooks/useTech";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { useUserRole } from "@/hooks/useUserRole";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -156,6 +164,60 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
     it_observations: "",          // 12. Observações da TI
   });
 
+  const { assets, updateAsset, createAsset } = useTechAssets();
+  const [assignedAssetIds, setAssignedAssetIds] = useState<string[]>([]);
+  const [isTransfer, setIsTransfer] = useState(false);
+  const [isNewAssetOpen, setIsNewAssetOpen] = useState(false);
+  const [newAsset, setNewAsset] = useState({
+    device_type: 'notebook',
+    status: 'available',
+    brand: '',
+    model: '',
+    asset_tag: '',
+    serial_number: '',
+    location: 'TI - Estoque Central',
+    assigned_to_name: ''
+  });
+
+  // Filter available assets based on transfer mode
+  const filteredAssets = assets?.filter(a => {
+    if (isTransfer) {
+      // If transfer, show assets currently in use
+      return a.status === 'in_use';
+    }
+    // Otherwise show available stock
+    return a.status === 'available';
+  });
+
+  const handleCreateAsset = () => {
+    if (!newAsset.asset_tag || !newAsset.model || !newAsset.brand || !newAsset.device_type) {
+      toast.error("Preencha os campos obrigatórios (*)");
+      return;
+    }
+
+    createAsset.mutate(newAsset as any, {
+      onSuccess: (data) => {
+        setIsNewAssetOpen(false);
+        // reset form
+        setNewAsset({
+          device_type: 'notebook',
+          status: 'available',
+          brand: '',
+          model: '',
+          asset_tag: '',
+          serial_number: '',
+          location: 'TI - Estoque Central',
+          assigned_to_name: ''
+        });
+        // Auto-select the newly created asset
+        if (data && data.id) {
+          setAssignedAssetIds(prev => [...prev, data.id]);
+          toast.success("Ativo criado e selecionado!");
+        }
+      }
+    });
+  };
+
   // Opções de licenças Microsoft 365
   const MICROSOFT_LICENSES_OPTIONS = [
     { value: "Microsoft 365 Business Basic", label: "Business Basic" },
@@ -183,6 +245,33 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
         id: processId,
         data: itForm,
       });
+
+      // AUTOMATION: Assign selected assets
+      if (assignedAssetIds.length > 0) {
+        const process = processes?.find(p => p.id === processId);
+        if (process && assets) {
+          const employeeName = process.employee_name;
+          const targetDept = process.target_department || departmentSlug;
+
+          toast.loading("Vinculando ativos ao colaborador...");
+          await Promise.all(assignedAssetIds.map(async (assetId) => {
+            return updateAsset.mutateAsync({
+              id: assetId,
+              status: 'in_use',
+              assigned_to_name: employeeName,
+              location: targetDept.toUpperCase(), // Best guess for location
+              // assigned_to: process.employee_id // We don't have employee_id yet usually in admission flow until created? 
+              // actually admission creates employee record? The admission "concluido" step usually creates the Employee record.
+              // At 'TI' step, the employee might not exist in 'employees' table yet, just in 'admission_processes'.
+              // So we just update the text fields 'assigned_to_name'.
+            } as any);
+          }));
+          toast.dismiss();
+          toast.success("Ativos vinculados com sucesso!");
+        }
+      }
+
+      setAssignedAssetIds([]); // Reset
       setSelectedProcess(null);
     } catch (error) {
       // Error handled in hook
@@ -293,7 +382,12 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                           <UserPlus className="h-5 w-5 text-purple-600" />
                         </div>
                         <div>
-                          <p className="font-medium">{process.employee_name}</p>
+                          <p className="font-medium flex items-center gap-2">
+                            {process.employee_name}
+                            <Badge variant="secondary" className="text-[10px] h-5 px-1.5 font-normal">
+                              ID: {process.cpf.replace(/\D/g, '').slice(0, 3)}...
+                            </Badge>
+                          </p>
                           <p className="text-sm text-muted-foreground">
                             {process.position}
                           </p>
@@ -341,7 +435,12 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                           <UserPlus className="h-5 w-5 text-primary" />
                         </div>
                         <div>
-                          <p className="font-medium">{process.employee_name}</p>
+                          <p className="font-medium flex items-center gap-2">
+                            {process.employee_name}
+                            <Badge variant="secondary" className="text-[10px] h-5 px-1.5 font-normal">
+                              ID: {process.cpf.replace(/\D/g, '').slice(0, 3)}...
+                            </Badge>
+                          </p>
                           <p className="text-sm text-muted-foreground">
                             {process.position}
                           </p>
@@ -389,7 +488,12 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                           <CheckCircle2 className="h-5 w-5 text-green-600" />
                         </div>
                         <div>
-                          <p className="font-medium">{process.employee_name}</p>
+                          <p className="font-medium flex items-center gap-2">
+                            {process.employee_name}
+                            <Badge variant="secondary" className="text-[10px] h-5 px-1.5 font-normal">
+                              ID: {process.cpf.replace(/\D/g, '').slice(0, 3)}...
+                            </Badge>
+                          </p>
                           <p className="text-sm text-muted-foreground">
                             {process.position}
                           </p>
@@ -451,7 +555,12 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
                           <span className="text-muted-foreground">Colaborador:</span>
-                          <p className="font-medium">{process.employee_name}</p>
+                          <p className="font-medium flex items-center gap-2">
+                            {process.employee_name}
+                            <Badge variant="secondary" className="text-[10px] h-5 px-1.5 font-normal">
+                              ID: {process.cpf.replace(/\D/g, '').slice(0, 3)}...
+                            </Badge>
+                          </p>
                         </div>
                         <div>
                           <span className="text-muted-foreground">Cargo:</span>
@@ -522,6 +631,86 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                               </div>
                             </div>
                           )}
+                        </div>
+
+                        {/* SELEÇÃO DE ATIVOS DO ESTOQUE (AUTOMACAO) */}
+                        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 space-y-3 border border-blue-100 dark:border-blue-800">
+                          <div className="flex flex-col gap-2">
+                            <Label className="text-base font-medium text-blue-800 dark:text-blue-300 flex items-center gap-2">
+                              <Monitor className="h-4 w-4" />
+                              Vincular Ativos
+                            </Label>
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center space-x-2">
+                                <Switch
+                                  id="transfer-mode"
+                                  checked={isTransfer}
+                                  onCheckedChange={setIsTransfer}
+                                />
+                                <Label htmlFor="transfer-mode" className="text-sm cursor-pointer">
+                                  Repasse entre funcionários?
+                                </Label>
+                              </div>
+                              <Button size="sm" variant="outline" onClick={() => setIsNewAssetOpen(true)} className="h-7 text-xs gap-1 border-blue-200 text-blue-700 hover:bg-blue-100">
+                                <PlusCircle className="h-3 w-3" />
+                                Novo Equipamento
+                              </Button>
+                            </div>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Select onValueChange={(val) => {
+                              if (!assignedAssetIds.includes(val)) {
+                                setAssignedAssetIds([...assignedAssetIds, val]);
+                              }
+                            }}>
+                              <SelectTrigger className="bg-background notranslate">
+                                <SelectValue placeholder={isTransfer ? "Selecione um ativo em uso..." : "Selecione um ativo do estoque..."} />
+                              </SelectTrigger>
+                              <SelectContent className="notranslate">
+                                {filteredAssets?.map(asset => (
+                                  <SelectItem key={asset.id} value={asset.id}>
+                                    <span className="font-medium mr-2">[{asset.asset_tag}]</span>
+                                    {asset.model}
+                                    {isTransfer && asset.assigned_to_name && (
+                                      <span className="text-muted-foreground ml-2 text-xs">
+                                        (Ex: {asset.assigned_to_name})
+                                      </span>
+                                    )}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+
+                            {assignedAssetIds.length > 0 && (
+                              <div className="space-y-2 mt-2">
+                                <Label className="text-xs text-muted-foreground">Itens selecionados para vínculo:</Label>
+                                {assignedAssetIds.map(id => {
+                                  const asset = assets?.find(a => a.id === id);
+                                  return (
+                                    <div key={id} className="flex items-center justify-between bg-background p-2 rounded border text-sm">
+                                      <span>
+                                        {asset?.device_type === 'notebook' && <Monitor className="inline h-3 w-3 mr-1 text-blue-500" />}
+                                        <strong>{asset?.asset_tag}</strong> - {asset?.model}
+                                        {asset?.assigned_to_name && isTransfer && (
+                                          <span className="text-xs text-amber-600 block">
+                                            <RefreshCw className="inline h-3 w-3 mr-1" />
+                                            Transferindo de: {asset.assigned_to_name}
+                                          </span>
+                                        )}
+                                      </span>
+                                      <Button
+                                        variant="ghost" size="icon" className="h-6 w-6 text-red-500"
+                                        onClick={() => setAssignedAssetIds(ids => ids.filter(i => i !== id))}
+                                      >
+                                        <X className="h-4 w-4" />
+                                      </Button>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
                         </div>
 
                         {/* 1. Responsável TI */}
@@ -871,9 +1060,80 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                 );
               })()}
             </div>
-          )}
+          )
+          }
+        </DialogContent >
+      </Dialog >
+      <Dialog open={isNewAssetOpen} onOpenChange={setIsNewAssetOpen}>
+        <DialogContent className="sm:max-w-[600px] notranslate">
+          <DialogHeader>
+            <DialogTitle>Cadastrar Novo Equipamento</DialogTitle>
+            <DialogDescription>
+              Cadastre um novo ativo para vincular imediatamente a esta admissão.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label>Tipo *</Label>
+                <Select
+                  value={newAsset.device_type}
+                  onValueChange={(v: any) => setNewAsset({ ...newAsset, device_type: v })}
+                >
+                  <SelectTrigger className="notranslate"><SelectValue /></SelectTrigger>
+                  <SelectContent className="notranslate">
+                    <SelectItem value="notebook">Notebook</SelectItem>
+                    <SelectItem value="smartphone">Smartphone</SelectItem>
+                    <SelectItem value="monitor">Monitor</SelectItem>
+                    <SelectItem value="other">Outro</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label>Marca *</Label>
+                <Input
+                  placeholder="Ex: Dell"
+                  value={newAsset.brand}
+                  onChange={e => setNewAsset({ ...newAsset, brand: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label>Modelo *</Label>
+                <Input
+                  placeholder="Ex: Latitude 5420"
+                  value={newAsset.model}
+                  onChange={e => setNewAsset({ ...newAsset, model: e.target.value })}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label>Patrimônio (Tag) *</Label>
+                <Input
+                  placeholder="Ex: 004592"
+                  value={newAsset.asset_tag}
+                  onChange={e => setNewAsset({ ...newAsset, asset_tag: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="grid gap-2">
+              <Label>Número de Série</Label>
+              <Input
+                placeholder="Serial Number"
+                value={newAsset.serial_number}
+                onChange={e => setNewAsset({ ...newAsset, serial_number: e.target.value })}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsNewAssetOpen(false)}>Cancelar</Button>
+            <Button onClick={handleCreateAsset} disabled={createAsset.isPending}>
+              {createAsset.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Cadastrar e Selecionar
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </div >
   );
 }
