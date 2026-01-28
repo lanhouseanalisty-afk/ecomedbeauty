@@ -1,4 +1,7 @@
 import { useState, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
+
+import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import {
   Users,
@@ -13,7 +16,7 @@ import {
   Phone,
   MapPin,
   Briefcase,
-  Eye
+  Eye,
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -65,15 +68,18 @@ import { toast } from "sonner";
 
 export default function RHDashboard() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
   const [activeFilters, setActiveFilters] = useState<Record<string, string>>({});
 
-  const { employees, isLoading, createEmployee } = useEmployees();
+  const { employees, isLoading, createEmployee, updateEmployee } = useEmployees();
   const { data: departments } = useDepartments();
   const { data: positions } = usePositions();
+  const [editingEmployee, setEditingEmployee] = useState<string | null>(null);
+
 
   const [newEmployee, setNewEmployee] = useState({
     full_name: "",
@@ -86,23 +92,61 @@ export default function RHDashboard() {
     phone: "",
   });
 
-  const handleCreateEmployee = () => {
-    createEmployee.mutate(newEmployee, {
-      onSuccess: () => {
-        setIsDialogOpen(false);
-        setNewEmployee({
-          full_name: "",
-          email: "",
-          cpf: "",
-          employee_code: "",
-          hire_date: new Date().toISOString().split('T')[0],
-          department_id: "",
-          position_id: "",
-          phone: "",
-        });
-      }
-    });
+  const handleSubmit = () => {
+    const formattedData = {
+      ...newEmployee,
+      department_id: newEmployee.department_id || null,
+      position_id: newEmployee.position_id || null,
+    };
+
+    if (editingEmployee) {
+      updateEmployee.mutate({ id: editingEmployee, ...formattedData }, {
+        onSuccess: () => {
+          setIsDialogOpen(false);
+          setEditingEmployee(null);
+          resetForm();
+        }
+      });
+    } else {
+      createEmployee.mutate(formattedData, {
+        onSuccess: () => {
+          setIsDialogOpen(false);
+          resetForm();
+        }
+      });
+    }
   };
+
+  const resetForm = () => {
+    setNewEmployee({
+      full_name: "",
+      email: "",
+      cpf: "",
+      employee_code: "",
+      hire_date: new Date().toISOString().split('T')[0],
+      department_id: "",
+      position_id: "",
+      phone: "",
+    });
+    setEditingEmployee(null);
+  };
+
+  const handleOpenEdit = (employee: any) => {
+    setEditingEmployee(employee.id);
+    setNewEmployee({
+      full_name: employee.full_name,
+      email: employee.email,
+      cpf: employee.cpf || "",
+      employee_code: employee.employee_code || "",
+      hire_date: employee.hire_date || new Date().toISOString().split('T')[0],
+      department_id: employee.department_id || "",
+      position_id: employee.position_id || "",
+      phone: employee.phone || "",
+    });
+    setIsDialogOpen(true);
+  };
+
+
 
   const getStatusBadge = (status: string | null) => {
     switch (status) {
@@ -151,9 +195,25 @@ export default function RHDashboard() {
       : 'some';
 
   const handleBulkAction = async (actionId: string) => {
-    // Simulate action
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    toast.success(`Ação "${actionId}" executada em ${selectedIds.length} funcionários`);
+    if (actionId === 'delete') {
+      try {
+        const { error } = await supabase
+          .from('employees')
+          .delete()
+          .in('id', selectedIds);
+
+        if (error) throw error;
+
+        toast.success(`${selectedIds.length} funcionários removidos com sucesso.`);
+        queryClient.invalidateQueries({ queryKey: ['employees'] });
+      } catch (error: any) {
+        toast.error(`Erro ao excluir: ${error.message}`);
+      }
+    } else {
+      // Outras ações (Email/Export) ainda podem ser simuladas ou implementadas conforme necessário
+      await new Promise(resolve => setTimeout(resolve, 500));
+      toast.success(`Ação "${actionId}" concluída para ${selectedIds.length} funcionários.`);
+    }
     setSelectedIds([]);
   };
 
@@ -219,11 +279,16 @@ export default function RHDashboard() {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="font-serif text-3xl font-bold">Recursos Humanos</h1>
-          <p className="text-muted-foreground">Gestão de pessoas e departamentos</p>
+          <p className="text-muted-foreground">Gestão de pessoas e talentos</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
+          <Badge variant="outline" className="h-9 px-4 text-sm hidden md:flex">Gestora: Gleice Silva</Badge>
+
           <DataExport data={filteredEmployees} filename="funcionarios" columns={exportColumns} />
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <Dialog open={isDialogOpen} onOpenChange={(open) => {
+            setIsDialogOpen(open);
+            if (!open) resetForm();
+          }}>
             <DialogTrigger asChild>
               <Button>
                 <Plus className="mr-2 h-4 w-4" />
@@ -232,9 +297,12 @@ export default function RHDashboard() {
             </DialogTrigger>
             <DialogContent className="sm:max-w-[500px]">
               <DialogHeader>
-                <DialogTitle>Novo Funcionário</DialogTitle>
+                <DialogTitle>{editingEmployee ? 'Editar Funcionário' : 'Novo Funcionário'}</DialogTitle>
                 <DialogDescription>
-                  Preencha os dados do novo funcionário.
+                  {editingEmployee
+                    ? 'Atualize as informações do colaborador abaixo.'
+                    : 'Preencha os dados do novo funcionário.'
+                  }
                 </DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
@@ -335,9 +403,9 @@ export default function RHDashboard() {
                 <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
                   Cancelar
                 </Button>
-                <Button onClick={handleCreateEmployee} disabled={createEmployee.isPending}>
-                  {createEmployee.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Cadastrar
+                <Button onClick={handleSubmit} disabled={createEmployee.isPending || updateEmployee.isPending}>
+                  {(createEmployee.isPending || updateEmployee.isPending) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {editingEmployee ? 'Salvar Alterações' : 'Cadastrar'}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -419,20 +487,23 @@ export default function RHDashboard() {
                       />
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-9 w-9">
-                          <AvatarFallback className="bg-primary/10 text-primary">
+                      <div
+                        className="flex items-center gap-3 cursor-pointer group"
+                        onClick={() => navigate(`/crm/rh/funcionario/${employee.id}`)}
+                      >
+                        <Avatar className="h-9 w-9 transition-transform group-hover:scale-105">
+                          <AvatarFallback className="bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                             {getInitials(employee.full_name)}
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <p className="font-medium flex items-center gap-2">
+                          <p className="font-medium flex items-center gap-2 group-hover:text-primary transition-colors">
                             {employee.full_name}
                             <Badge variant="secondary" className="text-[10px] h-5 px-1.5 font-normal">
                               ID: {employee.cpf.replace(/\D/g, '').slice(0, 3)}...
                             </Badge>
                           </p>
-                          <p className="text-xs text-muted-foreground">{employee.employee_code}</p>
+                          <p className="text-xs text-muted-foreground group-hover:text-primary/70 transition-colors">{employee.employee_code}</p>
                         </div>
                       </div>
                     </TableCell>
@@ -470,7 +541,9 @@ export default function RHDashboard() {
                             <Eye className="h-4 w-4 mr-2" />
                             Ver Perfil
                           </DropdownMenuItem>
-                          <DropdownMenuItem>Editar</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleOpenEdit(employee)}>
+                            Editar
+                          </DropdownMenuItem>
                           <DropdownMenuItem>Solicitar Férias</DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem

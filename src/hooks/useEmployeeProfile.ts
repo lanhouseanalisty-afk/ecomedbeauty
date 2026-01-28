@@ -54,7 +54,7 @@ export function useEmployeeProfile(employeeId: string) {
             console.log("🔍 Buscando posts para o ID:", actualEmployeeId);
             const { data, error } = await supabase
                 .from('employee_posts')
-                .select('*')
+                .select('*, author:profiles(full_name, avatar_url)')
                 .eq('employee_id', actualEmployeeId)
                 .order('created_at', { ascending: false });
 

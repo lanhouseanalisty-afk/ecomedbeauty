@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { 
-  Package, 
-  Truck, 
+import {
+  Package,
+  Truck,
   CheckCircle,
   Clock,
   AlertCircle,
@@ -108,10 +108,11 @@ export default function LogisticaDashboard() {
           <h1 className="font-serif text-3xl font-bold">Logística</h1>
           <p className="text-muted-foreground">Gestão de envios, estoque e fulfillment</p>
         </div>
-        <div className="flex gap-2">
-          <DataExport 
-            data={filteredShipments} 
-            filename="envios" 
+        <div className="flex gap-2 items-center">
+          <Badge variant="outline" className="h-9 px-4 text-sm hidden md:flex">Gestora: Luciana Borri</Badge>
+          <DataExport
+            data={filteredShipments}
+            filename="envios"
             columns={[
               { key: 'tracking_code', label: 'Rastreio' },
               { key: 'order_id', label: 'Pedido' },
@@ -169,7 +170,7 @@ export default function LogisticaDashboard() {
                 <EmptyState
                   variant={searchTerm ? 'search' : 'empty'}
                   title={searchTerm ? 'Nenhum resultado' : 'Nenhum envio'}
-                  description={searchTerm 
+                  description={searchTerm
                     ? 'Tente um código de rastreio diferente'
                     : 'Os envios aparecerão aqui quando forem criados'
                   }

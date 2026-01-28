@@ -17,7 +17,9 @@ import {
   FileText,
   TicketCheck,
   Store,
-  Wrench
+  Wrench,
+  Shield,
+  Beaker
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
@@ -93,8 +95,16 @@ const menuSections: MenuSection[] = [
           { title: "Usuários", url: "/crm/admin/usuarios" },
           { title: "Permissões", url: "/crm/admin/permissoes" },
           { title: "Auditoria", url: "/crm/admin/auditoria" },
-          { title: "Configurações", url: "/crm/admin/configuracoes" },
           { title: "Solicitações entre Setores", url: "/crm/admin/solicitacoes-setores" },
+        ],
+      },
+      {
+        title: "Científica",
+        icon: Beaker,
+        url: "/crm/cientifica",
+        subitems: [
+          { title: "Dashboard", url: "/crm/cientifica" },
+          { title: "Solicitações entre Setores", url: "/crm/cientifica/solicitacoes-setores" },
         ],
       },
       {
@@ -109,16 +119,27 @@ const menuSections: MenuSection[] = [
           { title: "Sul", url: "/crm/comercial/sul" },
           { title: "Centro", url: "/crm/comercial/centro" },
           { title: "Norte", url: "/crm/comercial/norte" },
-
         ],
       },
       {
         title: "Compras",
-        icon: Package,
+        icon: Package, // Usando Package, pois ShoppingCart já é usado no E-commerce? O user pediu ShoppingCart ou Package. ShoppingCart está em E-commerce. Vou ver se ShoppingCart está importado. Sim. Vou usar Package para Compras corporativas para distinguir do carrinho de compras do e-commerce? O user disse "Compras (Gilcimar Gil)". No passo anterior user aceitou ShoppingCart. Mas E-commerce usa ShoppingCart. Vou usar Package para diferenciar visualmente se possível, ou ShoppingCart se não importar.
+        // O user disse: "Atualizar o ícone para ShoppingCart ou Package (vou usar ShoppingCart ...)".
+        // Vou usar Package para evitar confusão com E-commerce.
         url: "/crm/compras",
         subitems: [
           { title: "Dashboard", url: "/crm/compras" },
           { title: "Solicitações entre Setores", url: "/crm/compras/solicitacoes-setores" },
+        ],
+      },
+
+      {
+        title: "Diretoria",
+        icon: Shield,
+        url: "/crm/diretoria",
+        subitems: [
+          { title: "Dashboard", url: "/crm/diretoria" },
+          { title: "Indicadores (KPIs)", url: "/crm/diretoria/kpis" },
         ],
       },
       {
@@ -200,23 +221,20 @@ const menuSections: MenuSection[] = [
         ],
       },
       {
-        title: "RH",
+        title: "Recursos Humanos",
         icon: Users,
         url: "/crm/rh",
         subitems: [
           { title: "Dashboard", url: "/crm/rh" },
-
           { title: "Admissão", url: "/crm/rh/admissao" },
           { title: "Demissão", url: "/crm/rh/demissao" },
-          { title: "Cargos", url: "/crm/rh/cargos" },
-          { title: "Ponto", url: "/crm/rh/ponto" },
           { title: "Férias", url: "/crm/rh/ferias" },
           { title: "Treinamentos", url: "/crm/rh/treinamentos" },
           { title: "Solicitações entre Setores", url: "/crm/rh/solicitacoes-setores" },
         ],
       },
       {
-        title: "Tech / Suporte",
+        title: "Tech TI",
         icon: Headphones,
         url: "/crm/tech",
         subitems: [

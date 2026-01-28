@@ -183,6 +183,7 @@ export interface TechAsset {
   warranty_expiration?: string;
   specifications?: Record<string, any>;
   notes?: string;
+  modified_after_admission?: boolean;
   created_at?: string;
 }
 

@@ -19,7 +19,7 @@ export function useShipments() {
           warehouse:warehouses(name)
         `)
         .order('created_at', { ascending: false });
-      
+
       if (error) throw error;
       return data;
     },
@@ -33,7 +33,7 @@ export function useShipments() {
         .eq('id', id)
         .select()
         .single();
-      
+
       if (error) throw error;
       return updated;
     },
@@ -58,7 +58,7 @@ export function useWarehouses() {
         .select('*')
         .eq('is_active', true)
         .order('name');
-      
+
       if (error) throw error;
       return data;
     },
@@ -74,7 +74,7 @@ export function useCarriers() {
         .select('*')
         .eq('is_active', true)
         .order('name');
-      
+
       if (error) throw error;
       return data;
     },
@@ -82,7 +82,9 @@ export function useCarriers() {
 }
 
 export function useInventory() {
-  return useQuery({
+  const queryClient = useQueryClient();
+
+  const query = useQuery({
     queryKey: ['inventory'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -92,11 +94,34 @@ export function useInventory() {
           warehouse:warehouses(name)
         `)
         .order('sku');
-      
+
       if (error) throw error;
       return data;
     },
   });
+
+  const updateInventory = useMutation({
+    mutationFn: async ({ id, ...updates }: { id: string } & any) => {
+      const { data, error } = await supabase
+        .from('inventory')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['inventory'] });
+      toast.success('Estoque atualizado com sucesso');
+    },
+    onError: (error) => {
+      toast.error('Erro ao atualizar estoque: ' + error.message);
+    }
+  });
+
+  return { ...query, inventory: query.data, updateInventory };
 }
 
 export function useLogisticsStats() {
@@ -104,14 +129,14 @@ export function useLogisticsStats() {
     queryKey: ['logistics_stats'],
     queryFn: async () => {
       const today = new Date().toISOString().split('T')[0];
-      
+
       const { data: shipments, error } = await supabase
         .from('shipments')
         .select('status, created_at');
 
       if (error) throw error;
 
-      const todayShipments = shipments?.filter(s => 
+      const todayShipments = shipments?.filter(s =>
         s.created_at?.startsWith(today)
       ).length || 0;
 

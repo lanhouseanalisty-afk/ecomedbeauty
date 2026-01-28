@@ -229,11 +229,14 @@ export default function EmployeeProfilePage() {
                                             <div className="flex justify-between items-start">
                                                 <div className="flex items-center gap-3">
                                                     <Avatar className="h-10 w-10">
-                                                        <AvatarFallback>U</AvatarFallback>
+                                                        <AvatarImage src={post.author?.avatar_url} />
+                                                        <AvatarFallback>{getInitials(post.author?.full_name || "U")}</AvatarFallback>
                                                     </Avatar>
                                                     <div>
-                                                        <p className="font-semibold text-sm">Usuário</p>
-                                                        <p className="text-xs text-muted-foreground">{format(new Date(post.created_at), "dd MMM HH:mm", { locale: ptBR })}</p>
+                                                        <p className="font-semibold text-sm">{post.author?.full_name || "Usuário"}</p>
+                                                        <p className="text-xs text-muted-foreground">
+                                                            {post.created_at ? format(new Date(post.created_at), "dd MMM HH:mm", { locale: ptBR }) : '-'}
+                                                        </p>
                                                     </div>
                                                 </div>
                                             </div>

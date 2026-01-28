@@ -28,6 +28,8 @@ import NotFound from "./pages/NotFound";
 // CRM Pages
 import CRMDashboard from "./pages/crm/CRMDashboard";
 import AdminCRMDashboard from "./pages/crm/admin/AdminCRMDashboard";
+import DiretoriaDashboard from "./pages/crm/admin/DiretoriaDashboard";
+import CientificaDashboard from "./pages/crm/admin/DiretoriaDashboard"; // Placeholder usando Diretoria por enquanto ou criar um arquivo novo? Vou criar um arquivo novo para Cientifica.
 import RHDashboard from "./pages/crm/rh/RHDashboard";
 import RHAdmissaoPage from "./pages/crm/rh/AdmissaoPage";
 import DemissaoPage from "./pages/crm/rh/DemissaoPage";
@@ -47,6 +49,7 @@ import ComercialSubDepartmentPage from "./pages/crm/comercial/ComercialSubDepart
 import LogisticaDashboard from "./pages/crm/logistica/LogisticaDashboard";
 import LogisticaAdmissaoPage from "./pages/crm/logistica/LogisticaAdmissaoPage";
 import LogisticaPedidosPage from "./pages/crm/logistica/LogisticaPedidosPage";
+import LogisticaEstoquePage from "./pages/crm/logistica/LogisticaEstoquePage";
 import JuridicoDashboard from "./pages/crm/juridico/JuridicoDashboard";
 import JuridicoAdmissaoPage from "./pages/crm/juridico/JuridicoAdmissaoPage";
 import TechDashboard from "./pages/crm/tech/TechDashboard";
@@ -146,6 +149,26 @@ const App = () => (
                           <SectorRequestsPage currentSector="admin" sectorName="Administração" />
                         </ProtectedRoute>
                       } />
+                      <Route path="diretoria" element={
+                        <ProtectedRoute requiredModule="admin">
+                          <DiretoriaDashboard />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="diretoria/*" element={
+                        <ProtectedRoute requiredModule="admin">
+                          <DiretoriaDashboard />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="cientifica" element={
+                        <ProtectedRoute requiredModule="admin">
+                          <CientificaDashboard />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="cientifica/*" element={
+                        <ProtectedRoute requiredModule="admin">
+                          <CientificaDashboard />
+                        </ProtectedRoute>
+                      } />
                       <Route path="admin/*" element={
                         <ProtectedRoute requiredModule="admin">
                           <AdminCRMDashboard />
@@ -175,7 +198,7 @@ const App = () => (
 
                       <Route path="rh/solicitacoes-setores" element={
                         <ProtectedRoute requiredModule="rh">
-                          <SectorRequestsPage currentSector="rh" sectorName="Recursos Humanos" />
+                          <SectorRequestsPage currentSector="rh" sectorName="Compras" />
                         </ProtectedRoute>
                       } />
 
@@ -295,6 +318,11 @@ const App = () => (
                           <LogisticaPedidosPage />
                         </ProtectedRoute>
                       } />
+                      <Route path="logistica/estoque" element={
+                        <ProtectedRoute requiredModule="logistica">
+                          <LogisticaEstoquePage />
+                        </ProtectedRoute>
+                      } />
 
                       <Route path="logistica/solicitacoes-setores" element={
                         <ProtectedRoute requiredModule="logistica">
@@ -315,6 +343,12 @@ const App = () => (
                       <Route path="juridico/admissao" element={
                         <ProtectedRoute requiredModule="juridico">
                           <JuridicoAdmissaoPage />
+                        </ProtectedRoute>
+                      } />
+
+                      <Route path="juridico/contratos" element={
+                        <ProtectedRoute requiredModule="juridico">
+                          <JuridicoDashboard />
                         </ProtectedRoute>
                       } />
 
@@ -357,7 +391,7 @@ const App = () => (
 
                       <Route path="tech/solicitacoes-setores" element={
                         <ProtectedRoute requiredModule="tech">
-                          <SectorRequestsPage currentSector="tech" sectorName="Tech / Suporte" />
+                          <SectorRequestsPage currentSector="tech" sectorName="Tech Digital" />
                         </ProtectedRoute>
                       } />
 
@@ -449,7 +483,7 @@ const App = () => (
         </CMSProvider>
       </TooltipProvider>
     </HelmetProvider>
-  </QueryClientProvider>
+  </QueryClientProvider >
 );
 
 export default App;

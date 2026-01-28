@@ -11,28 +11,40 @@ import {
     Megaphone,
     ChevronRight,
     ChevronDown,
-    Building2
+    Building2,
+    ShoppingCart,
+    Wrench
 } from "lucide-react";
 
 // Mock data for the tree
 const orgStructure = {
-    name: "CEO / Diretoria",
-    role: "Direção Geral",
+    name: "Diretoria",
+    role: "Gestor: Pedro Miguel",
     icon: Building2,
     children: [
         {
-            name: "Recursos Humanos (RH)",
-            role: "Gestão de Pessoas",
+            name: "Recursos Humanos",
+            role: "Gestora: Gleice Silva",
             icon: Users,
             children: [
-                { name: "Recrutamento & Seleção", role: "R&S" },
-                { name: "Departamento Pessoal", role: "DP" },
+                { name: "Talent Acquisition", role: "Recrutamento" },
+                { name: "Departamento Pessoal", role: "Administrativo" },
                 { name: "T&D", role: "Treinamento" }
             ]
         },
         {
+            name: "Compras",
+            role: "Gestor: Gilcimar Gil",
+            icon: ShoppingCart,
+            children: [
+                { name: "Gestão de Fornecedores", role: "Compras" },
+                { name: "Controle de Estoque", role: "Almoxarifado" },
+                { name: "Aquisições", role: "Operacional" }
+            ]
+        },
+        {
             name: "Financeiro",
-            role: "Gestão Financeira",
+            role: "Gestor: Lucas Voltarelli",
             icon: CreditCard,
             children: [
                 { name: "Contas a Pagar", role: "Operacional" },
@@ -41,8 +53,8 @@ const orgStructure = {
             ]
         },
         {
-            name: "Tecnologia (Tech)",
-            role: "Inovação & Suporte",
+            name: "Tech TI",
+            role: "Gestor: Marcelo Ravagnani",
             icon: Monitor,
             children: [
                 { name: "Infraestrutura", role: "Suporte N1/N2" },
@@ -54,14 +66,14 @@ const orgStructure = {
             role: "Vendas & CRM",
             icon: ShoppingBag,
             children: [
-                { name: "Sales Development (SDR)", role: "Prospecção" },
+                { name: "Inside Sales", role: "Gestor: Cesar Camargo" },
                 { name: "Account Executives (AE)", role: "Fechamento" },
                 { name: "Pós-Venda / CS", role: "Retenção" }
             ]
         },
         {
             name: "Logística",
-            role: "Operações & Entrega",
+            role: "Gestora: Luciana Borri",
             icon: Truck,
             children: [
                 { name: "Estoque / Warehouse", role: "Armazenagem" },
@@ -69,17 +81,17 @@ const orgStructure = {
             ]
         },
         {
-            name: "Jurídico",
-            role: "Legal & Compliance",
-            icon: Scale,
+            name: "Manutenção",
+            role: "Gestor: Laércio",
+            icon: Wrench,
             children: [
-                { name: "Contratos", role: "Administrativo" },
-                { name: "Contencioso", role: "Processual" }
+                { name: "Predial", role: "Infraestrutura" },
+                { name: "Equipamentos", role: "Preventiva/Corretiva" }
             ]
         },
         {
             name: "Marketing",
-            role: "Growth & Brand",
+            role: "Gestora: Viviane Toledo",
             icon: Megaphone,
             children: [
                 { name: "Performance", role: "Ads/Traffic" },

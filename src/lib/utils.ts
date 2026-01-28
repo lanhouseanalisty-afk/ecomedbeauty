@@ -21,15 +21,22 @@ export function debounce<T extends (...args: any[]) => any>(
   };
 }
 
-export function formatCurrency(value: number, currency = 'BRL'): string {
+export function formatCurrency(value: number | string | null | undefined, currency = 'BRL'): string {
+  if (value === null || value === undefined || value === '') return 'R$ 0,00';
+  const numValue = typeof value === 'string' ? parseFloat(value) : value;
+  if (isNaN(numValue)) return 'R$ 0,00';
+
   return new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency,
-  }).format(value);
+  }).format(numValue);
 }
 
-export function formatDate(date: string | Date, options?: Intl.DateTimeFormatOptions): string {
-  return new Intl.DateTimeFormat('pt-BR', options).format(new Date(date));
+export function formatDate(date: string | Date | null | undefined, options?: Intl.DateTimeFormatOptions): string {
+  if (!date) return '-';
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return '-';
+  return new Intl.DateTimeFormat('pt-BR', options).format(d);
 }
 
 export function formatCPF(cpf: string): string {
@@ -113,7 +120,7 @@ export function isValidCPF(cpf: string): boolean {
   const cleaned = cpf.replace(/\D/g, '');
   if (cleaned.length !== 11) return false;
   if (/^(\d)\1+$/.test(cleaned)) return false;
-  
+
   let sum = 0;
   for (let i = 0; i < 9; i++) {
     sum += parseInt(cleaned.charAt(i)) * (10 - i);
@@ -121,7 +128,7 @@ export function isValidCPF(cpf: string): boolean {
   let remainder = (sum * 10) % 11;
   if (remainder === 10 || remainder === 11) remainder = 0;
   if (remainder !== parseInt(cleaned.charAt(9))) return false;
-  
+
   sum = 0;
   for (let i = 0; i < 10; i++) {
     sum += parseInt(cleaned.charAt(i)) * (11 - i);

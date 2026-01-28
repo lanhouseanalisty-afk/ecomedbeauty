@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { 
-  DollarSign, 
-  Plus, 
+import {
+  DollarSign,
+  Plus,
   TrendingUp,
   TrendingDown,
   CreditCard,
@@ -139,33 +139,33 @@ export default function FinanceiroDashboard() {
   };
 
   const quickStats = [
-    { 
-      title: "A Receber", 
-      value: formatCurrency(stats?.receivable || 0), 
-      icon: TrendingUp, 
+    {
+      title: "A Receber",
+      value: formatCurrency(stats?.receivable || 0),
+      icon: TrendingUp,
       trend: { value: 12 },
-      color: "text-success" 
+      color: "text-success"
     },
-    { 
-      title: "A Pagar", 
-      value: formatCurrency(stats?.payable || 0), 
-      icon: TrendingDown, 
+    {
+      title: "A Pagar",
+      value: formatCurrency(stats?.payable || 0),
+      icon: TrendingDown,
       trend: { value: -8 },
-      color: "text-destructive" 
+      color: "text-destructive"
     },
-    { 
-      title: "Saldo", 
-      value: formatCurrency(stats?.balance || 0), 
-      icon: DollarSign, 
+    {
+      title: "Saldo",
+      value: formatCurrency(stats?.balance || 0),
+      icon: DollarSign,
       trend: { value: 18 },
-      color: "text-primary" 
+      color: "text-primary"
     },
-    { 
-      title: "Vencidos", 
-      value: formatCurrency(stats?.overdue || 0), 
-      icon: Receipt, 
+    {
+      title: "Vencidos",
+      value: formatCurrency(stats?.overdue || 0),
+      icon: Receipt,
       description: "Requer atenção",
-      color: "text-warning" 
+      color: "text-warning"
     },
   ];
 
@@ -198,7 +198,8 @@ export default function FinanceiroDashboard() {
           <h1 className="font-serif text-3xl font-bold">Financeiro</h1>
           <p className="text-muted-foreground">Gestão financeira e fluxo de caixa</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
+          <Badge variant="outline" className="h-9 px-4 text-sm hidden md:flex">Gestor: Lucas Voltarelli</Badge>
           <DataExport data={filteredInvoices} filename="faturas" columns={exportColumns} />
           <Button variant="outline" onClick={() => {
             setNewInvoice({ ...newInvoice, type: 'payable' });
@@ -253,8 +254,8 @@ export default function FinanceiroDashboard() {
                       id="total"
                       type="number"
                       value={newInvoice.subtotal}
-                      onChange={(e) => setNewInvoice({ 
-                        ...newInvoice, 
+                      onChange={(e) => setNewInvoice({
+                        ...newInvoice,
                         subtotal: Number(e.target.value),
                         total: Number(e.target.value)
                       })}
@@ -372,7 +373,7 @@ export default function FinanceiroDashboard() {
                 <EmptyState
                   variant={searchTerm ? 'search' : 'empty'}
                   title={searchTerm ? 'Nenhum resultado' : 'Nenhuma fatura'}
-                  description={searchTerm 
+                  description={searchTerm
                     ? 'Tente um termo diferente'
                     : 'Registre sua primeira fatura'
                   }
