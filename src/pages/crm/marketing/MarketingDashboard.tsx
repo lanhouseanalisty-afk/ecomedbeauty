@@ -65,7 +65,10 @@ export default function MarketingDashboard() {
           <h1 className="font-serif text-3xl font-bold">Marketing</h1>
           <p className="text-muted-foreground">Campanhas, promoções e performance</p>
         </div>
-        {/* Nova Campanha removed */}
+        <div className="flex gap-2 items-center">
+          <Badge variant="outline" className="h-9 px-4 text-sm hidden md:flex">Gestora: Viviane Toledo</Badge>
+          {/* Nova Campanha removed */}
+        </div>
       </div>
 
       <QuickStats stats={quickStats} />

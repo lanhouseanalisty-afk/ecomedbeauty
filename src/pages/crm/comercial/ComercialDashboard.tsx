@@ -177,7 +177,8 @@ export default function ComercialDashboard() {
           </h1>
           <p className="text-muted-foreground mt-1">Gestão inteligente de leads e oportunidades</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
+          <Badge variant="outline" className="h-9 px-4 text-sm hidden md:flex">Gestor Inside Sales: Cesar Camargo</Badge>
           <Button variant="outline" onClick={() => setIsSearchDialogOpen(true)} className="shadow-sm hover:shadow-md transition-all">
             <Globe className="mr-2 h-4 w-4 text-blue-500" />
             Buscar Leads Externos

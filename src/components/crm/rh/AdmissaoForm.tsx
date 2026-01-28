@@ -40,8 +40,8 @@ const DEPARTAMENTOS = [
   { value: "Comercial", label: "Comercial" },
   { value: "Logística", label: "Logística" },
   { value: "Jurídico", label: "Jurídico" },
-  { value: "TI", label: "TI / Tech" },
-  { value: "RH", label: "RH / Recursos Humanos" },
+  { value: "TI", label: "Tech Digital" },
+  { value: "RH", label: "Compras" },
 ];
 
 const REGIOES_COMERCIAL = [

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
-import { User, Mail, Phone, Save, Loader2 } from "lucide-react";
+import { User, Mail, Phone, Save, Loader2, KeyRound } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import { AvatarUpload } from "@/components/profile/AvatarUpload";
 import { OrderHistory } from "@/components/profile/OrderHistory";
 import { LoyaltyPoints } from "@/components/profile/LoyaltyPoints";
 import { ReferralSection } from "@/components/profile/ReferralSection";
+import { ChangePasswordForm } from "@/components/profile/ChangePasswordForm";
 
 interface Profile {
   id: string;
@@ -20,16 +21,18 @@ interface Profile {
   email: string | null;
   phone: string | null;
   avatar_url: string | null;
+  must_change_password: boolean;
 }
 
 export default function Profile() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  
+
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [mustChangePassword, setMustChangePassword] = useState(false);
   const [formData, setFormData] = useState({
     full_name: "",
     phone: "",
@@ -44,7 +47,7 @@ export default function Profile() {
   useEffect(() => {
     async function fetchProfile() {
       if (!user) return;
-      
+
       try {
         const { data, error } = await supabase
           .from("profiles")
@@ -54,7 +57,8 @@ export default function Profile() {
 
         if (error) throw error;
 
-        setProfile(data);
+        setProfile(data as any);
+        setMustChangePassword((data as any).must_change_password === true);
         setFormData({
           full_name: data.full_name || "",
           phone: data.phone || "",
@@ -116,6 +120,14 @@ export default function Profile() {
     );
   }
 
+  if (mustChangePassword) {
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-24">
+        <ChangePasswordForm onSuccess={() => setMustChangePassword(false)} />
+      </div>
+    );
+  }
+
   return (
     <>
       <Helmet>
@@ -124,7 +136,7 @@ export default function Profile() {
       </Helmet>
 
       <div className="mx-auto max-w-2xl px-4 py-12">
-        <h1 className="font-serif text-3xl font-bold text-foreground mb-8">
+        <h1 className="font-serif text-3xl font-bold text-foreground mb-8 text-center sm:text-left">
           Meu Perfil
         </h1>
 
@@ -226,3 +238,4 @@ export default function Profile() {
     </>
   );
 }
+

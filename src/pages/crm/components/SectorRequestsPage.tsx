@@ -35,7 +35,7 @@ interface SectorRequestsPageProps {
 
 const SECTORS = [
     { id: 'admin', name: 'Administração' },
-    { id: 'rh', name: 'RH' },
+    { id: 'rh', name: 'Compras' },
     { id: 'financeiro', name: 'Financeiro' },
     { id: 'marketing', name: 'Marketing' },
 
@@ -46,9 +46,9 @@ const SECTORS = [
     { id: 'com_norte', name: 'Comercial - Norte' },
     { id: 'logistica', name: 'Logística' },
     { id: 'juridico', name: 'Jurídico' },
-    { id: 'tech', name: 'Agile Ops / Tech' },
+    { id: 'tech', name: 'Tech Digital' },
     { id: 'ecommerce', name: 'E-commerce' },
-    { id: 'compras', name: 'Compras' },
+
     { id: 'manutencao', name: 'Manutenção' },
 ];
 

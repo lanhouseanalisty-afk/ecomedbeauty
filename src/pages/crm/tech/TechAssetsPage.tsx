@@ -9,11 +9,14 @@ import {
     Tablet,
     Monitor,
     Box,
-    QrCode
+    QrCode,
+    ExternalLink
 } from "lucide-react";
 import { format } from "date-fns";
+import { Link } from "react-router-dom";
 import { useTechAssets, TechAsset } from "@/hooks/useTech";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -43,15 +46,15 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function TechAssetsPage() {
-    const { assets, isLoading, createAsset } = useTechAssets();
+    const { assets, isLoading, createAsset, updateAsset } = useTechAssets();
 
-    // Fetch employees to map names to CPFs
+    // Fetch employees to map names to managers and departments
     const { data: employees } = useQuery({
         queryKey: ['employees-basic-list'],
         queryFn: async () => {
             const { data } = await supabase
                 .from('employees')
-                .select('id, full_name, cpf');
+                .select('id, full_name, cpf, manager:employees!manager_id(full_name), department:departments(name)');
             return data || [];
         }
     });
@@ -222,25 +225,150 @@ export default function TechAssetsPage() {
         return matchesSearch && asset.device_type === activeTab;
     });
 
-    // Grouping Logic
-    const groupedAssets = filteredAssets?.reduce((acc, asset) => {
-        const key = asset.assigned_to_name || "Estoque / Disponível";
-        if (!acc[key]) {
-            acc[key] = {
-                name: key,
-                location: asset.location || "",
-                items: []
-            };
-        }
-        acc[key].items.push(asset);
-        // Update location if we found one and previous was empty
-        if (!acc[key].location && asset.location) {
-            acc[key].location = asset.location;
-        }
-        return acc;
-    }, {} as Record<string, { name: string, location: string, items: TechAsset[] }>);
+    const groupedList = employees?.map(emp => {
+        const empAssets = assets?.filter(a => a.assigned_to_name === emp.full_name) || [];
 
-    const groupedList = Object.values(groupedAssets || {}).sort((a, b) => a.name.localeCompare(b.name));
+        // Find specific items
+        const notebook = empAssets.find(i => i.device_type === 'notebook');
+        const tablet = empAssets.find(i => i.device_type === 'tablet');
+        const smartphone = empAssets.find(i => i.device_type === 'smartphone');
+
+        const isModified = empAssets.some(i => i.modified_after_admission);
+
+        const deptName = (emp as any).department?.name;
+        let autoManager = null;
+        if (deptName) {
+            const lowerName = deptName.toLowerCase();
+            if (lowerName.includes('diretoria')) autoManager = 'Pedro Miguel';
+            else if (lowerName.includes('rh') || lowerName.includes('recursos humanos')) autoManager = 'Gleice Silva';
+            else if (lowerName.includes('compras')) autoManager = 'Gilcimar Gil';
+            else if (lowerName.includes('marketing')) autoManager = 'Viviane Toledo';
+            else if (lowerName.includes('tech') || lowerName.includes('ti') || lowerName.includes('tecnologia')) autoManager = 'Marcelo Ravagnani';
+            else if (lowerName.includes('financeiro')) autoManager = 'Lucas Voltarelli';
+            else if (lowerName.includes('comercial') || lowerName.includes('inside') || lowerName.includes('sdr')) autoManager = 'Cesar Camargo';
+            else if (lowerName.includes('logistica') || lowerName.includes('logística')) autoManager = 'Luciana Borri';
+            else if (lowerName.includes('manutencao') || lowerName.includes('manutenção')) autoManager = 'Laércio';
+        }
+
+        return {
+            name: emp.full_name,
+            location: deptName || "-",
+            items: empAssets,
+            employeeId: emp.id,
+            gestor: (emp as any).manager?.full_name || autoManager || "-",
+            setor: deptName || "-",
+            notebook,
+            tablet,
+            smartphone,
+            isModified,
+            hasNoAssets: empAssets.length === 0
+        };
+    }) || [];
+
+    // Add assets that are NOT assigned to any known employee (Stock/Available)
+    const stockAssets = assets?.filter(a => !employees?.some(e => e.full_name === a.assigned_to_name)) || [];
+    const stockGroups = stockAssets.reduce((acc, asset) => {
+        const key = asset.assigned_to_name || "Estoque / Disponível";
+        if (!acc[key]) acc[key] = { name: key, items: [] };
+        acc[key].items.push(asset);
+        return acc;
+    }, {} as Record<string, { name: string, items: TechAsset[] }>);
+
+    const stockList = Object.values(stockGroups).map(group => {
+        const notebook = group.items.find(i => i.device_type === 'notebook');
+        const tablet = group.items.find(i => i.device_type === 'tablet');
+        const smartphone = group.items.find(i => i.device_type === 'smartphone');
+        return {
+            name: group.name,
+            location: group.items[0]?.location || "Almoxarifado",
+            items: group.items,
+            gestor: "-",
+            setor: group.items[0]?.location || "Estoque",
+            notebook,
+            tablet,
+            smartphone,
+            isModified: false,
+            hasNoAssets: false,
+            employeeId: null
+        };
+    });
+
+    const finalDisplayList = [...groupedList, ...stockList]
+        .filter(item => {
+            const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                item.setor.toLowerCase().includes(searchTerm.toLowerCase());
+            return matchesSearch;
+        })
+        .sort((a, b) => a.name.localeCompare(b.name));
+
+    const handleUpdate = async (assetId: string, updates: Partial<TechAsset>) => {
+        try {
+            await updateAsset.mutateAsync({
+                id: assetId,
+                ...updates,
+                modified_after_admission: true
+            });
+        } catch (error) {
+            console.error("Error updating asset:", error);
+        }
+    };
+
+    const handleGroupUpdate = async (group: any, field: string, value: string) => {
+        if (!group.items || group.items.length === 0) return;
+
+        toast.loading(`Atualizando ${field}...`);
+        try {
+            await Promise.all(group.items.map((item: any) =>
+                updateAsset.mutateAsync({
+                    id: item.id,
+                    [field === 'nome' ? 'assigned_to_name' : 'location']: value,
+                    modified_after_admission: true
+                })
+            ));
+            toast.dismiss();
+            toast.success("Atualizado com sucesso");
+        } catch (error) {
+            toast.dismiss();
+            toast.error("Erro ao atualizar grupo");
+        }
+    };
+
+    const EditableCell = ({ value, onSave, className }: { value: string, onSave: (val: string) => void, className?: string }) => {
+        const [val, setVal] = useState(value);
+        const [isEditing, setIsEditing] = useState(false);
+
+        const handleBlur = () => {
+            setIsEditing(false);
+            if (val !== value) {
+                onSave(val);
+            }
+        };
+
+        if (isEditing) {
+            return (
+                <Input
+                    autoFocus
+                    value={val}
+                    onChange={(e) => setVal(e.target.value)}
+                    onBlur={handleBlur}
+                    onKeyDown={(e) => e.key === 'Enter' && handleBlur()}
+                    className={cn("h-7 text-xs w-full min-w-[80px]", className)}
+                />
+            );
+        }
+
+        return (
+            <div
+                onClick={() => setIsEditing(true)}
+                className={cn(
+                    "cursor-text min-h-[28px] flex items-center px-1 rounded hover:bg-muted/50 transition-colors text-sm",
+                    className
+                )}
+            >
+                {value || "-"}
+            </div>
+        );
+    };
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
@@ -405,54 +533,118 @@ export default function TechAssetsPage() {
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead className="w-[200px]">Nome</TableHead>
-                                <TableHead className="w-[150px]">Setor</TableHead>
-                                <TableHead>Equipamentos</TableHead>
+                                <TableHead className="font-bold">NOME</TableHead>
+                                <TableHead className="font-bold">SETOR</TableHead>
+                                <TableHead className="font-bold">GESTOR</TableHead>
+                                <TableHead className="font-bold">NOTEBOOK</TableHead>
+                                <TableHead className="font-bold">PATRIMONIO</TableHead>
+                                <TableHead className="font-bold">TABLET</TableHead>
+                                <TableHead className="font-bold">PATRIMONIO</TableHead>
+                                <TableHead className="font-bold">CELULAR</TableHead>
+                                <TableHead className="font-bold">Nº DE SÉRIE</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {isLoading ? (
                                 <TableRow>
-                                    <TableCell colSpan={3} className="h-24 text-center">
+                                    <TableCell colSpan={9} className="h-24 text-center">
                                         <Loader2 className="h-4 w-4 animate-spin mx-auto text-primary" />
                                     </TableCell>
                                 </TableRow>
-                            ) : groupedList.length === 0 ? (
+                            ) : finalDisplayList.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={3} className="h-32 text-center text-muted-foreground">
+                                    <TableCell colSpan={9} className="h-32 text-center text-muted-foreground">
                                         Nenhum registro encontrado.
                                     </TableCell>
                                 </TableRow>
                             ) : (
-                                groupedList.map((group, idx) => {
-                                    // Try to match employee by name to show ID
+                                finalDisplayList.map((group, idx) => {
+                                    // Try to match employee for CPF/ID
                                     const employee = employees?.find(e => e.full_name === group.name);
                                     const cpfDisplay = employee?.cpf ? `ID: ${employee.cpf.replace(/\D/g, '').slice(0, 3)}...` : '';
 
                                     return (
-                                        <TableRow key={idx}>
-                                            <TableCell className="font-medium flex items-center gap-2">
-                                                {group.name}
-                                                {cpfDisplay && (
-                                                    <Badge variant="secondary" className="text-[10px] h-5 px-1.5 font-normal">
-                                                        {cpfDisplay}
-                                                    </Badge>
-                                                )}
-                                            </TableCell>
-                                            <TableCell>
-                                                {group.location || "-"}
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="flex flex-wrap gap-1">
-                                                    {group.items.map((item, i) => (
-                                                        <span key={item.id} className="text-sm text-muted-foreground">
-                                                            {item.device_type === 'notebook' && <Laptop className="inline h-3 w-3 mr-1" />}
-                                                            {item.device_type === 'smartphone' && <Smartphone className="inline h-3 w-3 mr-1" />}
-                                                            {item.model} <span className="font-mono text-xs">({item.asset_tag})</span>
-                                                            {i < group.items.length - 1 ? ", " : ""}
-                                                        </span>
-                                                    ))}
+                                        <TableRow
+                                            key={idx}
+                                            className={cn(
+                                                "transition-colors",
+                                                group.hasNoAssets
+                                                    ? "opacity-80 hover:bg-red-50/30"
+                                                    : group.isModified
+                                                        ? "bg-amber-50/50 hover:bg-amber-100/50 dark:bg-amber-900/10 dark:hover:bg-amber-900/20"
+                                                        : "hover:bg-muted/50"
+                                            )}
+                                        >
+                                            <TableCell className="font-medium p-2">
+                                                <div className="flex flex-col gap-1 group/name">
+                                                    <div className="flex items-center gap-1">
+                                                        <EditableCell
+                                                            value={group.name}
+                                                            onSave={(v) => handleGroupUpdate(group, 'nome', v)}
+                                                            className={cn("flex-1", group.isModified && "font-bold text-amber-900 dark:text-amber-200")}
+                                                        />
+                                                        {group.employeeId && (
+                                                            <Link
+                                                                to={`/crm/rh/funcionario/${group.employeeId}`}
+                                                                className="opacity-0 group-hover/name:opacity-100 transition-opacity text-primary hover:text-primary/70"
+                                                                title="Ver perfil completo"
+                                                            >
+                                                                <ExternalLink className="h-3 w-3" />
+                                                            </Link>
+                                                        )}
+                                                    </div>
+                                                    {cpfDisplay && (
+                                                        <Badge variant="secondary" className="text-[10px] w-fit h-4 px-1 font-normal ml-1">
+                                                            {cpfDisplay}
+                                                        </Badge>
+                                                    )}
                                                 </div>
+                                            </TableCell>
+                                            <TableCell className="p-2">
+                                                <EditableCell
+                                                    value={group.setor}
+                                                    onSave={(v) => handleGroupUpdate(group, 'setor', v)}
+                                                />
+                                            </TableCell>
+                                            <TableCell className="p-2 text-sm text-muted-foreground">{group.gestor}</TableCell>
+                                            <TableCell className="p-2">
+                                                <EditableCell
+                                                    value={(group.notebook as any)?.model || "-"}
+                                                    onSave={(v) => group.notebook && handleUpdate(group.notebook.id, { model: v })}
+                                                />
+                                            </TableCell>
+                                            <TableCell className="p-2">
+                                                <EditableCell
+                                                    value={(group.notebook as any)?.asset_tag || "-"}
+                                                    onSave={(v) => group.notebook && handleUpdate(group.notebook.id, { asset_tag: v })}
+                                                    className="font-mono text-xs"
+                                                />
+                                            </TableCell>
+                                            <TableCell className="p-2">
+                                                <EditableCell
+                                                    value={(group.tablet as any)?.model || "-"}
+                                                    onSave={(v) => group.tablet && handleUpdate(group.tablet.id, { model: v })}
+                                                />
+                                            </TableCell>
+                                            <TableCell className="p-2">
+                                                <EditableCell
+                                                    value={(group.tablet as any)?.asset_tag || "-"}
+                                                    onSave={(v) => group.tablet && handleUpdate(group.tablet.id, { asset_tag: v })}
+                                                    className="font-mono text-xs"
+                                                />
+                                            </TableCell>
+                                            <TableCell className="p-2">
+                                                <EditableCell
+                                                    value={(group.smartphone as any)?.model || "-"}
+                                                    onSave={(v) => group.smartphone && handleUpdate(group.smartphone.id, { model: v })}
+                                                />
+                                            </TableCell>
+                                            <TableCell className="p-2">
+                                                <EditableCell
+                                                    value={(group.smartphone as any)?.serial_number || "-"}
+                                                    onSave={(v) => group.smartphone && handleUpdate(group.smartphone.id, { serial_number: v })}
+                                                    className="font-mono text-xs"
+                                                />
                                             </TableCell>
                                         </TableRow>
                                     );
