@@ -12,6 +12,16 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
     Package,
     Truck,
     MapPin,
@@ -26,6 +36,12 @@ export default function LogisticaPedidosPage() {
     const { getAllRequests, updateRequestStatus, loading } = useMarketingRequest();
     const [requests, setRequests] = useState<MarketingRequest[]>([]);
     const [refreshing, setRefreshing] = useState(false);
+
+    // Tracking Dialog States
+    const [trackingDialogOpen, setTrackingDialogOpen] = useState(false);
+    const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
+    const [trackingNumber, setTrackingNumber] = useState("");
+    const [processingTracking, setProcessingTracking] = useState(false);
 
     const loadRequests = async () => {
         const result = await getAllRequests();
@@ -50,8 +66,30 @@ export default function LogisticaPedidosPage() {
     }, []);
 
     const handleStatusChange = async (id: string, newStatus: string) => {
+        if (newStatus === 'shipped') {
+            setSelectedRequestId(id);
+            setTrackingNumber("");
+            setTrackingDialogOpen(true);
+            return;
+        }
+
         await updateRequestStatus(id, newStatus);
         await loadRequests();
+    };
+
+    const handleConfirmShipment = async () => {
+        if (!selectedRequestId) return;
+
+        setProcessingTracking(true);
+        try {
+            await updateRequestStatus(selectedRequestId, 'shipped', undefined, trackingNumber);
+            setTrackingDialogOpen(false);
+            setSelectedRequestId(null);
+            setTrackingNumber("");
+            await loadRequests();
+        } finally {
+            setProcessingTracking(false);
+        }
     };
 
     const STATUS_MAP: Record<string, { label: string; color: string }> = {
@@ -152,6 +190,11 @@ export default function LogisticaPedidosPage() {
                                                     <span className="text-xs text-muted-foreground">
                                                         Kit: {req.kit_type}
                                                     </span>
+                                                    {req.tracking_number && (
+                                                        <Badge variant="outline" className="mt-1 w-fit text-[10px] py-0 border-purple-200 text-purple-700 bg-purple-50">
+                                                            Rastreio: {req.tracking_number}
+                                                        </Badge>
+                                                    )}
                                                 </div>
                                             </TableCell>
                                             <TableCell>
@@ -165,7 +208,14 @@ export default function LogisticaPedidosPage() {
                                             </TableCell>
                                             <TableCell>
                                                 <div className="flex flex-col gap-1">
-                                                    <div className="text-sm font-medium">{req.consultant_name}</div>
+                                                    <div className="text-sm font-medium">
+                                                        {req.consultant_name}
+                                                        {req.regional_manager && (
+                                                            <span className="text-xs text-muted-foreground ml-2 font-normal">
+                                                                (Gestor: {req.regional_manager})
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                     <div className="text-xs text-muted-foreground flex items-start gap-1">
                                                         <MapPin className="h-3 w-3 mt-0.5 shrink-0" />
                                                         <span>
@@ -213,6 +263,46 @@ export default function LogisticaPedidosPage() {
                     </CardContent>
                 </Card>
             </div>
+
+            {/* Tracking Number Dialog */}
+            <Dialog open={trackingDialogOpen} onOpenChange={setTrackingDialogOpen}>
+                <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle>Informar Código de Rastreio</DialogTitle>
+                        <DialogDescription>
+                            Insira o código de rastreio para o envio deste pedido.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="tracking" className="text-right">
+                                Código
+                            </Label>
+                            <Input
+                                id="tracking"
+                                value={trackingNumber}
+                                onChange={(e) => setTrackingNumber(e.target.value)}
+                                className="col-span-3"
+                                placeholder="Ex: BR123456789"
+                                autoFocus
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setTrackingDialogOpen(false)}>
+                            Cancelar
+                        </Button>
+                        <Button
+                            onClick={handleConfirmShipment}
+                            disabled={processingTracking}
+                            className="bg-blue-600 hover:bg-blue-700"
+                        >
+                            {processingTracking && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            Confirmar Envio
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </>
     );
 }

@@ -4,18 +4,18 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { RequestsTable } from "@/components/crm/marketing/RequestsTable";
-import { useMarketingRequestLocal, MarketingRequest } from "@/hooks/useMarketingRequestLocal";
+import { useMarketingRequest, MarketingRequest } from "@/hooks/useMarketingRequest";
 import { Plus, ListChecks, Clock, CheckCircle, XCircle, Loader2 } from "lucide-react";
 
 export default function MarketingRequestsListPage() {
     const navigate = useNavigate();
-    const { getRequests, loading } = useMarketingRequestLocal();
+    const { getMyRequests, loading } = useMarketingRequest();
     const [requests, setRequests] = useState<MarketingRequest[]>([]);
 
     const loadRequests = async () => {
-        const result = await getRequests();
+        const result = await getMyRequests();
         if (result.success && result.data) {
-            setRequests(result.data);
+            setRequests(result.data as MarketingRequest[]);
         }
     };
 

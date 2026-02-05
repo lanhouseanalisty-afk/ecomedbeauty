@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS marketing_requests (
   approver_id UUID REFERENCES auth.users(id),
   approver_name TEXT,
   notes TEXT,
+  tracking_number TEXT,
   created_by UUID REFERENCES auth.users(id),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()

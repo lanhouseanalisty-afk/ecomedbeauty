@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useMarketingRequestLocal } from "@/hooks/useMarketingRequestLocal";
+import { useMarketingRequest } from "@/hooks/useMarketingRequest";
 import { fetchAddressByCep } from "@/services/cepService";
 import { toast } from "sonner";
 
@@ -46,7 +46,7 @@ const formSchema = z.object({
 });
 
 export function MarketingRequestForm() {
-    const { createRequest, loading } = useMarketingRequestLocal();
+    const { createRequest, loading } = useMarketingRequest();
     const [loadingCep, setLoadingCep] = useState(false);
 
     const form = useForm<z.infer<typeof formSchema>>({
@@ -96,12 +96,12 @@ export function MarketingRequestForm() {
             const result = await createRequest(values);
 
             if (result.success) {
-                alert(`✅ Solicitação salva com sucesso!\n\nID: ${result.requestId}\n\n(Dados salvos localmente)`);
+                alert(`✅ Solicitação enviada com sucesso!\n\nID: ${result.requestId}\n\n(A Logística já pode visualizar seu pedido)`);
                 window.location.reload();
             }
         } catch (error) {
             console.error('Error in onSubmit:', error);
-            alert('❌ Erro ao processar solicitação');
+            alert('❌ Erro ao enviar solicitação');
         }
     };
 

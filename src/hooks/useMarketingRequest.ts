@@ -23,6 +23,7 @@ export interface MarketingRequest {
     approver_id?: string;
     approver_name?: string;
     notes?: string;
+    tracking_number?: string;
     created_at?: string;
 }
 
@@ -208,13 +209,17 @@ export function useMarketingRequest() {
         }
     };
 
-    const updateRequestStatus = async (id: string, status: string, notes?: string) => {
+    const updateRequestStatus = async (id: string, status: string, notes?: string, trackingNumber?: string) => {
         setLoading(true);
         try {
             const updateData: any = { status };
 
             if (notes) {
                 updateData.notes = notes;
+            }
+
+            if (trackingNumber) {
+                updateData.tracking_number = trackingNumber;
             }
 
             const { data, error } = await supabase

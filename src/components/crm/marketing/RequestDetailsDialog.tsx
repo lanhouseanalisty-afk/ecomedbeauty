@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { RequestStatusBadge } from "./RequestStatusBadge";
 import { MarketingRequest } from "@/hooks/useMarketingRequest";
-import { Calendar, MapPin, Package, User, FileText } from "lucide-react";
+import { Calendar, MapPin, Package, User, FileText, Truck } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -138,6 +138,22 @@ export function RequestDetailsDialog({
                             <p className="text-muted-foreground">CEP: {request.cep}</p>
                         </div>
                     </div>
+
+                    {request.tracking_number && (
+                        <>
+                            <Separator />
+                            <div>
+                                <h3 className="font-semibold text-lg mb-3 flex items-center gap-2 text-purple-700">
+                                    <Truck className="h-5 w-5" />
+                                    Informações de Envio
+                                </h3>
+                                <div className="text-sm">
+                                    <p className="text-muted-foreground">Código de Rastreio</p>
+                                    <p className="font-mono font-bold text-base">{request.tracking_number}</p>
+                                </div>
+                            </div>
+                        </>
+                    )}
 
                     {request.extra_materials && (
                         <>
