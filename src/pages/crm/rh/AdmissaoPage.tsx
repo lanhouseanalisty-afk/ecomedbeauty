@@ -69,6 +69,9 @@ export default function AdmissaoPage() {
 
   const { processes, isLoading, createAdmission, sendToColaborador, returnToStep } = useAdmissionProcesses();
 
+  // ROLE SIMULATION
+  const [userRole, setUserRole] = useState<'rh' | 'gestor' | 'ti'>('rh');
+
   // Filtrar processos
   const pendingProcesses = processes?.filter(p => p.status !== 'completed' && p.status !== 'cancelled') || [];
   const awaitingReview = pendingProcesses.filter(p => p.current_step === 'rh_review');
@@ -109,7 +112,7 @@ export default function AdmissaoPage() {
         display_name: data.nome_exibicao || null,
         cpf: data.cpf,
         admission_date: data.data_admissao,
-        start_date: data.data_inicio,
+        start_date: data.data_admissao,
         contract_type: data.tipo_contratacao === "Estagio" ? "Estágio" : data.tipo_contratacao === "Temporario" ? "Temporário" : data.tipo_contratacao,
         department: data.setor_departamento,
         branch: data.filial_unidade,
@@ -147,10 +150,28 @@ export default function AdmissaoPage() {
             Inicie processos de admissão e acompanhe o fluxo por departamento
           </p>
         </div>
-        <Button onClick={() => setIsFormOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Nova Admissão
-        </Button>
+        <div className="flex items-center gap-4">
+          {/* SIMULADOR DE PAPEL */}
+          <div className="flex items-center gap-2 bg-muted p-1 px-3 rounded-full text-xs">
+            <span className="text-muted-foreground">Simular:</span>
+            <select
+              value={userRole}
+              onChange={(e) => setUserRole(e.target.value as any)}
+              className="bg-transparent border-none focus:ring-0 cursor-pointer font-bold text-primary"
+            >
+              <option value="rh">RH</option>
+              <option value="gestor">Gestor</option>
+              <option value="ti">TI</option>
+            </select>
+          </div>
+
+          {userRole === 'rh' && (
+            <Button onClick={() => setIsFormOpen(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Nova Admissão
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Stats */}

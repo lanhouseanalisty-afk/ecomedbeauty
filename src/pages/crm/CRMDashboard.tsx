@@ -57,13 +57,6 @@ const recentActivities = [
   { id: 5, type: "campaign", message: "Campanha 'Black Friday' iniciada", time: "3h atrás" },
 ];
 
-const moduleMetrics = [
-  { name: "Comercial", leads: 127, conversao: 3.2, meta: 150 },
-  { name: "Logística", pedidos: 45, entregues: 38, pendentes: 7 },
-  { name: "Financeiro", receber: 84500, pagar: 32100, saldo: 52400 },
-  { name: "Suporte", abertos: 12, resolvidos: 45, sla: 94 },
-];
-
 export default function CRMDashboard() {
   return (
     <div className="space-y-6">
@@ -110,73 +103,71 @@ export default function CRMDashboard() {
 
       {/* Main Content Grid */}
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Module Metrics */}
+        {/* E-commerce Metrics */}
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Métricas por Setor</CardTitle>
-            <CardDescription>Performance de cada módulo do CRM</CardDescription>
+            <CardTitle>Performance E-commerce</CardTitle>
+            <CardDescription>Acompanhamento de vendas, metas e logística</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
-              {/* Comercial */}
+
+              {/* Vendas Mensais */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="font-medium">Comercial - Leads</span>
-                  <span className="text-sm text-muted-foreground">
-                    {moduleMetrics[0].leads} / {moduleMetrics[0].meta} meta
+                  <div className="flex flex-col">
+                    <span className="font-medium">Vendas Mensais</span>
+                    <span className="text-xs text-muted-foreground uppercase">Faturamento</span>
+                  </div>
+                  <span className="text-sm font-medium">
+                    R$ 284k / R$ 350k meta
                   </span>
                 </div>
-                <Progress value={(moduleMetrics[0].leads / moduleMetrics[0].meta) * 100} className="h-2" />
+                <Progress value={(284 / 350) * 100} className="h-2 bg-slate-100" indicatorClassName="bg-blue-600" />
               </div>
 
-              {/* Logística */}
+              {/* Pedidos & Entregas */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="font-medium">Logística - Entregas</span>
-                  <span className="text-sm text-muted-foreground">
-                    {moduleMetrics[1].entregues} entregues, {moduleMetrics[1].pendentes} pendentes
+                  <div className="flex flex-col">
+                    <span className="font-medium">Expedição & Entregas</span>
+                    <span className="text-xs text-muted-foreground uppercase">Logística</span>
+                  </div>
+                  <span className="text-sm font-medium">
+                    342 entregues / 380 pedidos
                   </span>
                 </div>
-                <Progress
-                  value={(moduleMetrics[1].entregues / moduleMetrics[1].pedidos) * 100}
-                  className="h-2"
-                />
+                <Progress value={(342 / 380) * 100} className="h-2 bg-slate-100" indicatorClassName="bg-purple-600" />
               </div>
 
-              {/* Suporte */}
+              {/* Taxa de Conversão */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="font-medium">Suporte - SLA</span>
-                  <span className="text-sm text-muted-foreground">
-                    {moduleMetrics[3].sla}% dentro do prazo
+                  <div className="flex flex-col">
+                    <span className="font-medium">Taxa de Conversão</span>
+                    <span className="text-xs text-muted-foreground uppercase">Performance</span>
+                  </div>
+                  <span className="text-sm font-medium">
+                    3.2% (Meta: 4.5%)
                   </span>
                 </div>
-                <Progress value={moduleMetrics[3].sla} className="h-2" />
+                <Progress value={(3.2 / 4.5) * 100} className="h-2 bg-slate-100" indicatorClassName="bg-emerald-500" />
               </div>
 
-              {/* Financeiro */}
-              <div className="rounded-lg bg-muted/50 p-4">
-                <div className="grid grid-cols-3 gap-4 text-center">
-                  <div>
-                    <p className="text-sm text-muted-foreground">A Receber</p>
-                    <p className="text-lg font-semibold text-success">
-                      R$ {moduleMetrics[2].receber.toLocaleString()}
-                    </p>
+              {/* Novos Clientes */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex flex-col">
+                    <span className="font-medium">Novos Clientes</span>
+                    <span className="text-xs text-muted-foreground uppercase">Aquisição</span>
                   </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">A Pagar</p>
-                    <p className="text-lg font-semibold text-destructive">
-                      R$ {moduleMetrics[2].pagar.toLocaleString()}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Saldo</p>
-                    <p className="text-lg font-semibold text-info">
-                      R$ {moduleMetrics[2].saldo.toLocaleString()}
-                    </p>
-                  </div>
+                  <span className="text-sm font-medium">
+                    127 cadastros (Meta: 150)
+                  </span>
                 </div>
+                <Progress value={(127 / 150) * 100} className="h-2 bg-slate-100" indicatorClassName="bg-orange-500" />
               </div>
+
             </div>
           </CardContent>
         </Card>

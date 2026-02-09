@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -30,18 +30,33 @@ import {
   Monitor,
   CheckCircle2,
   Send,
-  Save
+  Save,
+  Package,
+  Car,
+  FileUp,
+  FileDown
 } from "lucide-react";
 
 // Departamentos disponíveis para roteamento
 const DEPARTAMENTOS = [
   { value: "Financeiro", label: "Financeiro" },
   { value: "Marketing", label: "Marketing" },
-  { value: "Comercial", label: "Comercial" },
   { value: "Logística", label: "Logística" },
   { value: "Jurídico", label: "Jurídico" },
-  { value: "TI", label: "Tech Digital" },
-  { value: "RH", label: "Compras" },
+  { value: "Tech", label: "Tech Digital (TI)" },
+  { value: "Compras", label: "Compras" },
+  { value: "Comercial", label: "Comercial (Geral)" },
+  { value: "com_norte", label: "Comercial - Norte" },
+  { value: "com_sul", label: "Comercial - Sul" },
+  { value: "com_sudeste", label: "Comercial - Sudeste" },
+  { value: "com_centro", label: "Comercial - Centro" },
+  { value: "com_inside", label: "Comercial - Inside Sales" },
+  { value: "franquias", label: "Comercial - Franquias" },
+  { value: "Diretoria", label: "Diretoria" },
+  { value: "Científica", label: "Científica" },
+  { value: "Manutenção", label: "Manutenção" },
+  { value: "Administração", label: "Administração" },
+  { value: "RH", label: "Recursos Humanos" },
 ];
 
 const REGIOES_COMERCIAL = [
@@ -50,6 +65,7 @@ const REGIOES_COMERCIAL = [
   { value: "Sudeste", label: "Sudeste" },
   { value: "Centro", label: "Centro" },
   { value: "Inside Sales", label: "Inside Sales" },
+  { value: "Franquias", label: "Franquias" },
 ];
 
 // Schema de validação para Seção 1 - RH
@@ -58,7 +74,7 @@ const secaoRHSchema = z.object({
   nome_exibicao: z.string().optional(),
   cpf: z.string().min(11, "CPF inválido").max(14),
   data_admissao: z.string().min(1, "Data de admissão é obrigatória"),
-  data_inicio: z.string().min(1, "Data de início é obrigatória"),
+  data_admissao: z.string().min(1, "Data de admissão é obrigatória"),
   tipo_contratacao: z.enum(["CLT", "PJ", "Estágio", "Temporário"], {
     required_error: "Selecione o tipo de contratação",
   }),
@@ -80,6 +96,7 @@ const secaoGestorSchema = z.object({
   equipamentos_necessarios: z.array(z.string()).optional().default([]),
   softwares_necessarios: z.array(z.string()).optional().default([]),
   acessos_necessarios: z.array(z.string()).optional().default([]),
+  needs_vehicle: z.enum(["Sim", "Nao"]).optional(),
   sharepoint_pasta: z.string().optional(),
   outros_acessos: z.string().optional(),
   necessita_impressora: z.enum(["Sim", "Nao"]).optional(),
@@ -90,10 +107,8 @@ const secaoGestorSchema = z.object({
 const EQUIPAMENTOS_OPTIONS = [
   { value: "Notebook", label: "Notebook" },
   { value: "Desktop", label: "Desktop" },
+  { value: "Tablet", label: "Tablet" },
   { value: "Celular", label: "Celular" },
-  { value: "Monitor", label: "Monitor" },
-  { value: "HeadSet", label: "HeadSet" },
-  { value: "Mouse", label: "Mouse" },
 ];
 
 const SOFTWARES_OPTIONS = [
@@ -136,6 +151,13 @@ const LICENCAS_MICROSOFT365_OPTIONS = [
   { value: "Power BI Pro", label: "Power BI Pro" },
 ];
 
+// Schema para Seção 3 - Compras
+const secaoComprasSchema = z.object({
+  vehicle_id: z.string().optional(),
+  compras_remarks: z.string().optional(),
+  document_urls: z.array(z.string()).optional().default([]),
+});
+
 // Schema para Seção 4 - Colaborador
 const secaoColaboradorSchema = z.object({
   confirma_recebimento_equipamentos: z.enum(["Sim", "Nao"], {
@@ -155,6 +177,7 @@ const secaoColaboradorSchema = z.object({
 
 const fullSchema = secaoRHSchema
   .merge(secaoGestorSchema)
+  .merge(secaoComprasSchema)
   .merge(secaoTISchema)
   .merge(secaoColaboradorSchema);
 
@@ -174,8 +197,9 @@ interface AdmissaoFormProps {
 const sections = [
   { id: 1, title: "Dados do Colaborador", icon: User, role: "RH" },
   { id: 2, title: "Definições do Gestor", icon: Briefcase, role: "Gestor" },
-  { id: 3, title: "Configuração TI", icon: Monitor, role: "TI" },
-  { id: 4, title: "Documentos", icon: CheckCircle2, role: "Colaborador" },
+  { id: 3, title: "Compras / Veículo", icon: Package, role: "Compras" },
+  { id: 4, title: "Configuração TI", icon: Monitor, role: "TI" },
+  { id: 5, title: "Documentos", icon: CheckCircle2, role: "Colaborador" },
 ];
 
 export default function AdmissaoForm({
@@ -189,6 +213,15 @@ export default function AdmissaoForm({
   userRole = 'rh',
 }: AdmissaoFormProps) {
   const [currentSection, setCurrentSection] = useState(initialSection);
+  const [vehicles, setVehicles] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchVehicles = async () => {
+      const { data } = await supabase.from('vehicles').select('*').eq('status', 'available');
+      if (data) setVehicles(data);
+    };
+    fetchVehicles();
+  }, []);
 
   const form = useForm<FormData>({
     resolver: zodResolver(fullSchema),
@@ -197,7 +230,7 @@ export default function AdmissaoForm({
       nome_exibicao: "",
       cpf: "",
       data_admissao: "",
-      data_inicio: "",
+      data_admissao: "",
       tipo_contratacao: undefined,
       setor_departamento: "",
       filial_unidade: "",
@@ -231,6 +264,9 @@ export default function AdmissaoForm({
       recebeu_orientacao_sistemas: undefined,
       sabe_solicitar_suporte: undefined,
       observacoes_colaborador: "",
+      vehicle_id: "",
+      compras_remarks: "",
+      document_urls: [],
       ...initialData,
     },
   });
@@ -268,7 +304,7 @@ export default function AdmissaoForm({
                 Formulário oficial de admissão de colaboradores da MEDBEAUTY.
                 <br />
                 <span className="text-xs font-medium mt-1 inline-block">
-                  Fluxo: RH → Gestor → TI → Colaborador
+                  Fluxo: RH → Gestor → (Compras) → TI → Colaborador
                 </span>
               </CardDescription>
             </div>
@@ -405,41 +441,23 @@ export default function AdmissaoForm({
                   )}
                 />
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormField
-                    control={form.control}
-                    name="data_admissao"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>
-                          4. Data de admissão <span className="text-destructive">*</span>
-                        </FormLabel>
-                        <FormControl>
-                          <Input type="date" {...field} disabled={isReadOnly} />
-                        </FormControl>
-                        <FormDescription>Insira a data (dd/MM/yyyy)</FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                <FormField
+                  control={form.control}
+                  name="data_admissao"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        4. Data de admissão <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input type="date" {...field} disabled={isReadOnly} />
+                      </FormControl>
+                      <FormDescription>Insira a data (dd/MM/yyyy)</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-                  <FormField
-                    control={form.control}
-                    name="data_inicio"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>
-                          5. Data de Início <span className="text-destructive">*</span>
-                        </FormLabel>
-                        <FormControl>
-                          <Input type="date" {...field} disabled={isReadOnly} />
-                        </FormControl>
-                        <FormDescription>Insira a data (dd/MM/yyyy)</FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
 
                 <FormField
                   control={form.control}
@@ -447,7 +465,7 @@ export default function AdmissaoForm({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        6. Tipo de contratação <span className="text-destructive">*</span>
+                        5. Tipo de contratação <span className="text-destructive">*</span>
                       </FormLabel>
                       <FormControl>
                         <RadioGroup
@@ -478,7 +496,7 @@ export default function AdmissaoForm({
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>
-                          7. Setor / Departamento <span className="text-destructive">*</span>
+                          6. Setor / Departamento <span className="text-destructive">*</span>
                         </FormLabel>
                         <RadioGroup
                           onValueChange={field.onChange}
@@ -510,7 +528,7 @@ export default function AdmissaoForm({
                       render={({ field }) => (
                         <FormItem className="col-span-1 md:col-span-2 bg-muted/30 p-4 rounded-lg border border-primary/20 animate-in fade-in slide-in-from-top-4">
                           <FormLabel className="text-primary">
-                            7.1 Região Comercial <span className="text-destructive">*</span>
+                            6.1 Região Comercial <span className="text-destructive">*</span>
                           </FormLabel>
                           <RadioGroup
                             onValueChange={field.onChange}
@@ -539,7 +557,7 @@ export default function AdmissaoForm({
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>
-                          8. Filial / Unidade <span className="text-destructive">*</span>
+                          7. Filial / Unidade <span className="text-destructive">*</span>
                         </FormLabel>
                         <FormControl>
                           <Input placeholder="Insira sua resposta" {...field} disabled={isReadOnly} />
@@ -557,7 +575,7 @@ export default function AdmissaoForm({
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>
-                          9. Gestor direto <span className="text-destructive">*</span>
+                          8. Gestor direto <span className="text-destructive">*</span>
                         </FormLabel>
                         <FormControl>
                           <Input placeholder="Insira sua resposta" {...field} disabled={isReadOnly} />
@@ -572,7 +590,7 @@ export default function AdmissaoForm({
                     name="email_gestor"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>10. E-mail Gestor</FormLabel>
+                        <FormLabel>9. E-mail Gestor</FormLabel>
                         <FormControl>
                           <Input
                             type="email"
@@ -593,7 +611,7 @@ export default function AdmissaoForm({
                   render={({ field }) => (
                     <FormItem className="max-w-md">
                       <FormLabel>
-                        11. Cargo / Função <span className="text-destructive">*</span>
+                        10. Cargo / Função <span className="text-destructive">*</span>
                       </FormLabel>
                       <FormControl>
                         <Input placeholder="Insira sua resposta" {...field} disabled={isReadOnly} />
@@ -609,7 +627,7 @@ export default function AdmissaoForm({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        12. Regime de trabalho <span className="text-destructive">*</span>
+                        11. Regime de trabalho <span className="text-destructive">*</span>
                       </FormLabel>
                       <FormControl>
                         <RadioGroup
@@ -638,7 +656,7 @@ export default function AdmissaoForm({
                   name="observacoes_rh"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>13. Observações do RH</FormLabel>
+                      <FormLabel>12. Observações do RH</FormLabel>
                       <FormControl>
                         <Textarea
                           placeholder="Insira sua resposta"
@@ -740,11 +758,41 @@ export default function AdmissaoForm({
 
                 <FormField
                   control={form.control}
+                  name="needs_vehicle"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        3. O Colaborador vai utilizar veículo?
+                      </FormLabel>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          className="flex flex-wrap gap-4"
+                          disabled={isReadOnly}
+                        >
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="Sim" id="vehicle-sim" />
+                            <Label htmlFor="vehicle-sim" className="cursor-pointer">Sim</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="Nao" id="vehicle-nao" />
+                            <Label htmlFor="vehicle-nao" className="cursor-pointer">Não</Label>
+                          </div>
+                        </RadioGroup>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
                   name="softwares_necessarios"
                   render={() => (
                     <FormItem>
                       <FormLabel>
-                        3. Softwares necessários <span className="text-destructive">*</span>
+                        4. Softwares necessários <span className="text-destructive">*</span>
                       </FormLabel>
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-2">
                         {SOFTWARES_OPTIONS.map((item) => (
@@ -789,7 +837,7 @@ export default function AdmissaoForm({
                   render={() => (
                     <FormItem>
                       <FormLabel>
-                        4. Acessos necessários <span className="text-destructive">*</span>
+                        5. Acessos necessários <span className="text-destructive">*</span>
                       </FormLabel>
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-2">
                         {ACESSOS_OPTIONS.map((item) => (
@@ -881,7 +929,7 @@ export default function AdmissaoForm({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        5. Necessita impressora? <span className="text-destructive">*</span>
+                        6. Necessita impressora? <span className="text-destructive">*</span>
                       </FormLabel>
                       <FormControl>
                         <RadioGroup
@@ -910,7 +958,7 @@ export default function AdmissaoForm({
                   name="observacoes_gestor"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>6. Observações do Gestor</FormLabel>
+                      <FormLabel>7. Observações do Gestor</FormLabel>
                       <FormControl>
                         <Textarea
                           placeholder="Insira sua resposta"
@@ -927,8 +975,99 @@ export default function AdmissaoForm({
             </Card>
           )}
 
-          {/* Seção 3 - TECNOLOGIA DA INFORMAÇÃO (TI) */}
+          {/* Seção 3 - COMPRAS / VEÍCULO */}
           {currentSection === 3 && (
+            <Card>
+              <CardHeader className="bg-rose-50 dark:bg-rose-950/20 rounded-t-lg">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-rose-100 dark:bg-rose-950 rounded-lg">
+                    <Package className="h-5 w-5 text-rose-600 dark:text-rose-400" />
+                  </div>
+                  <div>
+                    <CardTitle>Seção 3 — COMPRAS / VEÍCULO</CardTitle>
+                    <CardDescription>
+                      Atribuição de veículo e documentação (Compras)
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-6 space-y-6">
+                <FormField
+                  control={form.control}
+                  name="vehicle_id"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>1. Selecione o Veículo Disponível</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        disabled={isReadOnly}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione um veículo..." />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {vehicles.length > 0 ? (
+                            vehicles.map(v => (
+                              <SelectItem key={v.id} value={v.id}>
+                                {v.model} - {v.plate} ({v.rental_company})
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <SelectItem value="none" disabled>Nenhum veículo disponível</SelectItem>
+                          )}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="space-y-4">
+                  <Label>2. Documentação do Veículo</Label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <Button type="button" variant="outline" className="h-20 border-dashed flex flex-col gap-2" disabled={isReadOnly}>
+                      <FileUp className="h-6 w-6 text-muted-foreground" />
+                      <span>Upload de Contrato / Termo</span>
+                    </Button>
+                    <div className="p-4 border rounded-md bg-muted/30 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Package className="h-4 w-4 text-primary" />
+                        <span className="text-sm font-medium">termo_responsabilidade.pdf</span>
+                      </div>
+                      <Button type="button" variant="ghost" size="icon">
+                        <FileDown className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="compras_remarks"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>3. Observações de Compras</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Insira detalhes sobre a entrega do veículo, etc."
+                          className="min-h-[100px]"
+                          {...field}
+                          disabled={isReadOnly}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Seção 4 - TECNOLOGIA DA INFORMAÇÃO (TI) */}
+          {currentSection === 4 && (
             <Card>
               <CardHeader className="bg-purple-50 dark:bg-purple-950/20 rounded-t-lg">
                 <div className="flex items-center gap-3">
@@ -936,7 +1075,7 @@ export default function AdmissaoForm({
                     <Monitor className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                   </div>
                   <div>
-                    <CardTitle>Seção 3 — TECNOLOGIA DA INFORMAÇÃO (TI)</CardTitle>
+                    <CardTitle>Seção 4 — TECNOLOGIA DA INFORMAÇÃO (TI)</CardTitle>
                     <CardDescription>
                       Configurações técnicas realizadas pela equipe de TI
                     </CardDescription>
@@ -1313,8 +1452,8 @@ export default function AdmissaoForm({
             </Card>
           )}
 
-          {/* Seção 4 - COLABORADOR */}
-          {currentSection === 4 && (
+          {/* Seção 5 - COLABORADOR */}
+          {currentSection === 5 && (
             <Card>
               <CardHeader className="bg-green-50 dark:bg-green-950/20 rounded-t-lg">
                 <div className="flex items-center gap-3">
@@ -1322,7 +1461,7 @@ export default function AdmissaoForm({
                     <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
                   </div>
                   <div>
-                    <CardTitle>Seção 4 — COLABORADOR</CardTitle>
+                    <CardTitle>Seção 5 — COLABORADOR</CardTitle>
                     <CardDescription>
                       Confirmações finais do colaborador
                     </CardDescription>
@@ -1508,6 +1647,6 @@ export default function AdmissaoForm({
           </div>
         </form>
       </Form>
-    </div>
+    </div >
   );
 }

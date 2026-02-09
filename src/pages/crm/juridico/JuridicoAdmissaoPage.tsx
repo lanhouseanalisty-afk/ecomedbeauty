@@ -1,5 +1,5 @@
-import DepartmentAdmissaoPage from "@/components/crm/DepartmentAdmissaoPage";
+import SectorHROperationsPage from "@/pages/crm/SectorHROperationsPage";
 
 export default function JuridicoAdmissaoPage() {
-  return <DepartmentAdmissaoPage departmentSlug="juridico" departmentName="Jurídico" />;
+  return <SectorHROperationsPage departmentSlug="juridico" departmentName="Jurídico" />;
 }

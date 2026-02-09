@@ -130,3 +130,17 @@ export function useLegalStats() {
     },
   });
 }
+
+export function useLegalDistribution() {
+  return useQuery({
+    queryKey: ['legal_distribution'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('v_legal_distribution')
+        .select('*');
+
+      if (error) throw error;
+      return data;
+    },
+  });
+}

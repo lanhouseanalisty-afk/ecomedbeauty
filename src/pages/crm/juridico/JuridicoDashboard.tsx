@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import emailjs from '@emailjs/browser';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -63,7 +64,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useContracts, useLegalStats } from "@/hooks/useJuridico";
+import { useContracts, useLegalStats, useLegalDistribution } from "@/hooks/useJuridico";
 import { QuickStats } from "@/components/crm/shared/QuickStats";
 import { KPIChart } from "@/components/crm/shared/KPIChart";
 import { SearchFilter } from "@/components/crm/shared/SearchFilter";
@@ -71,11 +72,6 @@ import { DataExport } from "@/components/crm/shared/DataExport";
 import { EmptyState } from "@/components/crm/shared/EmptyState";
 import { formatCurrency, formatDate } from "@/lib/utils";
 
-const complianceData = [
-  { name: "Conforme", value: 85 },
-  { name: "Em Revisão", value: 10 },
-  { name: "Não Conforme", value: 5 },
-];
 
 export default function JuridicoDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -87,6 +83,7 @@ export default function JuridicoDashboard() {
   const [viewingContract, setViewingContract] = useState<any | null>(null);
   const { contracts, isLoading, createContract, updateContract } = useContracts();
   const { data: stats } = useLegalStats();
+  const { data: realComplianceData } = useLegalDistribution();
 
   const [newContract, setNewContract] = useState({
     title: "",
@@ -177,36 +174,147 @@ export default function JuridicoDashboard() {
 
     setSummarizingId(contract.id);
 
-    // Simular chamada de IA
-    setTimeout(async () => {
-      const summary = `
-Este contrato de ${contract.type.toUpperCase()} entre a MEDBEAUTY e ${contract.party_name || 'Terceiro'} refere-se a ${contract.title}.
+    try {
+      // Direct Client-Side Call to Google Gemini (Bypassing Supabase Function issues)
+      const API_KEY = "AIzaSyBNT7p3CJRZuDBqOuwgZ5VPK5DM1SKYA3M"; // Key #3
 
-**Pontos Principais:**
-1. **Vigência:** Início em ${formatDate(contract.start_date)} com término previsto para ${contract.end_date ? formatDate(contract.end_date) : 'Prazo Indeterminado'}.
-2. **Valor:** O montante total é de ${contract.value ? formatCurrency(contract.value) : 'não especificado'}.
-3. **Objeto:** Prestação de serviços/fornecimento conforme detalhado no anexo técnico.
-4. **Rescisão:** Cláusula padrão de 30 dias de aviso prévio sem multa após 12 meses.
-5. **Compliance:** Em conformidade com as políticas internas da MedBeauty e LGPD.
+      const systemPrompt = 'Você é um assistente jurídico sênior especializado em gestão de contratos da MedBeauty. Sua função é analisar metadados de contratos e gerar resumos executivos claros e objetivos. Identifique explicitamente datas críticas e valores financeiros.';
 
-*Resumo gerado automaticamente por MedBeauty AI Engine.*`;
+      const userMessage = `Analise o seguinte contrato e gere um resumo executivo destacando os pontos principais, riscos e prazos.
+              
+              Dados do Contrato:
+              - Título: ${contract.title}
+              - Parte: ${contract.party_name}
+              - Tipo: ${contract.type}
+              - Valor: ${contract.value ? formatCurrency(contract.value) : 'Não informado'}
+              - Início: ${formatDate(contract.start_date)}
+              - Fim: ${contract.end_date ? formatDate(contract.end_date) : 'Indeterminado'}
+              - Número: ${contract.contract_number}
+              
+              Seja conciso, profissional e foque no que um gestor precisa saber.`;
 
-      try {
-        await updateContract.mutateAsync({
-          id: contract.id,
-          updates: { terms_summary: summary }
-        });
+      // Strategy: Try the newly discovered 2.5 models, then 2.0
+      // List from API: gemini-2.5-flash, gemini-2.5-pro, gemini-2.0-flash
+      const modelsToTry = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.5-pro", "gemini-2.0-flash-001"];
+      let summary = null;
+      let errorLog = [];
 
-        setViewingSummary({
-          title: contract.title,
-          content: summary
-        });
-      } catch (error) {
-        toast.error("Erro ao salvar resumo da IA");
-      } finally {
-        setSummarizingId(null);
+      for (const model of modelsToTry) {
+        try {
+          // Using 'v1beta' endpoint
+          const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${API_KEY}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{
+                role: "user",
+                parts: [{ text: `[INSTRUÇÃO]: ${systemPrompt}\n\n[CONTRATO]: ${userMessage}` }]
+              }]
+            })
+          });
+
+          if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            const msg = errData.error?.message || `Status ${response.status}`;
+
+            // Specific handling for Rate Limit (Quota)
+            if (response.status === 429) {
+              console.warn(`Model ${model} hit rate limit. Waiting 2s before next...`);
+              await new Promise(resolve => setTimeout(resolve, 2000));
+            }
+
+            errorLog.push(`${model}: ${msg}`);
+            continue;
+          }
+
+          const json = await response.json();
+          summary = json.candidates?.[0]?.content?.parts?.[0]?.text;
+
+          if (summary) break; // Success
+
+        } catch (e: any) {
+          errorLog.push(`${model}: ${e.message}`);
+        }
       }
-    }, 2000);
+
+      if (!summary) {
+        const isQuota = errorLog.some(e => e.includes('429') || e.includes('Quota') || e.includes('quota'));
+        if (isQuota) throw new Error("LIMITE_COTA");
+        throw new Error(errorLog.map(e => `[${e}]`).join(' | '));
+      }
+
+      await updateContract.mutateAsync({
+        id: contract.id,
+        updates: { terms_summary: summary }
+      });
+
+      setViewingSummary({
+        title: contract.title,
+        content: summary
+      });
+
+      toast.success("Análise jurídica concluída com sucesso!");
+
+    } catch (error: any) {
+      console.error('Erro na IA:', error);
+      if (error.message === "LIMITE_COTA") {
+        toast.error("Limite gratuito atingido. Aguarde 1min.");
+      } else {
+        toast.error("Erro ao gerar análise: " + error.message.substring(0, 100) + "...");
+      }
+    } finally {
+      setSummarizingId(null);
+    }
+  };
+
+  const handleTestReminder = async (contract: any) => {
+    // Hardcoded fallbacks to avoid breaking Supabase with local .env files
+    const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID || "service_rhfqucq";
+    const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || "template_e60twuf";
+    const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || "q6l2XIrfR0caK9qKs";
+
+    console.log("DEBUG: handleTestReminder triggered v2.2 (with fallbacks)", {
+      hasService: !!serviceId,
+      hasTemplate: !!templateId,
+      hasKey: !!publicKey,
+      to_email: contract.reminder_email
+    });
+
+    if (!contract.reminder_email) {
+      toast.error("Defina um e-mail para receber o lembrete antes de testar.");
+      return;
+    }
+
+    if (!serviceId || !templateId || !publicKey) {
+      toast.error("Configuração EmailJS incompleta (.env). Verifique SERVICE_ID, TEMPLATE_ID e PUBLIC_KEY.");
+      console.error("DEBUG: Missing EmailJS env vars", { serviceId, templateId, publicKey });
+      return;
+    }
+
+    const templateParams = {
+      to_email: contract.reminder_email,
+      to_name: contract.party_name,
+      contract_title: contract.title,
+      contract_number: contract.contract_number,
+      expiry_date: formatDate(contract.end_date),
+      notice_days: contract.renewal_notice_days,
+      link_dashboard: window.location.href
+    };
+
+    const promise = emailjs.send(serviceId, templateId, templateParams, publicKey);
+
+    toast.promise(promise, {
+      loading: 'Enviando lembrete via EmailJS (v2.1)...',
+      success: (res) => {
+        console.log("DEBUG: EmailJS Success:", res);
+        return "E-mail de teste enviado com sucesso!";
+      },
+      error: (err: any) => {
+        console.error("DEBUG: EmailJS Error Details:", err);
+        const detailedError = err?.text || (typeof err === 'object' ? JSON.stringify(err) : String(err));
+        return `Falha no EmailJS: ${detailedError.substring(0, 80)}`;
+      }
+    });
   };
 
   const getStatusBadge = (status: string | null) => {
@@ -634,8 +742,8 @@ Este contrato de ${contract.type.toUpperCase()} entre a MEDBEAUTY e ${contract.p
           <div className="grid gap-6 lg:grid-cols-2">
             <KPIChart
               title="Status de Compliance"
-              description="Distribuição por status de conformidade"
-              data={complianceData}
+              description="Distribuição real por status de conformidade"
+              data={realComplianceData || []}
               type="pie"
             />
             <Card>
@@ -644,30 +752,44 @@ Este contrato de ${contract.type.toUpperCase()} entre a MEDBEAUTY e ${contract.p
                 <CardDescription>Itens que requerem atenção</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center gap-3 p-3 bg-warning/5 rounded-lg border border-warning/20">
-                  <AlertTriangle className="h-5 w-5 text-warning flex-shrink-0" />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">Contratos a vencer</p>
-                    <p className="text-xs text-muted-foreground">3 contratos vencem nos próximos 30 dias</p>
+                {stats?.expiringContracts > 0 && (
+                  <div className="flex items-center gap-3 p-3 bg-warning/5 rounded-lg border border-warning/20">
+                    <AlertTriangle className="h-5 w-5 text-warning flex-shrink-0" />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">Contratos a vencer</p>
+                      <p className="text-xs text-muted-foreground">{stats.expiringContracts} contratos vencem nos próximos 30 dias</p>
+                    </div>
+                    <Button variant="outline" size="sm" onClick={() => setSearchTerm("expiring")}>Ver</Button>
                   </div>
-                  <Button variant="outline" size="sm">Ver</Button>
-                </div>
-                <div className="flex items-center gap-3 p-3 bg-destructive/5 rounded-lg border border-destructive/20">
-                  <Clock className="h-5 w-5 text-destructive flex-shrink-0" />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">Prazos próximos</p>
-                    <p className="text-xs text-muted-foreground">2 casos com prazo judicial esta semana</p>
+                )}
+                {stats?.openCases > 0 && (
+                  <div className="flex items-center gap-3 p-3 bg-destructive/5 rounded-lg border border-destructive/20">
+                    <Clock className="h-5 w-5 text-destructive flex-shrink-0" />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">Processos Ativos</p>
+                      <p className="text-xs text-muted-foreground">{stats.openCases} casos jurídicos em andamento</p>
+                    </div>
+                    <Button variant="outline" size="sm" onClick={() => navigate("/crm/juridico/casos")}>Ver</Button>
                   </div>
-                  <Button variant="outline" size="sm">Ver</Button>
-                </div>
-                <div className="flex items-center gap-3 p-3 bg-info/5 rounded-lg border border-info/20">
-                  <FileSignature className="h-5 w-5 text-info flex-shrink-0" />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">Assinaturas pendentes</p>
-                    <p className="text-xs text-muted-foreground">5 contratos aguardando assinatura</p>
+                )}
+                {contracts?.filter(c => c.status === 'pending_signature').length > 0 && (
+                  <div className="flex items-center gap-3 p-3 bg-info/5 rounded-lg border border-info/20">
+                    <FileSignature className="h-5 w-5 text-info flex-shrink-0" />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">Assinaturas pendentes</p>
+                      <p className="text-xs text-muted-foreground">
+                        {contracts.filter(c => c.status === 'pending_signature').length} contratos aguardando assinatura
+                      </p>
+                    </div>
+                    <Button variant="outline" size="sm" onClick={() => setSearchTerm("pending_signature")}>Ver</Button>
                   </div>
-                  <Button variant="outline" size="sm">Ver</Button>
-                </div>
+                )}
+                {!stats?.expiringContracts && !stats?.openCases && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <CheckCircle className="h-8 w-8 mx-auto mb-2 opacity-20" />
+                    <p className="text-sm">Tudo em dia!</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -801,6 +923,13 @@ Este contrato de ${contract.type.toUpperCase()} entre a MEDBEAUTY e ${contract.p
                                 )}
                                 Resumo IA
                               </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => handleTestReminder(contract)}
+                                className="text-muted-foreground"
+                              >
+                                <Bell className="h-4 w-4 mr-2" />
+                                Testar Lembrete
+                              </DropdownMenuItem>
                               <DropdownMenuItem>Renovar</DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -817,31 +946,75 @@ Este contrato de ${contract.type.toUpperCase()} entre a MEDBEAUTY e ${contract.p
 
       {/* Modal de Resumo IA */}
       <Dialog open={!!viewingSummary} onOpenChange={() => setViewingSummary(null)}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <Brain className="h-5 w-5 text-primary" />
+        <DialogContent className="sm:max-w-[700px] gap-0 p-0 overflow-hidden bg-gradient-to-b from-background to-muted/20 border-primary/20">
+          <DialogHeader className="p-6 pb-2">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-primary/10 rounded-xl shadow-inner border border-primary/20">
+                  <Brain className="h-6 w-6 text-primary animate-pulse" />
+                </div>
+                <div>
+                  <DialogTitle className="text-xl font-serif">Resumo Inteligente</DialogTitle>
+                  <p className="text-xs text-muted-foreground flex items-center gap-1">
+                    <Bot className="h-3 w-3" /> Gerado por MedBeauty AI Engine
+                  </p>
+                </div>
               </div>
-              Resumo Inteligente - IA
-            </DialogTitle>
-            <DialogDescription>
-              Análise automática dos termos e condições do contrato: <strong>{viewingSummary?.title}</strong>
+              <Badge variant="outline" className="bg-primary/5 border-primary/20 font-mono text-[10px] uppercase tracking-tighter">
+                Análise de Contrato
+              </Badge>
+            </div>
+            <DialogDescription className="text-sm font-medium border-l-2 border-primary/30 pl-3 py-1">
+              Contrato: <span className="text-foreground">{viewingSummary?.title}</span>
             </DialogDescription>
           </DialogHeader>
-          <div className="bg-muted/50 p-6 rounded-xl border border-primary/10">
-            <div className="prose prose-sm dark:prose-invert max-w-none">
-              <div className="whitespace-pre-wrap leading-relaxed text-sm">
-                {viewingSummary?.content}
+
+          <div className="px-6 py-4">
+            <div className="relative group">
+              <div className="max-h-[50vh] overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-primary/20 hover:scrollbar-thumb-primary/40 transition-colors bg-white/40 dark:bg-black/20 p-6 rounded-2xl border border-primary/10 backdrop-blur-sm shadow-[inset_0_2px_10px_rgba(0,0,0,0.05)]">
+                <div className="prose prose-sm dark:prose-invert max-w-none">
+                  <div className="whitespace-pre-wrap leading-relaxed text-sm font-sans tracking-wide space-y-4">
+                    {viewingSummary?.content}
+                  </div>
+                </div>
               </div>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                className="absolute top-3 right-7 opacity-0 group-hover:opacity-100 transition-all duration-300 bg-background/80 hover:bg-primary/10 hover:text-primary backdrop-blur border border-primary/10"
+                onClick={() => {
+                  if (viewingSummary?.content) {
+                    navigator.clipboard.writeText(viewingSummary.content);
+                    toast.success("Copiado para a área de transferência!");
+                  }
+                }}
+              >
+                <Plus className="h-3 w-3 mr-1 rotate-45" /> Copiar Texto
+              </Button>
             </div>
           </div>
-          <DialogFooter className="flex justify-between sm:justify-between items-center bg-primary/5 -mx-6 -mb-6 p-4 rounded-b-lg border-t border-primary/10">
-            <p className="text-[10px] text-muted-foreground flex items-center gap-1">
-              <Bot className="h-3 w-3" />
-              Powered by MedBeauty AI Insight
-            </p>
-            <Button onClick={() => setViewingSummary(null)}>Fechar</Button>
+
+          <DialogFooter className="bg-primary/5 p-4 flex items-center justify-between mt-2 border-t border-primary/10">
+            <div className="flex items-center gap-4">
+              <div className="flex -space-x-2">
+                <div className="w-6 h-6 rounded-full bg-primary/20 border-2 border-background flex items-center justify-center">
+                  <Shield className="w-3 h-3 text-primary" />
+                </div>
+                <div className="w-6 h-6 rounded-full bg-blue-500/20 border-2 border-background flex items-center justify-center">
+                  <Scale className="w-3 h-3 text-blue-500" />
+                </div>
+              </div>
+              <p className="text-[10px] text-muted-foreground font-medium italic">
+                Análise baseada em metadados. Revise sempre o documento original.
+              </p>
+            </div>
+            <Button
+              onClick={() => setViewingSummary(null)}
+              className="px-8 shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all duration-300"
+            >
+              Concluído
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

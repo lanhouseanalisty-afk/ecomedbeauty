@@ -1,85 +1,80 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
-// Section: "Você é naturalmente beauty"
-export function BrandStatementSection() {
+
+import { CheckSquare, ShieldCheck } from "lucide-react";
+
+// Section: "Evidência Clínica" - Overhauled for Grade 10+
+export function ClinicalEvidenceSection() {
     return (
-        <section className="py-20 bg-[#fdfbf7] text-center">
-            <div className="max-w-4xl mx-auto px-4">
-                <h2 className="text-[#cfa79d] font-bold text-3xl md:text-4xl font-serif mb-4 uppercase tracking-widest">
-                    MEDBEAUTY
-                </h2>
-                <p className="text-[#5a4b66] text-lg md:text-xl font-light italic">
-                    Você é naturalmente beauty!
-                </p>
-            </div>
-        </section>
-    )
-}
+        <section className="relative py-24 lg:py-32 overflow-hidden bg-slate-50">
+            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/micro-carbon.png')] opacity-5" />
 
-import { CheckSquare } from "lucide-react";
-
-// Section: "Resultados Reais" - Redesigned
-export function RealResultsSection() {
-    return (
-        <section className="relative w-full overflow-hidden bg-[#7e6c92] min-h-[500px] flex items-center py-12 lg:py-0">
-            <div className="mx-auto w-full max-w-[1400px] flex flex-col lg:flex-row relative z-10 px-4 lg:px-0">
-
-                {/* Left Card - Glassmorphism Effect */}
-                <div className="bg-white/90 backdrop-blur-xl border border-white/20 lg:w-[65%] w-full rounded-r-[50px] lg:rounded-r-[80px] rounded-l-[20px] lg:rounded-l-none flex flex-col md:flex-row shadow-2xl overflow-hidden relative min-h-[450px]">
-                    {/* Image Side */}
-                    <div className="w-full md:w-1/2 relative h-[300px] md:h-auto">
-                        <img
-                            src="https://images.unsplash.com/photo-1616683693504-3ea7e9ad6fec?q=80&w=1974&auto=format&fit=crop"
-                            alt="Resultados Reais"
-                            className="absolute inset-0 w-full h-full object-cover"
-                        />
-                        {/* Gold Glow/Overlay effect at bottom left */}
-                        <div className="absolute bottom-[-50px] left-[-50px] w-64 h-64 bg-[#ECB546]/30 blur-[60px] rounded-full pointer-events-none"></div>
-                    </div>
-
-                    {/* Text Side */}
-                    <div className="w-full md:w-1/2 p-8 lg:p-12 flex flex-col justify-center">
-                        <h2 className="text-[#3b1b63] font-bold text-3xl md:text-4xl font-sans mb-6">
-                            Resultados reais
-                        </h2>
-                        <p className="text-gray-600 text-base leading-relaxed">
-                            A Medbeauty é especializada em soluções estéticas de alta performance, desenvolvidas com tecnologia e foco em resultados naturais e seguros.
-                        </p>
-                    </div>
-
-                    {/* Decorative Purple Curve overlapping from right (Visual trick) */}
-                    <div className="absolute top-0 right-0 w-0 md:w-0 h-full"></div>
-                </div>
-
-                {/* Right Content - On Purple Background */}
-                <div className="lg:w-[35%] w-full flex flex-col justify-center pl-8 lg:pl-16 pr-8 mt-8 lg:mt-0 text-white space-y-8">
-
-                    {[
-                        "Todos os produtos MedBeauty são desenvolvidos seguindo os mais rigorosos padrões de qualidade e segurança",
-                        "Certificação ISO, CE e BPF ANVISA: Atestando que nossos processos de produção seguem normas internacionais de qualidade.",
-                        "Registro na ANVISA: Garantindo que nossos produtos são seguros e aprovados para uso no Brasil.",
-                        "Certificações Internacionais: Reconhecimento de órgãos globais que validam a eficácia e a biocompatibilidade dos nossos produtos."
-                    ].map((text, idx) => (
-                        <div key={idx} className="flex gap-4 items-start group">
-                            <div className="mt-1 shrink-0">
-                                <div className="bg-white/20 p-1 rounded hover:bg-white/30 transition-colors">
-                                    <CheckSquare className="w-5 h-5 text-white" />
+            <div className="max-w-7xl mx-auto px-4 lg:px-8 relative z-10">
+                <div className="grid lg:grid-cols-2 gap-16 items-center">
+                    {/* Visual Comparison / Evidence Card */}
+                    <div className="relative group animate-fade-in-up">
+                        <div className="absolute -inset-4 bg-gradient-to-tr from-[#2B0F54]/10 to-[#ECB546]/10 rounded-[4rem] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                        <div className="relative bg-white rounded-[3.5rem] p-4 shadow-elegant border border-slate-100 overflow-hidden">
+                            <img
+                                src="https://images.unsplash.com/photo-1616683693504-3ea7e9ad6fec?q=80&w=1974&auto=format&fit=crop"
+                                alt="Evidência Clínica"
+                                className="w-full h-[500px] object-cover rounded-[3rem] transition-transform duration-1000 group-hover:scale-105"
+                            />
+                            <div className="absolute bottom-10 left-10 right-10 flex gap-4">
+                                <div className="flex-1 bg-white/80 backdrop-blur-xl p-6 rounded-3xl border border-white/20 shadow-lg">
+                                    <div className="text-2xl font-bold text-[#2B0F54]">98%</div>
+                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Satisfação Clínica</div>
+                                </div>
+                                <div className="flex-1 bg-[#2B0F54]/90 backdrop-blur-xl p-6 rounded-3xl border border-white/20 shadow-lg">
+                                    <div className="text-2xl font-bold text-[#ECB546]">Zero</div>
+                                    <div className="text-[10px] font-bold text-white/60 uppercase tracking-widest">Efeitos Adversos</div>
                                 </div>
                             </div>
-                            <p className="text-sm font-medium leading-normal opacity-90 group-hover:opacity-100 transition-opacity">
-                                {text}
+                        </div>
+                    </div>
+
+                    {/* Content */}
+                    <div className="space-y-10 animate-fade-in-up stagger-1">
+                        <div className="space-y-4">
+                            <div className="inline-flex items-center gap-2 text-[#ECB546]">
+                                <ShieldCheck className="h-5 w-5" />
+                                <span className="text-xs font-bold uppercase tracking-[0.3em]">Protocolo de Segurança</span>
+                            </div>
+                            <h2 className="font-serif text-4xl lg:text-5xl font-bold text-[#2B0F54] leading-tight">
+                                Evidência Clínica de <br />
+                                <span className="text-[#cfa79d] italic">Alta Performance</span>
+                            </h2>
+                            <p className="text-slate-500 text-lg leading-relaxed">
+                                Nossos processos são auditados internacionalmente, garantindo que cada miligrama de produto entregue a pureza necessária para procedimentos de alta complexidade.
                             </p>
                         </div>
-                    ))}
 
+                        <div className="grid gap-6">
+                            {[
+                                { title: "Certificação Global", desc: "Aprovado pelos rigorosos critérios da ANVISA, CE e FDA Compliant." },
+                                { title: "Rastreabilidade SAP", desc: "Controle total do lote, desde a síntese molecular até a sua clínica." },
+                                { title: "Biocompatibilidade", desc: "Fórmulas otimizadas para integração tecidual sem resposta inflamatória." }
+                            ].map((item, idx) => (
+                                <div key={idx} className="flex gap-5 group">
+                                    <div className="h-12 w-12 rounded-2xl bg-white border border-slate-100 shadow-sm flex items-center justify-center shrink-0 group-hover:border-[#ECB546]/30 transition-colors">
+                                        <CheckSquare className="h-5 w-5 text-[#ECB546]" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <h4 className="font-bold text-[#2B0F54]">{item.title}</h4>
+                                        <p className="text-sm text-slate-400 leading-relaxed">{item.desc}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
     )
 }
 
-// Section: Brand Logos Grid
+// Section: Brand Logos - Scrolling Marquee Grade 10+
 export function BrandLogosSection() {
     const brands = [
         { img: '/medbeauty/logo_ithread.jpg.webp', link: '/produto/i-thread' },
@@ -91,17 +86,21 @@ export function BrandLogosSection() {
     ];
 
     return (
-        <section className="py-12 border-t border-b border-[#eee0d9] bg-[#fcfaf7]">
-            <div className="max-w-7xl mx-auto px-4">
-                <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16 opacity-70 grayscale hover:grayscale-0 transition-all duration-500">
-                    {brands.map((brand, idx) => (
+        <section className="py-16 bg-white border-y border-slate-100 overflow-hidden">
+            <div className="flex flex-col items-center mb-10 space-y-2">
+                <span className="text-[10px] font-bold text-[#ECB546] uppercase tracking-[0.3em]">Portfólio Global</span>
+                <h3 className="font-serif text-2xl font-bold text-[#2B0F54]">Marcas de Confiança</h3>
+            </div>
+
+            <div className="relative flex overflow-hidden group">
+                <div className="flex animate-marquee whitespace-nowrap gap-16 items-center py-4 group-hover:pause">
+                    {[...brands, ...brands, ...brands].map((brand, idx) => (
                         <Link
                             key={idx}
                             to={brand.link}
-                            className="hover:opacity-100 transition-opacity animate-float"
-                            style={{ animationDelay: `${idx * 0.5}s` }}
+                            className="grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all duration-500 px-4"
                         >
-                            <img src={brand.img} alt="Brand" className="h-8 md:h-12 object-contain mix-blend-multiply" />
+                            <img src={brand.img} alt="Brand" className="h-10 md:h-14 object-contain mix-blend-multiply" />
                         </Link>
                     ))}
                 </div>
@@ -110,63 +109,3 @@ export function BrandLogosSection() {
     )
 }
 
-// Section: Product Highlights (Alternating)
-export function ProductHighlightsSection() {
-    return (
-        <div className="flex flex-col">
-            {/* i-Thread */}
-            <section className="bg-gradient-to-br from-[#fdfbf7] via-[#f7f4fc] to-[#efeaf6] py-16 lg:py-24">
-                <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                    <div className="space-y-6 order-2 lg:order-1">
-                        <h2 className="text-4xl font-serif font-bold text-[#2b0f54]">i-THREAD</h2>
-                        <p className="text-[#5a4b66] text-lg leading-relaxed">
-                            O i-Thread foi o primeiro fio de PDO a ser introduzido no mercado brasileiro e, desde então, consolidou-se como referência em excelência e confiança.
-                        </p>
-                        <Button asChild className="bg-[#cfa79d] hover:bg-[#b08d85] text-white uppercase tracking-wider px-8 rounded-none shadow-md">
-                            <Link to="/produto/i-thread">Saiba mais</Link>
-                        </Button>
-                    </div>
-                    <div className="order-1 lg:order-2 flex justify-center">
-                        <img src="/medbeauty/i-tread3.webp" alt="i-Thread" className="max-w-full max-h-[500px] object-contain drop-shadow-xl hover:scale-105 transition-transform duration-500" />
-                    </div>
-                </div>
-            </section>
-
-            {/* e.p.t.q. */}
-            <section className="bg-gradient-to-bl from-[#efeaf6] via-[#f7f4fc] to-[#fdfbf7] py-16 lg:py-24">
-                <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                    <div className="order-1 lg:order-1 flex justify-center">
-                        <img src="/medbeauty/eptq.webp" alt="e.p.t.q." className="max-w-full max-h-[500px] object-contain drop-shadow-xl hover:scale-105 transition-transform duration-500" />
-                    </div>
-                    <div className="space-y-6 order-2 lg:order-2 lg:pl-12">
-                        <h2 className="text-4xl font-serif font-bold text-[#2b0f54]">e.p.t.q.</h2>
-                        <p className="text-[#5a4b66] text-lg leading-relaxed">
-                            O e.p.t.q. é um preenchedor de ácido hialurônico reconhecido em mais de 60 países pela sua pureza e qualidade superior.
-                        </p>
-                        <Button asChild className="bg-[#cfa79d] hover:bg-[#b08d85] text-white uppercase tracking-wider px-8 rounded-none shadow-md">
-                            <Link to="/produto/eptq">Saiba mais</Link>
-                        </Button>
-                    </div>
-                </div>
-            </section>
-
-            {/* Idebenone */}
-            <section className="bg-gradient-to-br from-[#fdfbf7] via-[#f7f4fc] to-[#efeaf6] py-16 lg:py-24">
-                <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                    <div className="space-y-6 order-2 lg:order-1">
-                        <h2 className="text-4xl font-serif font-bold text-[#2b0f54]">Idebenone Ampoule</h2>
-                        <p className="text-[#5a4b66] text-lg leading-relaxed">
-                            Idebenone Ampoule é o antioxidante mais potente do mercado. Com eficácia superior a outros princípios ativos e resultados 4x mais potentes que o da Vitamina C.
-                        </p>
-                        <Button asChild className="bg-[#cfa79d] hover:bg-[#b08d85] text-white uppercase tracking-wider px-8 rounded-none shadow-md">
-                            <Link to="/produto/idebenone">Saiba mais</Link>
-                        </Button>
-                    </div>
-                    <div className="order-1 lg:order-2 flex justify-center">
-                        <img src="/medbeauty/ibedome-03.webp" alt="Idebenone" className="max-w-full max-h-[500px] object-contain drop-shadow-xl hover:scale-105 transition-transform duration-500" />
-                    </div>
-                </div>
-            </section>
-        </div>
-    )
-}

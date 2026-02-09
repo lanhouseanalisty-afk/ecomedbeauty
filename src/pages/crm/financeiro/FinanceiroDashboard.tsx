@@ -53,7 +53,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useInvoices, useFinancialStats } from "@/hooks/useFinanceiro";
+import { useInvoices, useFinancialStats, useMonthlyCashflow } from "@/hooks/useFinanceiro";
 import { QuickStats } from "@/components/crm/shared/QuickStats";
 import { KPIChart } from "@/components/crm/shared/KPIChart";
 import { SearchFilter } from "@/components/crm/shared/SearchFilter";
@@ -62,14 +62,6 @@ import { EmptyState } from "@/components/crm/shared/EmptyState";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { toast } from "sonner";
 
-const cashFlowData = [
-  { name: "Jan", value: 42000 },
-  { name: "Fev", value: 55000 },
-  { name: "Mar", value: 48000 },
-  { name: "Abr", value: 62000 },
-  { name: "Mai", value: 71000 },
-  { name: "Jun", value: 85000 },
-];
 
 export default function FinanceiroDashboard() {
   const [activeTab, setActiveTab] = useState("all");
@@ -77,6 +69,7 @@ export default function FinanceiroDashboard() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { invoices, isLoading, createInvoice } = useInvoices();
   const { data: stats } = useFinancialStats();
+  const { data: realCashFlowData } = useMonthlyCashflow();
 
   const [newInvoice, setNewInvoice] = useState({
     invoice_number: "",
@@ -291,8 +284,8 @@ export default function FinanceiroDashboard() {
       <div className="grid gap-6 lg:grid-cols-2">
         <KPIChart
           title="Fluxo de Caixa"
-          description="Evolução do saldo nos últimos 6 meses"
-          data={cashFlowData}
+          description="Evolução do saldo nos últimos meses"
+          data={realCashFlowData || []}
           type="area"
         />
         <Card>

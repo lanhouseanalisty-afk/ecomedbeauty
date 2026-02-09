@@ -57,13 +57,20 @@
     --gold: 45 100% 51%;
     --gold-light: 45 100% 75%;
 
+    /* Royal Purple & Scientific Indigo */
+    --royal-purple: 265 69% 19%; /* #2B0F54 */
+    --royal-purple-light: 265 60% 35%;
+    --royal-purple-dark: 265 80% 12%;
+    --scientific-blue: 215 100% 45%;
+    --scientific-indigo: 245 80% 40%;
+
     /* Gradients */
     --gradient-rose: linear-gradient(135deg, hsl(15 50% 85%) 0%, hsl(15 45% 75%) 100%);
     --gradient-cream: linear-gradient(180deg, hsl(30 30% 99%) 0%, hsl(30 25% 95%) 100%);
     --gradient-elegant: linear-gradient(135deg, hsl(30 25% 97%) 0%, hsl(15 30% 95%) 50%, hsl(150 15% 95%) 100%);
-    --gradient-hero: linear-gradient(135deg, hsl(30 25% 97%) 0%, hsl(15 40% 92%) 50%, hsl(150 20% 94%) 100%);
-    --gradient-premium: linear-gradient(135deg, hsl(45 100% 51% / 0.1) 0%, hsl(15 45% 65% / 0.2) 100%);
-    --gradient-dark: linear-gradient(180deg, hsl(30 10% 8%) 0%, hsl(30 8% 12%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(var(--royal-purple-dark)) 0%, hsl(var(--royal-purple)) 50%, hsl(var(--primary-foreground) / 0.1) 100%);
+    --gradient-premium: linear-gradient(135deg, hsl(var(--gold) / 0.2) 0%, hsl(var(--royal-purple) / 0.1) 100%);
+    --gradient-dark: linear-gradient(180deg, hsl(265 80% 8%) 0%, hsl(265 60% 12%) 100%);
     --gradient-glass: linear-gradient(135deg, hsl(0 0% 100% / 0.1) 0%, hsl(0 0% 100% / 0.05) 100%);
 
     /* Shadows */

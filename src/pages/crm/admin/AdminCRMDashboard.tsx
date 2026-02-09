@@ -1,13 +1,14 @@
 import { useState } from "react";
-import { 
-  Building2, 
-  Users, 
-  Shield, 
+import {
+  Building2,
+  Users,
+  Shield,
   Settings,
   Activity,
   MoreHorizontal,
   Search,
-  Plus
+  Plus,
+  Loader2
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -28,49 +29,81 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-const users = [
-  { id: 1, name: "Admin Master", email: "admin@medbeauty.com", role: "admin_global", status: "active", lastLogin: "2024-01-15 10:30" },
-  { id: 2, name: "Maria Silva", email: "maria@medbeauty.com", role: "sales_manager", status: "active", lastLogin: "2024-01-15 09:15" },
-  { id: 3, name: "João Santos", email: "joao@medbeauty.com", role: "finance_manager", status: "active", lastLogin: "2024-01-14 16:45" },
-  { id: 4, name: "Ana Costa", email: "ana@medbeauty.com", role: "marketing_manager", status: "inactive", lastLogin: "2024-01-10 11:00" },
-  { id: 5, name: "Pedro Lima", email: "pedro@medbeauty.com", role: "tech_support", status: "active", lastLogin: "2024-01-15 08:00" },
-];
-
-const stats = [
-  { title: "Usuários Ativos", value: "45", icon: Users },
-  { title: "Departamentos", value: "9", icon: Building2 },
-  { title: "Perfis", value: "11", icon: Shield },
-  { title: "Logs Hoje", value: "1.2K", icon: Activity },
-];
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 export default function AdminDashboard() {
-  const getRoleBadge = (role: string) => {
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const { data: usersData, isLoading: isLoadingUsers } = useQuery({
+    queryKey: ['admin-dashboard-users'],
+    queryFn: async () => {
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('full_name', { ascending: true });
+
+      if (profilesError) throw profilesError;
+
+      const { data: roles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('*');
+
+      if (rolesError) throw rolesError;
+
+      return profiles.map(profile => ({
+        ...profile,
+        roles: roles.filter(r => r.user_id === profile.id).map(r => r.role)
+      }));
+    }
+  });
+
+  const getRoleBadge = (roles: string[]) => {
+    if (!roles || roles.length === 0) return <Badge className="bg-muted text-muted-foreground">Funcionário</Badge>;
+
+    // Show most prominent role
+    const roleOrder = ['admin', 'rh_manager', 'finance_manager', 'marketing_manager', 'sales_manager', 'tech_support'];
+    const primaryRole = roleOrder.find(r => roles.includes(r)) || roles[0];
+
     const roleMap: Record<string, { label: string; className: string }> = {
-      admin_global: { label: "Admin Global", className: "bg-destructive/10 text-destructive" },
+      admin: { label: "Admin Global", className: "bg-destructive/10 text-destructive" },
       rh_manager: { label: "Gerente RH", className: "bg-info/10 text-info" },
       finance_manager: { label: "Gerente Financeiro", className: "bg-success/10 text-success" },
       marketing_manager: { label: "Gerente Marketing", className: "bg-warning/10 text-warning" },
       sales_manager: { label: "Gerente Comercial", className: "bg-primary/10 text-primary" },
       tech_support: { label: "Suporte Tech", className: "bg-purple-500/10 text-purple-500" },
-      employee: { label: "Funcionário", className: "bg-muted text-muted-foreground" },
     };
-    const config = roleMap[role] || { label: role, className: "" };
+
+    const config = roleMap[primaryRole] || { label: primaryRole, className: "" };
     return <Badge className={config.className}>{config.label}</Badge>;
   };
 
-  const getStatusBadge = (status: string) => {
-    return status === "active" 
+  const getStatusBadge = (isActive: boolean) => {
+    return isActive !== false
       ? <Badge className="bg-success/10 text-success">Ativo</Badge>
-      : <Badge className="bg-muted text-muted-foreground">Inativo</Badge>;
+      : <Badge className="bg-muted text-muted-foreground border-dashed">Inativo</Badge>;
   };
+
+  const filteredUsers = usersData?.filter(user =>
+    user.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const stats = [
+    { title: "Usuários Ativos", value: usersData?.filter(u => u.is_active !== false).length || "0", icon: Users },
+    { title: "Departamentos", value: "9", icon: Building2 }, // Hardcoded for now until we have a departments table
+    { title: "Gerentes", value: usersData?.filter(u => u.roles && u.roles.some((r: string) => r.includes('manager'))).length || "0", icon: Shield },
+    { title: "Inativos", value: usersData?.filter(u => u.is_active === false).length || "0", icon: Activity },
+  ];
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="font-serif text-3xl font-bold">Administração</h1>
-          <p className="text-muted-foreground">Gestão de usuários, permissões e configurações</p>
+          <p className="text-muted-foreground">Gestão de usuários, permissões e configurações em tempo real</p>
         </div>
         <Button>
           <Plus className="mr-2 h-4 w-4" />
@@ -112,49 +145,67 @@ export default function AdminDashboard() {
                 </div>
                 <div className="relative w-64">
                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input placeholder="Buscar usuário..." className="pl-10" />
+                  <Input
+                    placeholder="Buscar usuário..."
+                    className="pl-10"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
                 </div>
               </div>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nome</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Perfil</TableHead>
-                    <TableHead>Último Acesso</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="w-10"></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {users.map((user) => (
-                    <TableRow key={user.id}>
-                      <TableCell className="font-medium">{user.name}</TableCell>
-                      <TableCell>{user.email}</TableCell>
-                      <TableCell>{getRoleBadge(user.role)}</TableCell>
-                      <TableCell>{user.lastLogin}</TableCell>
-                      <TableCell>{getStatusBadge(user.status)}</TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem>Editar</DropdownMenuItem>
-                            <DropdownMenuItem>Alterar Perfil</DropdownMenuItem>
-                            <DropdownMenuItem>Reset Senha</DropdownMenuItem>
-                            <DropdownMenuItem className="text-destructive">Desativar</DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
+              {isLoadingUsers ? (
+                <div className="flex items-center justify-center p-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nome</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Perfil</TableHead>
+                      <TableHead>Último Acesso</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="w-10"></TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredUsers?.map((user) => (
+                      <TableRow key={user.id} className={user.is_active === false ? 'opacity-60' : ''}>
+                        <TableCell className="font-medium">{user.full_name || "Sem Nome"}</TableCell>
+                        <TableCell>{user.email}</TableCell>
+                        <TableCell>{getRoleBadge(user.roles || [])}</TableCell>
+                        <TableCell className="text-xs">
+                          {user.last_seen_at
+                            ? format(new Date(user.last_seen_at), "dd/MM HH:mm", { locale: ptBR })
+                            : "Nunca accessou"
+                          }
+                        </TableCell>
+                        <TableCell>{getStatusBadge(user.is_active)}</TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem>Editar</DropdownMenuItem>
+                              <DropdownMenuItem>Alterar Perfil</DropdownMenuItem>
+                              <DropdownMenuItem>Reset Senha</DropdownMenuItem>
+                              <DropdownMenuItem className="text-destructive">
+                                {user.is_active === false ? 'Ativar' : 'Desativar'}
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -178,7 +229,7 @@ export default function AdminDashboard() {
               <CardDescription>Histórico de ações no sistema</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">Em desenvolvimento...</p>
+              <p className="text-muted-foreground">Conectando aos logs do Supabase em breve...</p>
             </CardContent>
           </Card>
         </TabsContent>

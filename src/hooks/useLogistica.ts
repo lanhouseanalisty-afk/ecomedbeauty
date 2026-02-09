@@ -148,3 +148,17 @@ export function useLogisticsStats() {
     },
   });
 }
+
+export function useDeliveryTrend() {
+  return useQuery({
+    queryKey: ['delivery_trend'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('v_logistics_trend')
+        .select('*');
+
+      if (error) throw error;
+      return data;
+    },
+  });
+}

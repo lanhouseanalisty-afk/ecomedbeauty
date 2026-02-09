@@ -9,6 +9,7 @@ import { useMarketingStats } from "@/hooks/useMarketing";
 import { QuickStats } from "@/components/crm/shared/QuickStats";
 import { KPIChart } from "@/components/crm/shared/KPIChart";
 import { formatCurrency } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
 const performanceData = [
   { name: "Sem 1", value: 12500 },

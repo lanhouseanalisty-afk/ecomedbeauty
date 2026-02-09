@@ -145,12 +145,10 @@ async function getAdmissionEquipments(cpf: string) {
         if (!data) return null;
 
         const items = [];
-        if (data.needs_laptop) items.push("Notebook/Desktop");
-        if (data.needs_monitor) items.push("Monitor");
-        if (data.needs_headset) items.push("Headset");
-        if (data.needs_keyboard) items.push("Teclado");
-        if (data.needs_mouse) items.push("Mouse");
-        if (data.needs_printer) items.push("Impressora");
+        if (data.needs_laptop) items.push("Notebook");
+        if (data.needs_monitor) items.push("Desktop");
+        if (data.needs_headset) items.push("Tablet");
+        if (data.needs_keyboard) items.push("Celular");
 
         return items.length > 0 ? items.join(", ") : null;
     } catch (e) {

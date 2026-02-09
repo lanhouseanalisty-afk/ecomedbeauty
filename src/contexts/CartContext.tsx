@@ -12,6 +12,8 @@ interface CartContextType {
   totalItems: number;
   totalPrice: number;
   isValidatingStock: boolean;
+  isCartOpen: boolean;
+  setIsCartOpen: (open: boolean) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -21,12 +23,18 @@ const CART_STORAGE_KEY = "medbeauty_cart";
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>(() => {
     if (typeof window !== "undefined") {
-      const stored = localStorage.getItem(CART_STORAGE_KEY);
-      return stored ? JSON.parse(stored) : [];
+      try {
+        const stored = localStorage.getItem(CART_STORAGE_KEY);
+        return stored ? JSON.parse(stored) : [];
+      } catch (error) {
+        console.error("Failed to parse cart local storage", error);
+        return [];
+      }
     }
     return [];
   });
   const [isValidatingStock, setIsValidatingStock] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   useEffect(() => {
     localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
@@ -41,7 +49,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setIsValidatingStock(true);
     try {
       const stockResult = await checkItemStock(product.id, totalQuantity);
-      
+
       if (!stockResult.available) {
         toast.error(
           `Estoque insuficiente. Disponível: ${stockResult.stock} unidades`,
@@ -61,6 +69,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         }
         return [...prev, { product, quantity }];
       });
+      setIsCartOpen(true);
       toast.success(`${product.name} adicionado ao carrinho`);
     } catch (error) {
       console.error("Stock validation error:", error);
@@ -76,6 +85,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         }
         return [...prev, { product, quantity }];
       });
+      setIsCartOpen(true);
       toast.success(`${product.name} adicionado ao carrinho`);
     } finally {
       setIsValidatingStock(false);
@@ -120,6 +130,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
         totalItems,
         totalPrice,
         isValidatingStock,
+        isCartOpen,
+        setIsCartOpen,
       }}
     >
       {children}

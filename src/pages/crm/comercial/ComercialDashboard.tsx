@@ -65,7 +65,7 @@ export default function ComercialDashboard() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSearchDialogOpen, setIsSearchDialogOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<any>(null);
-  const { leads, isLoading, createLead } = useLeads();
+  const { leads, isLoading, createLead, updateLead, deleteLead } = useLeads();
   const { opportunities } = useOpportunities();
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState<"list" | "kanban">("list");
@@ -101,6 +101,16 @@ export default function ComercialDashboard() {
         });
       }
     });
+  };
+
+  const handleUpdateStatus = (leadId: string, newStatus: string) => {
+    updateLead.mutate({ id: leadId, status: newStatus });
+  };
+
+  const handleDeleteLead = (leadId: string) => {
+    if (confirm('Tem certeza que deseja remover este lead?')) {
+      deleteLead.mutate(leadId);
+    }
   };
 
   const getStatusBadge = (status: string | null) => {
@@ -443,8 +453,36 @@ export default function ComercialDashboard() {
                                 <Mail className="mr-2 h-3.5 w-3.5" /> Enviar Email
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem className="cursor-pointer text-destructive focus:text-destructive">
-                                Arquivar Lead
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <DropdownMenuItem className="cursor-pointer" onSelect={(e) => e.preventDefault()}>
+                                    Alterar Status
+                                  </DropdownMenuItem>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent side="left" align="start">
+                                  <DropdownMenuItem onClick={() => handleUpdateStatus(lead.id, 'new')}>
+                                    Novo
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleUpdateStatus(lead.id, 'contacted')}>
+                                    Contatado
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleUpdateStatus(lead.id, 'qualified')}>
+                                    Qualificado
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleUpdateStatus(lead.id, 'converted')}>
+                                    Convertido
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleUpdateStatus(lead.id, 'lost')}>
+                                    Perdido
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                className="cursor-pointer text-destructive focus:text-destructive"
+                                onClick={() => handleDeleteLead(lead.id)}
+                              >
+                                Remover Lead
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>

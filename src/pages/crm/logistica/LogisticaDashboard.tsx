@@ -32,35 +32,32 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useShipments, useLogisticsStats } from "@/hooks/useLogistica";
+import { useShipments, useLogisticsStats, useDeliveryTrend } from "@/hooks/useLogistica";
 import { QuickStats } from "@/components/crm/shared/QuickStats";
 import { KPIChart } from "@/components/crm/shared/KPIChart";
 import { SearchFilter } from "@/components/crm/shared/SearchFilter";
 import { DataExport } from "@/components/crm/shared/DataExport";
 import { EmptyState } from "@/components/crm/shared/EmptyState";
 
-const deliveryData = [
-  { name: "Seg", value: 45 },
-  { name: "Ter", value: 52 },
-  { name: "Qua", value: 38 },
-  { name: "Qui", value: 65 },
-  { name: "Sex", value: 72 },
-  { name: "Sáb", value: 28 },
-  { name: "Dom", value: 12 },
-];
-
-const carrierData = [
-  { name: "Correios", value: 45 },
-  { name: "JadLog", value: 25 },
-  { name: "Total Express", value: 18 },
-  { name: "Outros", value: 12 },
-];
 
 export default function LogisticaDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("all");
   const { shipments, isLoading, updateShipment } = useShipments();
   const { data: stats } = useLogisticsStats();
+  const { data: realDeliveryData } = useDeliveryTrend();
+
+  // Aggregate carrier data from shipments
+  const carrierDistribution = shipments?.reduce((acc: any[], ship: any) => {
+    const carrierName = (ship as any).carrier?.name || 'Outros';
+    const existing = acc.find(c => c.name === carrierName);
+    if (existing) {
+      existing.value += 1;
+    } else {
+      acc.push({ name: carrierName, value: 1 });
+    }
+    return acc;
+  }, []) || [];
 
   const getStatusBadge = (status: string | null) => {
     const statusMap: Record<string, { label: string; className: string; icon: React.ReactNode }> = {
@@ -132,13 +129,13 @@ export default function LogisticaDashboard() {
         <KPIChart
           title="Entregas por Dia"
           description="Volume de entregas na última semana"
-          data={deliveryData}
+          data={realDeliveryData || []}
           type="bar"
         />
         <KPIChart
           title="Distribuição por Transportadora"
           description="Percentual de envios por transportadora"
-          data={carrierData}
+          data={carrierDistribution}
           type="pie"
         />
       </div>

@@ -13,7 +13,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
-import AdmissionNotifications from "./AdmissionNotifications";
+import { NotificationCenter } from "./NotificationCenter";
 
 // Map route to department slug
 function getDepartmentFromRoute(pathname: string): string | undefined {
@@ -43,18 +43,25 @@ export function CRMHeader() {
       <SidebarTrigger className="-ml-2" />
 
       <div className="flex flex-1 items-center gap-4">
-        <div className="relative max-w-md flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            type="search"
-            placeholder="Buscar no CRM..."
-            className="pl-10 bg-background"
-          />
-        </div>
+        <button
+          onClick={() => {
+            const event = new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, metaKey: true });
+            document.dispatchEvent(event);
+          }}
+          className="relative max-w-md flex-1 text-left group"
+        >
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-hover:text-primary transition-colors" />
+          <div className="flex items-center justify-between w-full h-10 pl-10 pr-3 rounded-md border border-input bg-background text-sm text-muted-foreground hover:bg-muted/50 transition-colors pointer-events-none">
+            <span>Busca Inteligente...</span>
+            <kbd className="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+              <span className="text-xs">⌘</span>K
+            </kbd>
+          </div>
+        </button>
       </div>
 
       <div className="flex items-center gap-2">
-        <AdmissionNotifications departmentSlug={departmentSlug} />
+        <NotificationCenter />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

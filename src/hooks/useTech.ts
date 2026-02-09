@@ -3,7 +3,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { Database } from '@/integrations/supabase/types';
 
-type Ticket = Database['public']['Tables']['tickets']['Row'];
+type Ticket = Database['public']['Tables']['tickets']['Row'] & {
+  category?: { name: string };
+  requester?: { full_name: string; email: string; avatar_url: string | null };
+};
 type TicketInsert = Database['public']['Tables']['tickets']['Insert'];
 
 export function useTickets() {
@@ -163,6 +166,51 @@ export function useSendMessage() {
     onError: (error) => {
       toast.error('Erro ao enviar mensagem: ' + error.message);
     }
+  });
+}
+
+export function useTechTeam() {
+  return useQuery({
+    queryKey: ['tech_team'],
+    queryFn: async () => {
+      const { data: roles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .in('role', ['tech_support', 'admin', 'tech']);
+
+      if (rolesError) throw rolesError;
+
+      const userIds = [...new Set(roles.map(r => r.user_id))];
+
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, full_name, email, avatar_url')
+        .in('id', userIds);
+
+      if (profilesError) throw profilesError;
+      return profiles;
+    },
+  });
+}
+
+export function useTicketHistory(ticketId: string | null) {
+  return useQuery({
+    queryKey: ['ticket_history', ticketId],
+    queryFn: async () => {
+      if (!ticketId) return [];
+      const { data, error } = await supabase
+        .from('ticket_history')
+        .select(`
+          *,
+          user:profiles(full_name, email)
+        `)
+        .eq('ticket_id', ticketId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!ticketId,
   });
 }
 

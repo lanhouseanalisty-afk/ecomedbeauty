@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -23,7 +23,11 @@ import {
   PlusCircle,
   Loader2,
   RefreshCw,
-  Eye
+  RefreshCcw,
+  Eye,
+  Car,
+  FileUp,
+  FileDown
 } from "lucide-react";
 import { useDepartmentAdmissions } from "@/hooks/useAdmission";
 import { useTechAssets } from "@/hooks/useTech";
@@ -33,11 +37,13 @@ import { DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { useUserRole } from "@/hooks/useUserRole";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { supabase } from "@/integrations/supabase/client";
 
 const stepLabels: Record<string, string> = {
   rh: "RH",
   gestor: "Gestor",
   ti: "TI",
+  compras: "Compras",
   rh_review: "Revisão RH",
   colaborador: "Colaborador",
   concluido: "Concluído",
@@ -47,6 +53,7 @@ const stepColors: Record<string, string> = {
   rh: "bg-blue-500",
   gestor: "bg-purple-500",
   ti: "bg-orange-500",
+  compras: "bg-rose-500",
   rh_review: "bg-cyan-500",
   colaborador: "bg-green-500",
   concluido: "bg-emerald-500",
@@ -75,16 +82,19 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
     processes,
     isLoading,
     updateManagerStep,
+    updateComprasStep,
     updateITStep,
     completeAdmission
   } = useDepartmentAdmissions(departmentSlug);
 
   const { isAdmin } = useUserRole();
-
-  // Para TI: mostrar todos os processos que estão no step 'ti', independente do departamento
-  // Para outros departamentos: mostrar processos do próprio departamento
-  // Admin vê todos os processos
   const isTech = departmentSlug === 'tech';
+  const isCompras = departmentSlug === 'compras';
+
+  // ROLE SIMULATION
+  const [simulationRole, setSimulationRole] = useState<'admin' | 'gestor' | 'ti' | 'rh' | 'compras'>(
+    isAdmin ? 'admin' : (isTech ? 'ti' : (isCompras ? 'compras' : 'gestor'))
+  );
 
   const pendingProcesses = processes?.filter(p =>
     p.status !== 'completed' &&
@@ -95,11 +105,13 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
   // Para TI: aguardando ação são os processos no step 'ti'
   // Para outros (gestores): aguardando ação são os processos no step 'gestor' do seu departamento
   // Admin vê todos os processos pendentes de ação
-  const awaitingMyAction = isAdmin
-    ? pendingProcesses.filter(p => p.current_step === 'gestor' || p.current_step === 'ti')
-    : isTech
+  const awaitingMyAction = (simulationRole === 'admin' || isAdmin)
+    ? pendingProcesses.filter(p => p.current_step === 'gestor' || p.current_step === 'ti' || p.current_step === 'rh_review')
+    : simulationRole === 'ti'
       ? pendingProcesses.filter(p => p.current_step === 'ti')
-      : pendingProcesses.filter(p => p.current_step === 'gestor');
+      : simulationRole === 'rh'
+        ? pendingProcesses.filter(p => p.current_step === 'rh' || p.current_step === 'rh_review')
+        : pendingProcesses.filter(p => p.current_step === 'gestor');
   const awaitingIT = pendingProcesses.filter(p => p.current_step === 'ti');
   const completedProcesses = processes?.filter(p => p.status === 'completed' && (isAdmin || isTech ? true : p.target_department === departmentSlug)) || [];
 
@@ -114,10 +126,8 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
   const EQUIPAMENTOS_OPTIONS = [
     { value: "Notebook", label: "Notebook" },
     { value: "Desktop", label: "Desktop" },
+    { value: "Tablet", label: "Tablet" },
     { value: "Celular", label: "Celular" },
-    { value: "Monitor", label: "Monitor" },
-    { value: "HeadSet", label: "HeadSet" },
-    { value: "Mouse", label: "Mouse" },
   ];
 
   // Opções de softwares (igual ao AdmissaoForm)
@@ -145,6 +155,7 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
     sharepoint_pasta: "",
     outros_acessos: "",
     necessita_impressora: false,
+    needs_vehicle: null as boolean | null,
     manager_observations: "",
   });
 
@@ -163,6 +174,25 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
     general_tests_done: false,    // 11. Testes gerais realizados?
     it_observations: "",          // 12. Observações da TI
   });
+
+  // Estado do formulário de Compras
+  const [comprasForm, setComprasForm] = useState({
+    vehicle_id: "",
+    pickup_address: "",
+    pickup_date: "",
+    pickup_time: "",
+    compras_remarks: "",
+  });
+
+  const [vehicles, setVehicles] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchVehicles = async () => {
+      const { data } = await supabase.from('vehicles').select('*').eq('status', 'available');
+      if (data) setVehicles(data);
+    };
+    fetchVehicles();
+  }, [processes]);
 
   const { assets, updateAsset, createAsset } = useTechAssets();
   const [assignedAssetIds, setAssignedAssetIds] = useState<string[]>([]);
@@ -278,6 +308,37 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
     }
   };
 
+  const handleComprasSubmit = async (processId: string) => {
+    try {
+      await updateComprasStep.mutateAsync({
+        id: processId,
+        data: {
+          vehicle_id: comprasForm.vehicle_id,
+          pickup_address: comprasForm.pickup_address,
+          pickup_date: comprasForm.pickup_date,
+          pickup_time: comprasForm.pickup_time,
+          compras_remarks: comprasForm.compras_remarks,
+        },
+      });
+
+      // Update vehicle status to in_use if selected
+      if (comprasForm.vehicle_id) {
+        const process = processes?.find(p => p.id === processId);
+        await supabase
+          .from('vehicles')
+          .update({
+            status: 'in_use',
+            assigned_to_name: process?.employee_name
+          })
+          .eq('id', comprasForm.vehicle_id);
+      }
+
+      setSelectedProcess(null);
+    } catch (error) {
+      // Error handled in hook
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -290,6 +351,22 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
           <p className="text-muted-foreground">
             Processos de admissão destinados ao seu departamento
           </p>
+        </div>
+
+        {/* SIMULADOR DE PAPEL */}
+        <div className="flex items-center gap-2 bg-muted p-1 px-3 rounded-full text-xs">
+          <span className="text-muted-foreground">Simular:</span>
+          <select
+            value={simulationRole}
+            onChange={(e) => setSimulationRole(e.target.value as any)}
+            className="bg-transparent border-none focus:ring-0 cursor-pointer font-bold text-primary"
+          >
+            <option value="rh">RH</option>
+            <option value="gestor">Gestor</option>
+            <option value="ti">TI</option>
+            <option value="compras">Compras</option>
+            <option value="admin">Admin</option>
+          </select>
         </div>
       </div>
 
@@ -530,10 +607,13 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                 // Admin vê baseado no step atual do processo
                 if (isAdmin) {
                   if (process.current_step === 'ti') return 'Configuração TI';
+                  if (process.current_step === 'compras') return 'Atribuição de Veículo';
                   if (process.current_step === 'gestor') return 'Definições do Gestor';
                   return 'Detalhes do Processo';
                 }
-                return isTech ? 'Configuração TI' : 'Definições do Gestor';
+                if (isTech) return 'Configuração TI';
+                if (isCompras) return 'Atribuição de Veículo';
+                return 'Definições do Gestor';
               })()}
             </DialogTitle>
           </DialogHeader>
@@ -545,8 +625,9 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                 if (!process) return null;
 
                 // Para admin, determinar qual formulário mostrar baseado no step atual
-                const showITForm = isAdmin ? process.current_step === 'ti' : isTech;
-                const showManagerForm = isAdmin ? process.current_step === 'gestor' : !isTech;
+                const showITForm = (simulationRole === 'admin' || isAdmin) ? process.current_step === 'ti' : simulationRole === 'ti';
+                const showManagerForm = (simulationRole === 'admin' || isAdmin) ? process.current_step === 'gestor' : simulationRole === 'gestor';
+                const showComprasForm = (simulationRole === 'admin' || isAdmin) ? process.current_step === 'compras' : simulationRole === 'compras';
 
                 return (
                   <>
@@ -582,10 +663,113 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                             <p className="font-medium">{process.manager_observations}</p>
                           </div>
                         )}
+                        {showComprasForm && process.manager_observations && (
+                          <div className="col-span-2">
+                            <span className="text-muted-foreground">Observações do Gestor:</span>
+                            <p className="font-medium">{process.manager_observations}</p>
+                          </div>
+                        )}
                       </div>
                     </div>
 
                     {/* Formulário baseado no step do processo (para admin) ou tipo de departamento */}
+                    {showComprasForm && (
+                      <div className="space-y-6">
+                        <div className="p-4 bg-rose-50 dark:bg-rose-900/20 rounded-lg border border-rose-100 dark:border-rose-800">
+                          <Label className="text-base font-medium text-rose-800 dark:text-rose-300 flex items-center gap-2 mb-4">
+                            <Car className="h-4 w-4" />
+                            Atribuir Veículo
+                          </Label>
+
+                          <div className="space-y-4">
+                            <div>
+                              <Label htmlFor="vehicle_select">Veículo</Label>
+                              <select
+                                id="vehicle_select"
+                                className="w-full mt-2 p-2 rounded-md border bg-background"
+                                value={comprasForm.vehicle_id}
+                                onChange={(e) => setComprasForm(prev => ({ ...prev, vehicle_id: e.target.value }))}
+                              >
+                                <option value="">Selecione um veículo...</option>
+                                {vehicles?.map(v => (
+                                  <option key={v.id} value={v.id}>
+                                    {v.model} - {v.plate} ({v.rental_company})
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+
+                            <div className="space-y-4">
+                              <div>
+                                <Label htmlFor="pickup_address">Endereço de Retirada</Label>
+                                <Input
+                                  id="pickup_address"
+                                  placeholder="Rua, Número, Bairro, Cidade - UF"
+                                  className="mt-2"
+                                  value={comprasForm.pickup_address}
+                                  onChange={(e) => setComprasForm(prev => ({ ...prev, pickup_address: e.target.value }))}
+                                />
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                  <Label htmlFor="pickup_date">Data de Retirada</Label>
+                                  <Input
+                                    id="pickup_date"
+                                    type="date"
+                                    className="mt-2"
+                                    value={comprasForm.pickup_date}
+                                    onChange={(e) => setComprasForm(prev => ({ ...prev, pickup_date: e.target.value }))}
+                                  />
+                                </div>
+                                <div>
+                                  <Label htmlFor="pickup_time">Horário de Retirada</Label>
+                                  <Input
+                                    id="pickup_time"
+                                    type="time"
+                                    className="mt-2"
+                                    value={comprasForm.pickup_time}
+                                    onChange={(e) => setComprasForm(prev => ({ ...prev, pickup_time: e.target.value }))}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                              <Button variant="outline" className="h-16 flex flex-col gap-1 border-dashed">
+                                <FileUp className="h-4 w-4" />
+                                <span className="text-xs">Upload Contrato</span>
+                              </Button>
+                              <div className="p-2 border rounded bg-muted/50 flex items-center justify-between">
+                                <span className="text-xs truncate max-w-[100px]">termo_modelo.pdf</span>
+                                <Button size="icon" variant="ghost" className="h-6 w-6">
+                                  <FileDown className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            </div>
+
+                            <div>
+                              <Label htmlFor="compras_obs">Observações</Label>
+                              <Textarea
+                                id="compras_obs"
+                                placeholder="Notas sobre a frota/entrega"
+                                className="mt-2"
+                                value={comprasForm.compras_remarks}
+                                onChange={(e) => setComprasForm(prev => ({ ...prev, compras_remarks: e.target.value }))}
+                              />
+                            </div>
+
+                            <Button
+                              className="w-full bg-rose-600 hover:bg-rose-700 text-white"
+                              onClick={() => handleComprasSubmit(process.id)}
+                            >
+                              Concluir Etapa Compras
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     {showITForm ? (
                       /* Formulário da TI - 12 itens do checklist */
                       <div className="space-y-6">
@@ -596,14 +780,12 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                             <div>
                               <span className="text-muted-foreground">Equipamentos:</span>
                               <div className="mt-1 space-y-1">
-                                {process.needs_laptop && <span className="block">• Notebook/Desktop</span>}
-                                {process.needs_monitor && <span className="block">• Monitor</span>}
-                                {process.needs_headset && <span className="block">• Headset</span>}
-                                {process.needs_keyboard && <span className="block">• Teclado</span>}
-                                {process.needs_mouse && <span className="block">• Mouse</span>}
-                                {process.needs_printer && <span className="block">• Impressora</span>}
+                                {process.needs_laptop && <span className="block">• Notebook</span>}
+                                {process.needs_monitor && <span className="block">• Desktop</span>}
+                                {process.needs_headset && <span className="block">• Tablet</span>}
+                                {process.needs_keyboard && <span className="block">• Celular</span>}
                                 {!process.needs_laptop && !process.needs_monitor && !process.needs_headset &&
-                                  !process.needs_keyboard && !process.needs_mouse && !process.needs_printer && (
+                                  !process.needs_keyboard && (
                                     <span className="text-muted-foreground italic">Nenhum solicitado</span>
                                   )}
                               </div>
@@ -658,49 +840,94 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                             </div>
                           </div>
 
-                          <div className="space-y-2">
-                            <Select onValueChange={(val) => {
-                              if (!assignedAssetIds.includes(val)) {
-                                setAssignedAssetIds([...assignedAssetIds, val]);
-                              }
-                            }}>
-                              <SelectTrigger className="bg-background notranslate">
-                                <SelectValue placeholder={isTransfer ? "Selecione um ativo em uso..." : "Selecione um ativo do estoque..."} />
-                              </SelectTrigger>
-                              <SelectContent className="notranslate">
-                                {filteredAssets?.map(asset => (
-                                  <SelectItem key={asset.id} value={asset.id}>
-                                    <span className="font-medium mr-2">[{asset.asset_tag}]</span>
-                                    {asset.model}
-                                    {isTransfer && asset.assigned_to_name && (
-                                      <span className="text-muted-foreground ml-2 text-xs">
-                                        (Ex: {asset.assigned_to_name})
-                                      </span>
-                                    )}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                          <div className="space-y-4 mt-2">
+                            {/* Requisitos específicos do Gestor */}
+                            {[
+                              { id: 'laptop', label: 'Notebook', req: process.needs_laptop, type: 'notebook' },
+                              { id: 'desktop', label: 'Desktop', req: process.needs_monitor, type: 'notebook' },
+                              { id: 'tablet', label: 'Tablet', req: process.needs_headset, type: 'other' },
+                              { id: 'celular', label: 'Celular', req: process.needs_keyboard, type: 'smartphone' },
+                            ].filter(item => item.req).map(req => (
+                              <div key={req.id} className="space-y-1.5 border-l-2 border-blue-400 pl-3 py-1 bg-blue-50/50 dark:bg-blue-900/10 rounded-r-md">
+                                <Label className="text-xs font-bold text-blue-700 dark:text-blue-400 uppercase flex items-center justify-between">
+                                  <span>Vincular {req.label}</span>
+                                  <span className="text-[10px] bg-blue-100 dark:bg-blue-800 px-1.5 rounded">SOLICITADO</span>
+                                </Label>
+                                <Select onValueChange={(val) => {
+                                  if (!assignedAssetIds.includes(val)) {
+                                    setAssignedAssetIds([...assignedAssetIds, val]);
+                                  }
+                                }}>
+                                  <SelectTrigger className="bg-background notranslate h-9 border-blue-200 focus:ring-blue-500">
+                                    <SelectValue placeholder={`Selecione um ${req.label}...`} />
+                                  </SelectTrigger>
+                                  <SelectContent className="notranslate">
+                                    {filteredAssets?.filter(a => req.type === 'other' || a.device_type === req.type).map(asset => (
+                                      <SelectItem key={asset.id} value={asset.id}>
+                                        <span className="font-medium mr-2">[{asset.asset_tag}]</span>
+                                        {asset.model}
+                                        {isTransfer && asset.assigned_to_name && (
+                                          <span className="text-muted-foreground ml-2 text-[10px] italic">
+                                            (Com: {asset.assigned_to_name})
+                                          </span>
+                                        )}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            ))}
+
+                            {/* Seleção Genérica / Outros */}
+                            <div className="space-y-1.5 border-l-2 border-gray-300 pl-3 py-1">
+                              <Label className="text-xs font-bold text-muted-foreground uppercase">
+                                Outros Ativos / Adicionais
+                              </Label>
+                              <Select onValueChange={(val) => {
+                                if (!assignedAssetIds.includes(val)) {
+                                  setAssignedAssetIds([...assignedAssetIds, val]);
+                                }
+                              }}>
+                                <SelectTrigger className="bg-background notranslate h-9">
+                                  <SelectValue placeholder="Adicionar outro equipamento..." />
+                                </SelectTrigger>
+                                <SelectContent className="notranslate">
+                                  {filteredAssets?.map(asset => (
+                                    <SelectItem key={asset.id} value={asset.id}>
+                                      <span className="font-medium mr-2">[{asset.asset_tag}]</span>
+                                      {asset.model}
+                                      {isTransfer && asset.assigned_to_name && (
+                                        <span className="text-muted-foreground ml-2 text-[10px] italic">
+                                          (Com: {asset.assigned_to_name})
+                                        </span>
+                                      )}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
 
                             {assignedAssetIds.length > 0 && (
-                              <div className="space-y-2 mt-2">
-                                <Label className="text-xs text-muted-foreground">Itens selecionados para vínculo:</Label>
+                              <div className="pt-2 space-y-2">
+                                <Label className="text-[11px] font-semibold text-blue-800 dark:text-blue-300 uppercase tracking-tight">Equipamentos vinculados para entrega:</Label>
                                 {assignedAssetIds.map(id => {
                                   const asset = assets?.find(a => a.id === id);
                                   return (
-                                    <div key={id} className="flex items-center justify-between bg-background p-2 rounded border text-sm">
-                                      <span>
-                                        {asset?.device_type === 'notebook' && <Monitor className="inline h-3 w-3 mr-1 text-blue-500" />}
-                                        <strong>{asset?.asset_tag}</strong> - {asset?.model}
-                                        {asset?.assigned_to_name && isTransfer && (
-                                          <span className="text-xs text-amber-600 block">
-                                            <RefreshCw className="inline h-3 w-3 mr-1" />
-                                            Transferindo de: {asset.assigned_to_name}
-                                          </span>
-                                        )}
+                                    <div key={id} className="flex items-center justify-between bg-white dark:bg-slate-950 p-2 rounded-md border border-blue-200 dark:border-blue-800 text-sm shadow-sm transition-all hover:border-blue-300">
+                                      <span className="flex items-center gap-2">
+                                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                                        <span>
+                                          <strong>{asset?.asset_tag}</strong> - {asset?.model}
+                                          {isTransfer && asset?.assigned_to_name && (
+                                            <span className="text-[10px] text-amber-600 dark:text-amber-400 block leading-tight">
+                                              <RefreshCcw className="inline h-2 w-2 mr-1" />
+                                              Transferindo de: {asset.assigned_to_name}
+                                            </span>
+                                          )}
+                                        </span>
                                       </span>
                                       <Button
-                                        variant="ghost" size="icon" className="h-6 w-6 text-red-500"
+                                        variant="ghost" size="icon" className="h-7 w-7 text-red-500 hover:bg-red-50 hover:text-red-600 rounded-full"
                                         onClick={() => setAssignedAssetIds(ids => ids.filter(i => i !== id))}
                                       >
                                         <X className="h-4 w-4" />
@@ -928,9 +1155,32 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                           </div>
                         </div>
 
-                        {/* 3. Softwares necessários */}
+                        {/* 3. O Colaborador vai utilizar veículo? */}
                         <div>
-                          <Label className="text-base font-medium">3. Softwares necessários</Label>
+                          <Label className="text-base font-medium">3. O Colaborador vai utilizar veículo?</Label>
+                          <div className="flex flex-wrap gap-4 mt-3">
+                            <div className="flex items-center space-x-2">
+                              <Checkbox
+                                id="vehicle-sim"
+                                checked={managerForm.needs_vehicle === true}
+                                onCheckedChange={(checked) => setManagerForm(prev => ({ ...prev, needs_vehicle: true }))}
+                              />
+                              <Label htmlFor="vehicle-sim" className="cursor-pointer">Sim</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <Checkbox
+                                id="vehicle-nao"
+                                checked={managerForm.needs_vehicle === false}
+                                onCheckedChange={(checked) => setManagerForm(prev => ({ ...prev, needs_vehicle: false }))}
+                              />
+                              <Label htmlFor="vehicle-nao" className="cursor-pointer">Não</Label>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* 4. Softwares necessários */}
+                        <div>
+                          <Label className="text-base font-medium">4. Softwares necessários</Label>
                           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-3">
                             {SOFTWARES_OPTIONS.map(item => (
                               <div key={item.value} className="flex items-center space-x-2 rounded-md border p-3">
@@ -952,9 +1202,9 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                           </div>
                         </div>
 
-                        {/* 4. Acessos necessários */}
+                        {/* 5. Acessos necessários */}
                         <div>
-                          <Label className="text-base font-medium">4. Acessos necessários</Label>
+                          <Label className="text-base font-medium">5. Acessos necessários</Label>
                           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-3">
                             {ACESSOS_OPTIONS.map(item => (
                               <div key={item.value} className="flex items-center space-x-2 rounded-md border p-3">
@@ -1021,12 +1271,12 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                               setManagerForm(prev => ({ ...prev, necessita_impressora: !!checked }))
                             }
                           />
-                          <Label htmlFor="necessita_impressora">5. Necessita impressora?</Label>
+                          <Label htmlFor="necessita_impressora">6. Necessita impressora?</Label>
                         </div>
 
                         {/* 6. Observações */}
                         <div>
-                          <Label htmlFor="observations">6. Observações do Gestor</Label>
+                          <Label htmlFor="observations">7. Observações do Gestor</Label>
                           <Textarea
                             id="observations"
                             placeholder="Informe sistemas, acessos ou requisitos específicos..."

@@ -19,7 +19,9 @@ import {
   Store,
   Wrench,
   Shield,
-  Beaker
+  Beaker,
+  Database,
+  ListTodo
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
@@ -47,7 +49,8 @@ import { cn } from "@/lib/utils";
 
 interface SubItem {
   title: string;
-  url: string;
+  url?: string;
+  subitems?: SubItem[];
 }
 
 interface MenuItem {
@@ -84,6 +87,31 @@ const menuSections: MenuSection[] = [
     ],
   },
   {
+    title: "Intranet Medbeauty",
+    items: [
+      {
+        title: "Mural de Avisos",
+        icon: Megaphone,
+        url: "/crm/intranet",
+      },
+      {
+        title: "Biblioteca Interna",
+        icon: FileText,
+        url: "/crm/biblioteca",
+      },
+      {
+        title: "Planilha do Jean",
+        icon: ListTodo,
+        url: "/crm/checklist/planilha-jean",
+      },
+      {
+        title: "Solicitação de Insumos",
+        icon: Package,
+        url: "/crm/marketing/solicitacoes",
+      },
+    ],
+  },
+  {
     title: "Setores",
     items: [
       {
@@ -91,10 +119,10 @@ const menuSections: MenuSection[] = [
         icon: Building2,
         url: "/crm/admin",
         subitems: [
-          { title: "Visão Geral", url: "/crm/admin" },
           { title: "Usuários", url: "/crm/admin/usuarios" },
-          { title: "Permissões", url: "/crm/admin/permissoes" },
-          { title: "Auditoria", url: "/crm/admin/auditoria" },
+          { title: "Integração SAP B1", url: "/crm/integracoes/sap" },
+          { title: "Admissão & Demissão", url: "/crm/admin/admissao" },
+          { title: "Controle de Processos", url: "/crm/controle-processos" },
           { title: "Solicitações entre Setores", url: "/crm/admin/solicitacoes-setores" },
         ],
       },
@@ -104,6 +132,9 @@ const menuSections: MenuSection[] = [
         url: "/crm/cientifica",
         subitems: [
           { title: "Dashboard", url: "/crm/cientifica" },
+          { title: "Apresentações Científicas", url: "/crm/cientifica/apresentacoes" },
+          { title: "Admissão & Demissão", url: "/crm/cientifica/admissao" },
+          { title: "Controle de Processos", url: "/crm/controle-processos" },
           { title: "Solicitações entre Setores", url: "/crm/cientifica/solicitacoes-setores" },
         ],
       },
@@ -113,12 +144,48 @@ const menuSections: MenuSection[] = [
         url: "/crm/comercial",
         subitems: [
           { title: "Leads", url: "/crm/comercial" },
-          { title: "Admissão", url: "/crm/comercial/admissao" },
-          { title: "Inside Sales", url: "/crm/comercial/inside-sales" },
-          { title: "Sudeste", url: "/crm/comercial/sudeste" },
-          { title: "Sul", url: "/crm/comercial/sul" },
-          { title: "Centro", url: "/crm/comercial/centro" },
-          { title: "Norte", url: "/crm/comercial/norte" },
+          {
+            title: "Inside Sales",
+            subitems: [
+              { title: "Dashboard", url: "/crm/comercial/inside-sales" },
+              { title: "Controle de Processos", url: "/crm/controle-processos" },
+            ]
+          },
+          {
+            title: "Franquias",
+            subitems: [
+              { title: "Dashboard", url: "/crm/comercial/franquias" },
+              { title: "Controle de Processos", url: "/crm/controle-processos" },
+            ]
+          },
+          {
+            title: "Sudeste",
+            subitems: [
+              { title: "Dashboard", url: "/crm/comercial/sudeste" },
+              { title: "Controle de Processos", url: "/crm/controle-processos" },
+            ]
+          },
+          {
+            title: "Sul",
+            subitems: [
+              { title: "Dashboard", url: "/crm/comercial/sul" },
+              { title: "Controle de Processos", url: "/crm/controle-processos" },
+            ]
+          },
+          {
+            title: "Centro",
+            subitems: [
+              { title: "Dashboard", url: "/crm/comercial/centro" },
+              { title: "Controle de Processos", url: "/crm/controle-processos" },
+            ]
+          },
+          {
+            title: "Norte",
+            subitems: [
+              { title: "Dashboard", url: "/crm/comercial/norte" },
+              { title: "Controle de Processos", url: "/crm/controle-processos" },
+            ]
+          },
         ],
       },
       {
@@ -129,25 +196,21 @@ const menuSections: MenuSection[] = [
         url: "/crm/compras",
         subitems: [
           { title: "Dashboard", url: "/crm/compras" },
+          { title: "Admissão & Demissão", url: "/crm/compras/admissao" },
+          { title: "Controle de Processos", url: "/crm/controle-processos" },
+          { title: "Veículos", url: "/crm/compras/veiculos" },
           { title: "Solicitações entre Setores", url: "/crm/compras/solicitacoes-setores" },
         ],
       },
 
-      {
-        title: "Diretoria",
-        icon: Shield,
-        url: "/crm/diretoria",
-        subitems: [
-          { title: "Dashboard", url: "/crm/diretoria" },
-          { title: "Indicadores (KPIs)", url: "/crm/diretoria/kpis" },
-        ],
-      },
       {
         title: "E-commerce",
         icon: ShoppingCart,
         url: "/crm/ecommerce",
         subitems: [
           { title: "Dashboard", url: "/crm/ecommerce" },
+          { title: "Admissão & Demissão", url: "/crm/ecommerce/admissao" },
+          { title: "Controle de Processos", url: "/crm/controle-processos" },
           { title: "Produtos", url: "/crm/ecommerce/produtos" },
           { title: "Categorias", url: "/crm/ecommerce/categorias" },
           { title: "Pedidos", url: "/crm/ecommerce/pedidos" },
@@ -162,7 +225,8 @@ const menuSections: MenuSection[] = [
         url: "/crm/financeiro",
         subitems: [
           { title: "Dashboard", url: "/crm/financeiro" },
-          { title: "Admissão", url: "/crm/financeiro/admissao" },
+          { title: "Admissão & Demissão", url: "/crm/financeiro/admissao" },
+          { title: "Controle de Processos", url: "/crm/controle-processos" },
           { title: "Faturas", url: "/crm/financeiro/faturas" },
           { title: "Pagamentos", url: "/crm/financeiro/pagamentos" },
           { title: "Contas", url: "/crm/financeiro/contas" },
@@ -177,7 +241,8 @@ const menuSections: MenuSection[] = [
         url: "/crm/juridico",
         subitems: [
           { title: "Dashboard", url: "/crm/juridico" },
-          { title: "Admissão", url: "/crm/juridico/admissao" },
+          { title: "Admissão & Demissão", url: "/crm/juridico/admissao" },
+          { title: "Controle de Processos", url: "/crm/controle-processos" },
           { title: "Contratos", url: "/crm/juridico/contratos" },
           { title: "Casos", url: "/crm/juridico/casos" },
           { title: "Compliance", url: "/crm/juridico/compliance" },
@@ -190,12 +255,9 @@ const menuSections: MenuSection[] = [
         url: "/crm/logistica",
         subitems: [
           { title: "Dashboard", url: "/crm/logistica" },
-          { title: "Admissão", url: "/crm/logistica/admissao" },
-          { title: "Pedidos", url: "/crm/logistica/pedidos" },
-          { title: "Envios", url: "/crm/logistica/envios" },
-          { title: "Estoque", url: "/crm/logistica/estoque" },
-          { title: "Transportadoras", url: "/crm/logistica/transportadoras" },
-          { title: "Depósitos", url: "/crm/logistica/depositos" },
+          { title: "Admissão & Demissão", url: "/crm/logistica/admissao" },
+          { title: "Controle de Processos", url: "/crm/controle-processos" },
+          { title: "Pedidos Insumos", url: "/crm/logistica/pedidos" },
           { title: "Solicitações entre Setores", url: "/crm/logistica/solicitacoes-setores" },
         ],
       },
@@ -205,6 +267,8 @@ const menuSections: MenuSection[] = [
         url: "/crm/manutencao",
         subitems: [
           { title: "Dashboard", url: "/crm/manutencao" },
+          { title: "Admissão & Demissão", url: "/crm/manutencao/admissao" },
+          { title: "Controle de Processos", url: "/crm/controle-processos" },
           { title: "Solicitações entre Setores", url: "/crm/manutencao/solicitacoes-setores" },
         ],
       },
@@ -214,9 +278,9 @@ const menuSections: MenuSection[] = [
         url: "/crm/marketing",
         subitems: [
           { title: "Dashboard", url: "/crm/marketing" },
-          { title: "Admissão", url: "/crm/marketing/admissao" },
+          { title: "Admissão & Demissão", url: "/crm/marketing/admissao" },
+          { title: "Controle de Processos", url: "/crm/controle-processos" },
           { title: "Campanhas", url: "/crm/marketing/campanhas" },
-          { title: "Insumos", url: "/crm/marketing/solicitacoes" },
           { title: "Solicitações entre Setores", url: "/crm/marketing/solicitacoes-setores" },
         ],
       },
@@ -226,10 +290,8 @@ const menuSections: MenuSection[] = [
         url: "/crm/rh",
         subitems: [
           { title: "Dashboard", url: "/crm/rh" },
-          { title: "Admissão", url: "/crm/rh/admissao" },
-          { title: "Demissão", url: "/crm/rh/demissao" },
-          { title: "Férias", url: "/crm/rh/ferias" },
-          { title: "Treinamentos", url: "/crm/rh/treinamentos" },
+          { title: "Admissão & Demissão", url: "/crm/rh/operacoes" },
+          { title: "Controle de Processos", url: "/crm/controle-processos" },
           { title: "Solicitações entre Setores", url: "/crm/rh/solicitacoes-setores" },
         ],
       },
@@ -238,10 +300,11 @@ const menuSections: MenuSection[] = [
         icon: Headphones,
         url: "/crm/tech",
         subitems: [
-          { title: "Admissão", url: "/crm/tech/admissao" },
-          { title: "Demissão / Offboarding", url: "/crm/tech/demissao" },
-          { title: "Tickets", url: "/crm/tech/tickets" },
-          { title: "Ativos / Inventário", url: "/crm/tech/ativos" },
+          { title: "Admissão & Demissão", url: "/crm/tech/admissao" },
+          { title: "Controle de Processos", url: "/crm/controle-processos" },
+          { title: "Chamados", url: "/crm/tech/tickets" },
+          // Ativos movido para Checklist
+          { title: "Inventário", url: "/crm/tech/inventario" },
           { title: "Base de Conhecimento", url: "/crm/tech/kb" },
           { title: "Solicitações entre Setores", url: "/crm/tech/solicitacoes-setores" },
         ],
@@ -305,7 +368,7 @@ export function CRMSidebar() {
                           >
                             <div className="flex items-center gap-3">
                               <item.icon className="h-5 w-5" />
-                              {!collapsed && <span>{item.title}</span>}
+                              {!collapsed && <span className={cn(section.title === "Setores" && "font-bold")}>{item.title}</span>}
                             </div>
                             {!collapsed && (
                               <ChevronDown className="h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-180" />
@@ -316,16 +379,44 @@ export function CRMSidebar() {
                           <CollapsibleContent>
                             <SidebarMenuSub>
                               {item.subitems.map((subitem) => (
-                                <SidebarMenuSubItem key={subitem.url}>
-                                  <SidebarMenuSubButton
-                                    asChild
-                                    isActive={isActive(subitem.url)}
-                                    className="h-auto whitespace-normal py-1.5"
-                                  >
-                                    <NavLink to={subitem.url}>
-                                      {subitem.title}
-                                    </NavLink>
-                                  </SidebarMenuSubButton>
+                                <SidebarMenuSubItem key={subitem.title}>
+                                  {subitem.subitems ? (
+                                    <Collapsible>
+                                      <CollapsibleTrigger asChild>
+                                        <SidebarMenuSubButton className="w-full justify-between group">
+                                          <span>{subitem.title}</span>
+                                          <ChevronDown className="h-3 w-3 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                                        </SidebarMenuSubButton>
+                                      </CollapsibleTrigger>
+                                      <CollapsibleContent>
+                                        <ul className="ml-4 mt-1 border-l border-sidebar-border pl-2 space-y-1">
+                                          {subitem.subitems.map((nested) => (
+                                            <li key={nested.url}>
+                                              <SidebarMenuSubButton
+                                                asChild
+                                                isActive={isActive(nested.url || "")}
+                                                size="sm"
+                                              >
+                                                <NavLink to={nested.url || "#"}>
+                                                  {nested.title}
+                                                </NavLink>
+                                              </SidebarMenuSubButton>
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      </CollapsibleContent>
+                                    </Collapsible>
+                                  ) : (
+                                    <SidebarMenuSubButton
+                                      asChild
+                                      isActive={isActive(subitem.url || "")}
+                                      className="h-auto whitespace-normal py-1.5"
+                                    >
+                                      <NavLink to={subitem.url || "#"}>
+                                        {subitem.title}
+                                      </NavLink>
+                                    </SidebarMenuSubButton>
+                                  )}
                                 </SidebarMenuSubItem>
                               ))}
                             </SidebarMenuSub>
@@ -339,7 +430,7 @@ export function CRMSidebar() {
                       >
                         <NavLink to={item.url} className="flex items-center gap-3">
                           <item.icon className="h-5 w-5" />
-                          {!collapsed && <span>{item.title}</span>}
+                          {!collapsed && <span className={cn(section.title === "Setores" && "font-bold")}>{item.title}</span>}
                         </NavLink>
                       </SidebarMenuButton>
                     )}

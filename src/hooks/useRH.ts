@@ -20,8 +20,9 @@ export function useEmployees() {
           department:departments(name),
           position:positions(title)
         `)
+        .neq('status', 'terminated')
         .order('full_name');
-      
+
       if (error) throw error;
       return data;
     },
@@ -34,7 +35,7 @@ export function useEmployees() {
         .insert(employee)
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },
@@ -55,7 +56,7 @@ export function useEmployees() {
         .eq('id', id)
         .select()
         .single();
-      
+
       if (error) throw error;
       return updated;
     },
@@ -74,7 +75,7 @@ export function useEmployees() {
         .from('employees')
         .delete()
         .eq('id', id);
-      
+
       if (error) throw error;
     },
     onSuccess: () => {
@@ -105,7 +106,7 @@ export function useDepartments() {
         .select('*')
         .eq('is_active', true)
         .order('name');
-      
+
       if (error) throw error;
       return data;
     },
@@ -121,7 +122,7 @@ export function usePositions() {
         .select('*')
         .eq('is_active', true)
         .order('title');
-      
+
       if (error) throw error;
       return data;
     },

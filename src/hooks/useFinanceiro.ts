@@ -16,7 +16,7 @@ export function useInvoices() {
         .from('fin_invoices')
         .select('*')
         .order('due_date', { ascending: false });
-      
+
       if (error) throw error;
       return data;
     },
@@ -29,7 +29,7 @@ export function useInvoices() {
         .insert(invoice)
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },
@@ -56,7 +56,7 @@ export function usePayments() {
           invoice:fin_invoices(invoice_number)
         `)
         .order('payment_date', { ascending: false });
-      
+
       if (error) throw error;
       return data;
     },
@@ -74,7 +74,7 @@ export function useFinancialAccounts() {
         .select('*')
         .eq('is_active', true)
         .order('name');
-      
+
       if (error) throw error;
       return data;
     },
@@ -95,7 +95,7 @@ export function useCostCenters() {
         `)
         .eq('is_active', true)
         .order('name');
-      
+
       if (error) throw error;
       return data;
     },
@@ -132,6 +132,20 @@ export function useFinancialStats() {
         balance: receivable - payable,
         overdue,
       };
+    },
+  });
+}
+
+export function useMonthlyCashflow() {
+  return useQuery({
+    queryKey: ['monthly_cashflow'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('v_monthly_cashflow')
+        .select('*');
+
+      if (error) throw error;
+      return data;
     },
   });
 }

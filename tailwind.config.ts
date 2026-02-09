@@ -142,6 +142,14 @@ export default {
           from: { transform: "rotate(0deg)" },
           to: { transform: "rotate(360deg)" },
         },
+        "marquee": {
+          "0%": { transform: "translateX(0%)" },
+          "100%": { transform: "translateX(-50%)" },
+        },
+        "fade-in-right": {
+          from: { opacity: "0", transform: "translateX(20px)" },
+          to: { opacity: "1", transform: "translateX(0)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -155,6 +163,8 @@ export default {
         "glow": "glow 2s ease-in-out infinite",
         "bounce-subtle": "bounce-subtle 2s ease-in-out infinite",
         "spin-slow": "spin-slow 20s linear infinite",
+        "marquee": "marquee 30s linear infinite",
+        "fade-in-right": "fade-in-right 0.5s ease-out forwards",
       },
       boxShadow: {
         soft: "var(--shadow-soft)",

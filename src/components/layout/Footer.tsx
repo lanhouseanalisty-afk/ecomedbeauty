@@ -53,8 +53,6 @@ export function Footer() {
                 { label: "Home", path: "/" },
                 { label: "Sobre Nós", path: "/sobre" },
                 { label: "Produtos", path: "/produtos" },
-                { label: "Onde Comprar", path: "/onde-comprar" },
-                { label: "Blog", path: "/blog" },
                 { label: "Área do Aluno", path: "/area-do-aluno" },
               ].map((item, idx) => (
                 <li key={idx}>
@@ -67,40 +65,17 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Column 3: Contact Info */}
-          <div>
-            <h3 className="text-lg font-bold uppercase tracking-wider mb-6 text-[#ECB546]">Fale Conosco</h3>
-            <ul className="space-y-4">
-              <li className="flex items-start gap-3 text-gray-300">
-                <MapPin className="h-5 w-5 text-[#ECB546] shrink-0 mt-1" />
-                <span className="text-sm">
-                  Rua Surubim, 577 - 7º Andar<br />
-                  Brooklin Novo - São Paulo/SP<br />
-                  CEP: 04571-050
-                </span>
-              </li>
-              <li className="flex items-center gap-3 text-gray-300">
-                <Phone className="h-5 w-5 text-[#ECB546] shrink-0" />
-                <span className="text-sm">(11) 4551-3513</span>
-              </li>
-              <li className="flex items-center gap-3 text-gray-300">
-                <Mail className="h-5 w-5 text-[#ECB546] shrink-0" />
-                <span className="text-sm">contato@medbeauty.com.br</span>
-              </li>
-            </ul>
-          </div>
-
-          {/* Column 4: Newsletter/Stamp */}
-          <div>
+          {/* Column 3: Certificação */}
+          <div className="lg:col-span-2">
             <h3 className="text-lg font-bold uppercase tracking-wider mb-6 text-[#ECB546]">Certificação</h3>
-            <div className="bg-white/5 p-6 rounded-lg border border-white/10 text-center">
-              <p className="text-sm text-gray-300 mb-4">
-                Empresa certificada com os principais selos de qualidade e segurança do mercado.
+            <div className="bg-white/5 p-8 rounded-2xl border border-white/10 flex flex-col md:flex-row items-center gap-8">
+              <p className="text-sm text-gray-300 flex-1">
+                A Medbeauty é certificada com os mais rigorosos selos de qualidade e segurança do mercado global, garantindo excelência em cada formulação.
               </p>
-              {/* Placeholder for Trust Badges image if available, otherwise stylized text */}
-              <div className="flex justify-center gap-3 opacity-70 grayscale">
-                <div className="border border-gray-500 p-2 rounded text-xs font-bold">ANVISA</div>
-                <div className="border border-gray-500 p-2 rounded text-xs font-bold">ISO 9001</div>
+              <div className="flex justify-center gap-4 opacity-70 grayscale hover:grayscale-0 transition-all">
+                <div className="border border-white/20 px-4 py-2 rounded-lg text-xs font-bold tracking-widest">ANVISA</div>
+                <div className="border border-white/20 px-4 py-2 rounded-lg text-xs font-bold tracking-widest">ISO 9001</div>
+                <div className="border border-white/20 px-4 py-2 rounded-lg text-xs font-bold tracking-widest">GMP</div>
               </div>
             </div>
           </div>

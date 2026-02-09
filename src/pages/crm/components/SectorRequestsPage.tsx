@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSectorRequests, SectorRequest } from "@/hooks/useSectorRequests";
-import { Plus, ArrowDownLeft, ArrowUpRight, Loader2, MessageSquare, Send } from "lucide-react";
+import { Plus, ArrowDownLeft, ArrowUpRight, Loader2, MessageSquare, Send, Trash } from "lucide-react";
 
 import {
     Dialog,
@@ -53,7 +53,7 @@ const SECTORS = [
 ];
 
 export function SectorRequestsPage({ currentSector, sectorName }: SectorRequestsPageProps) {
-    const { getRequests, createRequest, updateRequestStatus, addMessage, loading } = useSectorRequests(currentSector);
+    const { getRequests, createRequest, updateRequestStatus, addMessage, deleteRequest, loading } = useSectorRequests(currentSector);
     const [requests, setRequests] = useState<SectorRequest[]>([]);
     const [modalOpen, setModalOpen] = useState(false);
 
@@ -125,6 +125,24 @@ export function SectorRequestsPage({ currentSector, sectorName }: SectorRequests
     };
 
 
+    const handleDeleteRequest = async (requestId: string, fromSector: string) => {
+        // Check if user is admin or from the requesting sector
+        const isAdmin = true; // TODO: Get from auth context
+        const canDelete = isAdmin || fromSector === currentSector;
+
+        if (!canDelete) {
+            toast.error('Você não tem permissão para remover esta solicitação');
+            return;
+        }
+
+        if (confirm('Tem certeza que deseja remover esta solicitação?')) {
+            const result = await deleteRequest(requestId);
+            if (result.success) {
+                loadData();
+            }
+        }
+    };
+
     const incomingRequests = requests.filter(r => r.toSector === currentSector);
     const outgoingRequests = requests.filter(r => r.fromSector === currentSector);
 
@@ -149,7 +167,7 @@ export function SectorRequestsPage({ currentSector, sectorName }: SectorRequests
                     <TableHead>Data</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Mensagens</TableHead>
-                    {type === 'incoming' && <TableHead>Ações</TableHead>}
+                    <TableHead>Ações</TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
@@ -169,7 +187,12 @@ export function SectorRequestsPage({ currentSector, sectorName }: SectorRequests
                                     : SECTORS.find(s => s.id === req.toSector)?.name || req.toSector
                                 }
                             </TableCell>
-                            <TableCell className="max-w-[200px] truncate" title={req.title}>{req.title}</TableCell>
+                            <TableCell className="max-w-[300px]">
+                                <div className="font-semibold truncate" title={req.title}>{req.title}</div>
+                                <div className="text-xs text-muted-foreground line-clamp-2" title={req.description}>
+                                    {req.description}
+                                </div>
+                            </TableCell>
                             <TableCell>
                                 <Badge variant={req.priority === 'urgent' ? 'destructive' : 'secondary'}>
                                     {req.priority === 'urgent' ? 'Urgente' : req.priority === 'high' ? 'Alta' : req.priority === 'medium' ? 'Média' : 'Baixa'}
@@ -184,27 +207,38 @@ export function SectorRequestsPage({ currentSector, sectorName }: SectorRequests
                                 </Button>
                             </TableCell>
 
-                            {type === 'incoming' && (
-                                <TableCell>
-                                    <div className="flex gap-2">
-                                        {req.status === 'pending' && (
-                                            <>
-                                                <Button size="sm" onClick={() => handleStatusUpdate(req.id, 'in_progress')}>
-                                                    Aceitar
+                            <TableCell>
+                                <div className="flex gap-2">
+                                    {type === 'incoming' && (
+                                        <>
+                                            {req.status === 'pending' && (
+                                                <>
+                                                    <Button size="sm" onClick={() => handleStatusUpdate(req.id, 'in_progress')}>
+                                                        Aceitar
+                                                    </Button>
+                                                    <Button size="sm" variant="ghost" className="text-red-500" onClick={() => handleStatusUpdate(req.id, 'rejected')}>
+                                                        Rejeitar
+                                                    </Button>
+                                                </>
+                                            )}
+                                            {req.status === 'in_progress' && (
+                                                <Button size="sm" variant="outline" className="text-green-600 border-green-600" onClick={() => handleStatusUpdate(req.id, 'completed')}>
+                                                    Concluir
                                                 </Button>
-                                                <Button size="sm" variant="ghost" className="text-red-500" onClick={() => handleStatusUpdate(req.id, 'rejected')}>
-                                                    Rejeitar
-                                                </Button>
-                                            </>
-                                        )}
-                                        {req.status === 'in_progress' && (
-                                            <Button size="sm" variant="outline" className="text-green-600 border-green-600" onClick={() => handleStatusUpdate(req.id, 'completed')}>
-                                                Concluir
-                                            </Button>
-                                        )}
-                                    </div>
-                                </TableCell>
-                            )}
+                                            )}
+                                        </>
+                                    )}
+                                    <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        className="text-red-500 hover:text-red-700"
+                                        onClick={() => handleDeleteRequest(req.id, req.fromSector)}
+                                        title="Remover solicitação"
+                                    >
+                                        <Trash className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            </TableCell>
                         </TableRow>
                     ))
                 )}
@@ -308,8 +342,13 @@ export function SectorRequestsPage({ currentSector, sectorName }: SectorRequests
                         <DialogContent className="max-w-md">
                             <DialogHeader>
                                 <DialogTitle>Chat: {selectedRequest?.request_id}</DialogTitle>
-                                <DialogDescription>
-                                    {selectedRequest?.title}
+                                <DialogDescription className="space-y-2 mt-2">
+                                    <div className="font-medium text-foreground border-b pb-2">
+                                        {selectedRequest?.title}
+                                    </div>
+                                    <div className="text-sm bg-muted/50 p-2 rounded-md italic">
+                                        {selectedRequest?.description}
+                                    </div>
                                 </DialogDescription>
                             </DialogHeader>
 

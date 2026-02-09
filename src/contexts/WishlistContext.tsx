@@ -18,8 +18,13 @@ const WISHLIST_STORAGE_KEY = "medbeauty_wishlist";
 export function WishlistProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<WishlistItem[]>(() => {
     if (typeof window !== "undefined") {
-      const stored = localStorage.getItem(WISHLIST_STORAGE_KEY);
-      return stored ? JSON.parse(stored) : [];
+      try {
+        const stored = localStorage.getItem(WISHLIST_STORAGE_KEY);
+        return stored ? JSON.parse(stored) : [];
+      } catch (error) {
+        console.error("Failed to parse wishlist local storage", error);
+        return [];
+      }
     }
     return [];
   });

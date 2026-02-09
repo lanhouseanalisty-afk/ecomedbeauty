@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ./ollama:/root/.ollama
+    # Instructions: Once running, execute: docker exec -it ollama ollama pull llama3.1:8b
+
+  chroma:
+    image: chromadb/chroma:latest
+    container_name: chroma
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./chroma:/chroma
+
+  ai-gateway:
+    build: ./ai-gateway
+    container_name: ai-gateway
+    restart: unless-stopped
+    ports:
+      - "8787:8787"
+    environment:
+      OLLAMA_URL: http://ollama:11434
+      CHROMA_URL: http://chroma:8000
+      MODEL_NAME: llama3.1:8b
+    depends_on:
+      - ollama
+      - chroma

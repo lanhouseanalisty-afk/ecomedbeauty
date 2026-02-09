@@ -92,6 +92,7 @@ export interface AdmissionProcess {
   needs_keyboard: boolean | null;
   needs_mouse: boolean | null;
   needs_printer: boolean | null;
+  needs_vehicle: boolean | null;
   software_list: string[] | null;
   systems_list: string[] | null; // Acessos necessários
   email_required: boolean | null;
@@ -117,7 +118,7 @@ export interface AdmissionProcess {
   documents_received: string[] | null;
   documents_pending: string[] | null;
   // Controle de fluxo
-  current_step: 'rh' | 'gestor' | 'ti' | 'rh_review' | 'colaborador' | 'concluido';
+  current_step: 'rh' | 'gestor' | 'compras' | 'ti' | 'rh_review' | 'colaborador' | 'concluido';
   status: 'pending' | 'in_progress' | 'completed' | 'cancelled';
   target_department: string;
   created_by: string | null;
@@ -127,6 +128,11 @@ export interface AdmissionProcess {
   hr_completed_by: string | null;
   manager_completed_at: string | null;
   manager_completed_by: string | null;
+  compras_completed_at?: string | null;
+  compras_completed_by?: string | null;
+  pickup_address?: string | null;
+  pickup_date?: string | null;
+  pickup_time?: string | null;
   ti_completed_at: string | null;
   ti_completed_by: string | null;
   documents_completed_at: string | null;
@@ -299,16 +305,17 @@ export function useAdmissionProcesses(department?: string, fetchAll?: boolean) {
         .update({
           buddy_mentor: data.buddy_mentor,
           // Mapear lista de equipamentos para campos booleanos
-          needs_laptop: equipamentos.includes('Notebook') || equipamentos.includes('Desktop'),
-          needs_monitor: equipamentos.includes('Monitor'),
-          needs_headset: equipamentos.includes('Headset'),
-          needs_keyboard: equipamentos.includes('Teclado'),
-          needs_mouse: equipamentos.includes('Mouse'),
+          needs_laptop: equipamentos.includes('Notebook'),
+          needs_monitor: equipamentos.includes('Desktop'),
+          needs_headset: equipamentos.includes('Tablet'),
+          needs_keyboard: equipamentos.includes('Celular'),
+          needs_mouse: false,
+          needs_vehicle: data.needs_vehicle,
           needs_printer: data.necessita_impressora,
           software_list: data.softwares_necessarios,
           systems_list: data.acessos_necessarios, // Acessos necessários
           manager_observations: data.manager_observations,
-          current_step: 'ti',
+          current_step: data.needs_vehicle ? 'compras' : 'ti',
           manager_completed_at: new Date().toISOString(),
           manager_completed_by: user?.user?.id,
         })
@@ -318,22 +325,26 @@ export function useAdmissionProcesses(department?: string, fetchAll?: boolean) {
 
       if (error) throw error;
 
-      // Create notification for TI
+      // Create notification for next step (Compras or TI)
+      const nextStep = data.needs_vehicle ? 'compras' : 'ti';
+      const targetDept = data.needs_vehicle ? 'compras' : 'tech';
+
       await createNotificationAndSendEmail(
         result.id,
-        'ti',
-        'tech',
+        nextStep,
+        targetDept,
         result.employee_name,
-        null, // TI email could be configured
+        null,
         result.position,
         result.manager_name
       );
 
       return result;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['admission-processes'] });
-      toast.success('Definições do gestor salvas. Notificação enviada para TI.');
+      const nextStepLabel = data.current_step === 'compras' ? 'Compras' : 'TI';
+      toast.success(`Definições do gestor salvas. Notificação enviada para ${nextStepLabel}.`);
     },
     onError: (error) => {
       toast.error('Erro ao atualizar: ' + error.message);
@@ -401,12 +412,63 @@ export function useAdmissionProcesses(department?: string, fetchAll?: boolean) {
 
       return result;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admission-processes'] });
-      toast.success('Configuração TI concluída. Enviado para revisão do RH.');
-    },
     onError: (error) => {
       toast.error('Erro ao atualizar: ' + error.message);
+    },
+  });
+
+  // Update Compras step
+  const updateComprasStep = useMutation({
+    mutationFn: async ({ id, data }: {
+      id: string;
+      data: {
+        vehicle_id?: string;
+        pickup_address?: string;
+        pickup_date?: string;
+        pickup_time?: string;
+        compras_remarks?: string;
+        document_urls?: string[];
+      };
+    }) => {
+      const { data: user } = await supabase.auth.getUser();
+
+      const { data: result, error } = await supabase
+        .from('admission_processes')
+        .update({
+          // Note: using available fields if specific ones don't exist
+          manager_observations: data.compras_remarks,
+          pickup_address: data.pickup_address,
+          pickup_date: data.pickup_date,
+          pickup_time: data.pickup_time,
+          current_step: 'ti',
+          compras_completed_at: new Date().toISOString(),
+          compras_completed_by: user?.user?.id,
+        } as any)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Create notification for TI
+      await createNotificationAndSendEmail(
+        result.id,
+        'ti',
+        'tech',
+        result.employee_name,
+        null,
+        result.position,
+        result.manager_name
+      );
+
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admission-processes'] });
+      toast.success('Processo de Compras concluído. Enviado para TI.');
+    },
+    onError: (error) => {
+      toast.error('Erro ao atualizar Compras: ' + error.message);
     },
   });
 
@@ -538,6 +600,7 @@ export function useAdmissionProcesses(department?: string, fetchAll?: boolean) {
     error,
     createAdmission,
     updateManagerStep,
+    updateComprasStep,
     updateITStep,
     sendToColaborador,
     returnToStep,

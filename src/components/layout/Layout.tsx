@@ -2,6 +2,7 @@ import { Outlet } from "react-router-dom";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
 import { FloatingChat } from "@/components/chat/FloatingChat";
+import { CartDrawer } from "@/components/cart/CartDrawer";
 
 export function Layout() {
   return (
@@ -12,6 +13,7 @@ export function Layout() {
       </main>
       <Footer />
       <FloatingChat />
+      <CartDrawer />
     </div>
   );
 }

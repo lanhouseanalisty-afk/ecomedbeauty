@@ -7,6 +7,7 @@ import { OrganizationChart } from "@/components/crm/comercial/OrganizationChart"
 import { useDepartmentMembers } from "@/hooks/useDepartmentMembers";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SectorRequestsPage } from "../components/SectorRequestsPage";
+import SectorHROperationsPage from "../SectorHROperationsPage";
 
 const subDepartmentData: Record<string, {
     name: string;
@@ -126,15 +127,6 @@ export default function ComercialSubDepartmentPage() {
                         <p className="text-muted-foreground">{data.description}</p>
                     </div>
                 </div>
-                <div className="flex gap-2">
-                    <Badge variant="outline" className="font-mono">
-                        {data.code}
-                    </Badge>
-                    <Button size="sm">
-                        <UserPlus className="h-4 w-4 mr-2" />
-                        Adicionar Colaborador
-                    </Button>
-                </div>
             </div>
 
 
@@ -143,6 +135,7 @@ export default function ComercialSubDepartmentPage() {
                 <TabsList>
                     <TabsTrigger value="overview">Visão Geral</TabsTrigger>
                     <TabsTrigger value="requests">Solicitações</TabsTrigger>
+                    <TabsTrigger value="people">Gestão de Pessoas</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="overview" className="space-y-6">
@@ -249,6 +242,10 @@ export default function ComercialSubDepartmentPage() {
 
                 <TabsContent value="requests">
                     <SectorRequestsPage currentSector={data.code} sectorName={`${data.name}`} />
+                </TabsContent>
+
+                <TabsContent value="people">
+                    <SectorHROperationsPage departmentSlug={data.code} departmentName={data.name} />
                 </TabsContent>
             </Tabs>
         </div>

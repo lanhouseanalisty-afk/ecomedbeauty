@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom"; // Added useLocation
+import { cn } from "@/lib/utils";
 import { Search, ShoppingBag, Heart, User, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -14,7 +15,7 @@ export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const { totalItems } = useCart();
+  const { totalItems, setIsCartOpen } = useCart();
   const { totalItems: wishlistItems } = useWishlist();
   const { user, signOut, isEmployee } = useAuth();
   const { content, isEditing } = useCMS();
@@ -37,89 +38,100 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full" style={{ backgroundColor: '#2b0f54' }}> {/* Deep Purple Background */}
-      <nav className="mx-auto flex w-full max-w-[1400px] items-center justify-between px-4 py-3 lg:px-8">
+    <header
+      className={cn(
+        "sticky top-0 z-50 w-full transition-all duration-500",
+        isScrolled ? "bg-[#2b0f54]/90 backdrop-blur-xl border-b border-white/5 shadow-elegant" : "bg-[#2b0f54]"
+      )}
+    >
+      <nav className="mx-auto flex w-full max-w-[1400px] items-center justify-between px-4 py-4 lg:px-8">
 
         {/* Left Section: Logo & Divider */}
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-8">
           <LinkComponent {...linkProps("/")} className="group cursor-pointer flex items-center">
-            {/* Recreating the Logo Text style if image doesn't work well on dark */}
-            <span className="font-sans text-2xl font-medium tracking-wide text-white uppercase flex items-center gap-1">
-              <span className="w-1 h-1 rounded-full bg-[#ECB546] self-baseline mt-2"></span> {/* Dot */}
+            <span className="font-sans text-2xl font-bold tracking-[0.2em] text-white uppercase flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-[#ECB546] animate-pulse" />
               MEDBEAUTY
-              <span className="w-1 h-1 rounded-full bg-[#ECB546] self-start mb-2"></span> {/* Dot */}
             </span>
           </LinkComponent>
 
           {/* Vertical Gold Divider */}
-          <div className="hidden lg:block h-8 w-[1px] bg-[#ECB546]"></div>
+          <div className="hidden lg:block h-6 w-[1px] bg-white/10"></div>
 
-          {/* Desktop Navigation - Integrated on the left/center */}
-          <div className="hidden lg:flex items-center gap-x-8 ml-2">
+          {/* Desktop Navigation */}
+          <div className="hidden lg:flex items-center gap-x-10">
             {[
-              { label: "Home", path: "/" },
-              { label: "Sobre Nós", path: "/sobre" },
-              { label: "Produtos", path: "/produtos" },
-              { label: "Onde Comprar", path: "/onde-comprar" },
-              { label: "Contatos", path: "/contatos" },
-              { label: "Blog", path: "/blog" },
+              { label: "COLEÇÃO", path: "/produtos" },
+              { label: "CIÊNCIA", path: "/sobre" },
             ].map(item => (
               <LinkComponent
                 key={item.label}
                 {...linkProps(item.path)}
-                className={`text-[15px] font-normal transition-colors cursor-pointer text-center tracking-wide
-                            ${isActive(item.path) ? 'text-[#ECB546]' : 'text-white hover:text-[#ECB546]'}
+                className={`text-[11px] font-bold transition-all cursor-pointer text-center tracking-[0.2em] uppercase
+                            ${isActive(item.path) ? 'text-[#ECB546]' : 'text-white/70 hover:text-white'}
                         `}
               >
                 {item.label}
               </LinkComponent>
             ))}
-            <LinkComponent
-              {...linkProps("/area-do-aluno")}
-              className={`text-[15px] font-normal transition-colors cursor-pointer text-center tracking-wide text-white hover:text-[#ECB546]`}
-            >
-              Área do Aluno
-            </LinkComponent>
           </div>
         </div>
 
-
-        {/* Right Section: Flags & Tools */}
-        <div className="flex items-center gap-6">
-          {/* Flags */}
-          <div className="hidden lg:flex flex-col gap-1 items-center justify-center mr-4">
-            <img src="/medbeauty/en-us.png" alt="US" className="w-5 h-auto opacity-80 hover:opacity-100 cursor-pointer" />
-            <img src="/medbeauty/pt-br.png" alt="BR" className="w-5 h-auto opacity-100 hover:opacity-100 cursor-pointer shadow-sm" />
-            <img src="/medbeauty/es.png" alt="ES" className="w-5 h-auto opacity-80 hover:opacity-100 cursor-pointer" />
-          </div>
-
-          {/* Actions Icons (White) */}
-          <div className="flex items-center gap-3 text-white">
+        {/* Right Section: Actions */}
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-1 text-white">
             {/* Search */}
             <Sheet open={searchOpen} onOpenChange={setSearchOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="hidden lg:flex text-white hover:text-[#ECB546] hover:bg-white/10">
+                <Button variant="ghost" size="icon" className="text-white/70 hover:text-white hover:bg-white/5 rounded-full transition-colors">
                   <Search className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="top" className="h-auto">
+              <SheetContent side="top" className="h-[400px] bg-[#2b0f54] border-white/5 text-white">
                 <SheetHeader>
-                  <SheetTitle className="sr-only">Buscar produtos</SheetTitle>
+                  <SheetTitle className="sr-only">Buscar Laboratório MedBeauty</SheetTitle>
                 </SheetHeader>
-                <div className="mx-auto max-w-2xl py-8">
+                <div className="mx-auto max-w-3xl py-12">
+                  <div className="text-center mb-10 space-y-2">
+                    <h2 className="font-serif text-4xl font-bold">O que procura hoje?</h2>
+                    <p className="text-white/40 text-sm uppercase tracking-widest">Acesse nossa base científica de produtos</p>
+                  </div>
                   <ProductSearch onClose={() => setSearchOpen(false)} />
                 </div>
               </SheetContent>
             </Sheet>
 
-            <LinkComponent {...linkProps("/conta")}>
-              <Button variant="ghost" size="icon" className="hidden lg:flex text-white hover:text-[#ECB546] hover:bg-white/10">
-                <User className="h-5 w-5" />
-              </Button>
-            </LinkComponent>
+            {!user ? (
+              <>
+                <LinkComponent {...linkProps("/conta")}>
+                  <Button variant="ghost" size="icon" className="text-white/70 hover:text-white hover:bg-white/5 rounded-full transition-colors">
+                    <User className="h-5 w-5" />
+                  </Button>
+                </LinkComponent>
 
-            <LinkComponent {...linkProps("/carrinho")} className="relative">
-              <Button variant="ghost" size="icon" className="text-white hover:text-[#ECB546] hover:bg-white/10">
+                <LinkComponent {...linkProps("/conta")}>
+                  <Button variant="ghost" size="sm" className="hidden lg:flex text-[#ECB546] hover:bg-[#ECB546]/10 hover:text-[#ECB546] transition-colors font-medium">
+                    Cadastre-se
+                  </Button>
+                </LinkComponent>
+              </>
+            ) : (
+              <LinkComponent {...linkProps("/perfil")}>
+                <Button variant="ghost" size="icon" className="text-white/70 hover:text-white hover:bg-white/5 rounded-full transition-colors">
+                  <User className="h-5 w-5" />
+                </Button>
+              </LinkComponent>
+            )}
+
+            <div className="h-4 w-[1px] bg-white/10 mx-2" />
+
+            <div className="relative">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-white/70 hover:text-white hover:bg-white/5 rounded-full transition-colors"
+                onClick={() => setIsCartOpen(true)}
+              >
                 <ShoppingBag className="h-5 w-5" />
                 {totalItems > 0 && (
                   <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#ECB546] text-[10px] font-bold text-[#2b0f54]">
@@ -127,13 +139,13 @@ export function Header() {
                   </span>
                 )}
               </Button>
-            </LinkComponent>
+            </div>
 
             {/* Mobile Menu Button */}
             <Button
               variant="ghost"
               size="icon"
-              className="lg:hidden text-white"
+              className="lg:hidden text-white/70 ml-2"
               onClick={() => setMobileMenuOpen(true)}
             >
               <Menu className="h-6 w-6" />
@@ -151,9 +163,6 @@ export function Header() {
               { label: "Home", path: "/" },
               { label: "Sobre Nós", path: "/sobre" },
               { label: "Produtos", path: "/produtos" },
-              { label: "Onde Comprar", path: "/onde-comprar" },
-              { label: "Contatos", path: "/contatos" },
-              { label: "Blog", path: "/blog" },
               { label: "Área do Aluno", path: "/area-do-aluno" },
             ].map(item => (
               <LinkComponent

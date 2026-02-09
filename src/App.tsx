@@ -1,3 +1,4 @@
+import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -11,6 +12,10 @@ import { CMSProvider } from "@/contexts/CMSContext";
 import { Layout } from "@/components/layout/Layout";
 import { CRMLayout } from "@/components/crm/CRMLayout";
 import { ProtectedRoute } from "@/components/crm/ProtectedRoute";
+import { Loader2 } from "lucide-react";
+import { ErrorBoundary } from "@/components/ui/error-boundary";
+
+// Standard Pages
 import Home from "./pages/Home";
 import Products from "./pages/Products";
 import ProductDetail from "./pages/ProductDetail";
@@ -25,465 +30,222 @@ import Admin from "./pages/Admin";
 import OrderTracking from "./pages/OrderTracking";
 import NotFound from "./pages/NotFound";
 
-// CRM Pages
-import CRMDashboard from "./pages/crm/CRMDashboard";
-import AdminCRMDashboard from "./pages/crm/admin/AdminCRMDashboard";
-import DiretoriaDashboard from "./pages/crm/admin/DiretoriaDashboard";
-import CientificaDashboard from "./pages/crm/admin/DiretoriaDashboard"; // Placeholder usando Diretoria por enquanto ou criar um arquivo novo? Vou criar um arquivo novo para Cientifica.
-import RHDashboard from "./pages/crm/rh/RHDashboard";
-import RHAdmissaoPage from "./pages/crm/rh/AdmissaoPage";
-import DemissaoPage from "./pages/crm/rh/DemissaoPage";
-import EmployeeProfilePage from "./pages/crm/rh/EmployeeProfilePage";
+// Lazy Loaded CRM Pages
+const CRMDashboard = lazy(() => import("./pages/crm/CRMDashboard"));
+const AdminCRMDashboard = lazy(() => import("./pages/crm/admin/AdminCRMDashboard"));
+const CientificaDashboard = lazy(() => import("./pages/crm/admin/CientificaDashboard"));
+const RHDashboard = lazy(() => import("./pages/crm/rh/RHDashboard"));
+const RHAdmissaoPage = lazy(() => import("./pages/crm/rh/AdmissaoPage"));
+const DemissaoPage = lazy(() => import("./pages/crm/rh/DemissaoPage"));
+const HROperationsPage = lazy(() => import("./pages/crm/rh/HROperationsPage"));
+const EmployeeProfilePage = lazy(() => import("./pages/crm/rh/EmployeeProfilePage"));
 
-import FinanceiroDashboard from "./pages/crm/financeiro/FinanceiroDashboard";
-import FinanceiroAdmissaoPage from "./pages/crm/financeiro/FinanceiroAdmissaoPage";
-import MarketingDashboard from "./pages/crm/marketing/MarketingDashboard";
-import MarketingAdmissaoPage from "./pages/crm/marketing/MarketingAdmissaoPage";
-import MarketingCampaignsPage from "./pages/crm/marketing/MarketingCampaignsPage";
-import MarketingSolicitacaoPage from "./pages/crm/marketing/MarketingSolicitacaoPage";
-import MarketingRequestsListPage from "./pages/crm/marketing/MarketingRequestsListPage";
-import MarketingRequestsManagementPage from "./pages/crm/marketing/MarketingRequestsManagementPage";
-import ComercialDashboard from "./pages/crm/comercial/ComercialDashboard";
-import ComercialAdmissaoPage from "./pages/crm/comercial/ComercialAdmissaoPage";
-import ComercialSubDepartmentPage from "./pages/crm/comercial/ComercialSubDepartmentPage";
-import LogisticaDashboard from "./pages/crm/logistica/LogisticaDashboard";
-import LogisticaAdmissaoPage from "./pages/crm/logistica/LogisticaAdmissaoPage";
-import LogisticaPedidosPage from "./pages/crm/logistica/LogisticaPedidosPage";
-import LogisticaEstoquePage from "./pages/crm/logistica/LogisticaEstoquePage";
-import JuridicoDashboard from "./pages/crm/juridico/JuridicoDashboard";
-import JuridicoAdmissaoPage from "./pages/crm/juridico/JuridicoAdmissaoPage";
-import TechDashboard from "./pages/crm/tech/TechDashboard";
-import TechAdmissaoPage from "./pages/crm/tech/TechAdmissaoPage";
-import TechTicketsPage from "./pages/crm/tech/TechTicketsPage";
-import TechAssetsPage from "./pages/crm/tech/TechAssetsPage";
-import TechKBPage from "./pages/crm/tech/TechKBPage";
-import EcommerceDashboard from "./pages/crm/ecommerce/EcommerceDashboard";
-import ComprasDashboard from "./pages/crm/compras/ComprasDashboard";
-import ManutencaoDashboard from "./pages/crm/manutencao/ManutencaoDashboard";
-import EcommerceAdmissaoPage from "./pages/crm/ecommerce/EcommerceAdmissaoPage";
-import EcommerceProdutosPage from "./pages/crm/ecommerce/EcommerceProdutosPage";
-import EcommerceCategoriasPage from "./pages/crm/ecommerce/EcommerceCategoriasPage";
-import EcommercePedidosPage from "./pages/crm/ecommerce/EcommercePedidosPage";
-import EcommerceCuponsPage from "./pages/crm/ecommerce/EcommerceCuponsPage";
-import EcommerceCMSPage from "./pages/crm/ecommerce/EcommerceCMSPage";
-import EcommerceCustomersPage from "./pages/crm/ecommerce/EcommerceCustomersPage";
+const FinanceiroDashboard = lazy(() => import("./pages/crm/financeiro/FinanceiroDashboard"));
+const FinanceiroAdmissaoPage = lazy(() => import("./pages/crm/financeiro/FinanceiroAdmissaoPage"));
+const MarketingDashboard = lazy(() => import("./pages/crm/marketing/MarketingDashboard"));
+const MarketingAdmissaoPage = lazy(() => import("./pages/crm/marketing/MarketingAdmissaoPage"));
+const MarketingCampaignsPage = lazy(() => import("./pages/crm/marketing/MarketingCampaignsPage"));
+const MarketingSolicitacaoPage = lazy(() => import("./pages/crm/marketing/MarketingSolicitacaoPage"));
+const MarketingRequestsListPage = lazy(() => import("./pages/crm/marketing/MarketingRequestsListPage"));
+const MarketingRequestsManagementPage = lazy(() => import("./pages/crm/marketing/MarketingRequestsManagementPage"));
+const ComercialDashboard = lazy(() => import("./pages/crm/comercial/ComercialDashboard"));
+const ComercialAdmissaoPage = lazy(() => import("./pages/crm/comercial/ComercialAdmissaoPage"));
+const ComercialSubDepartmentPage = lazy(() => import("./pages/crm/comercial/ComercialSubDepartmentPage"));
+const FranquiasPage = lazy(() => import("./pages/crm/comercial/FranquiasPage"));
+const LogisticaDashboard = lazy(() => import("./pages/crm/logistica/LogisticaDashboard"));
+const LogisticaAdmissaoPage = lazy(() => import("./pages/crm/logistica/LogisticaAdmissaoPage"));
+const LogisticaPedidosPage = lazy(() => import("./pages/crm/logistica/LogisticaPedidosPage"));
+const LogisticaEstoquePage = lazy(() => import("./pages/crm/logistica/LogisticaEstoquePage"));
+const JuridicoDashboard = lazy(() => import("./pages/crm/juridico/JuridicoDashboard"));
+const JuridicoAdmissaoPage = lazy(() => import("./pages/crm/juridico/JuridicoAdmissaoPage"));
+const TechDashboard = lazy(() => import("./pages/crm/tech/TechDashboard"));
+const TechAdmissaoPage = lazy(() => import("./pages/crm/tech/TechAdmissaoPage"));
+const TechTicketsPage = lazy(() => import("./pages/crm/tech/TechTicketsPage"));
+const TechKBPage = lazy(() => import("./pages/crm/tech/TechKBPage"));
+const EcommerceDashboard = lazy(() => import("./pages/crm/ecommerce/EcommerceDashboard"));
+const ComprasDashboard = lazy(() => import("./pages/crm/compras/ComprasDashboard"));
+const ComprasVeiculosPage = lazy(() => import("./pages/crm/compras/ComprasVeiculosPage"));
+const ManutencaoDashboard = lazy(() => import("./pages/crm/manutencao/ManutencaoDashboard"));
+const EcommerceAdmissaoPage = lazy(() => import("./pages/crm/ecommerce/EcommerceAdmissaoPage"));
+const EcommerceProdutosPage = lazy(() => import("./pages/crm/ecommerce/EcommerceProdutosPage"));
+const EcommerceCategoriasPage = lazy(() => import("./pages/crm/ecommerce/EcommerceCategoriasPage"));
+const EcommercePedidosPage = lazy(() => import("./pages/crm/ecommerce/EcommercePedidosPage"));
+const EcommerceCuponsPage = lazy(() => import("./pages/crm/ecommerce/EcommerceCuponsPage"));
+const EcommerceCMSPage = lazy(() => import("./pages/crm/ecommerce/EcommerceCMSPage"));
+const EcommerceCustomersPage = lazy(() => import("./pages/crm/ecommerce/EcommerceCustomersPage"));
+const SectorHROperationsPage = lazy(() => import("./pages/crm/SectorHROperationsPage"));
+const DepartmentAdmissaoPage = lazy(() => import("./components/crm/DepartmentAdmissaoPage"));
 
-import { SectorRequestsPage } from "./pages/crm/components/SectorRequestsPage";
-import EmployeeDirectoryPage from "./pages/crm/EmployeeDirectoryPage";
+const SectorRequestsPage = lazy(() => import("./pages/crm/components/SectorRequestsPage").then(module => ({ default: module.SectorRequestsPage })));
+const EmployeeDirectoryPage = lazy(() => import("./pages/crm/EmployeeDirectoryPage"));
+const IntranetPage = lazy(() => import("./pages/crm/IntranetPage"));
+const RequestCenterPage = lazy(() => import("./pages/crm/RequestCenterPage"));
+const NewRequestPage = lazy(() => import("./pages/crm/NewRequestPage"));
+const RequestDetailPage = lazy(() => import("./pages/crm/RequestDetailPage"));
+const ProcessControlPage = lazy(() => import("./pages/crm/ProcessControlPage"));
+const KnowledgeBasePage = lazy(() => import("./pages/crm/KnowledgeBasePage"));
+const SapIntegrationPage = lazy(() => import("./pages/crm/SapIntegrationPage"));
+const ChecklistDashboardPage = lazy(() => import("./pages/crm/checklist/ChecklistDashboardPage"));
+const ChecklistDetailPage = lazy(() => import("./pages/crm/checklist/ChecklistDetailPage"));
+const InventoryPage = lazy(() => import("./pages/crm/checklist/InventoryPage"));
+const PlanilhaJeanPage = lazy(() => import("./pages/crm/checklist/PlanilhaJeanPage"));
 
-import SystemSettingsPage from "./pages/admin/SystemSettingsPage";
-import AdminUsersPage from "./pages/crm/admin/AdminUsersPage";
-import AdminPermissionsPage from "./pages/crm/admin/AdminPermissionsPage";
+const SystemSettingsPage = lazy(() => import("./pages/admin/SystemSettingsPage"));
+const AdminUsersPage = lazy(() => import("./pages/crm/admin/AdminUsersPage"));
+const AdminPermissionsPage = lazy(() => import("./pages/crm/admin/AdminPermissionsPage"));
+const ScientificPresentationsPage = lazy(() => import("./pages/crm/scientific/ScientificPresentationsPage"));
+const SectorRequestsWrapper = lazy(() => import("./pages/crm/SectorRequestsWrapper"));
+
+const LoadingFallback = () => (
+  <div className="flex h-screen w-full items-center justify-center bg-slate-50/50 backdrop-blur-sm">
+    <div className="flex flex-col items-center gap-4">
+      <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      <p className="text-sm font-medium text-slate-500 animate-pulse">Carregando módulo...</p>
+    </div>
+  </div>
+);
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <HelmetProvider>
-      <TooltipProvider>
-        <CMSProvider>
-          <AuthProvider>
-            <CartProvider>
-              <WishlistProvider>
-                <Toaster />
-                <Sonner />
-                <BrowserRouter>
-                  <Routes>
-                    {/* E-commerce Routes */}
-                    <Route element={<Layout />}>
-                      <Route path="/" element={<Home />} />
-                      <Route path="/produtos" element={<Products />} />
-                      <Route path="/produto/:id" element={<ProductDetail />} />
-                      <Route path="/carrinho" element={<Cart />} />
-                      <Route path="/checkout" element={<Checkout />} />
-                      <Route path="/checkout/sucesso" element={<CheckoutSuccess />} />
-                      <Route path="/sobre" element={<About />} />
-                      <Route path="/contato" element={<Contact />} />
-                      <Route path="/auth" element={<Auth />} />
-                      <Route path="/conta" element={<Auth />} />
-                      <Route path="/perfil" element={<Profile />} />
-                      <Route path="/pedido/:orderId" element={<OrderTracking />} />
-                      <Route path="/admin" element={<Admin />} />
-                    </Route>
+const App = () => {
+  return (
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <HelmetProvider>
+          <TooltipProvider>
+            <CMSProvider>
+              <AuthProvider>
+                <CartProvider>
+                  <WishlistProvider>
+                    <Toaster />
+                    <Sonner />
+                    <BrowserRouter>
+                      <Suspense fallback={<LoadingFallback />}>
+                        <Routes>
+                          {/* E-commerce Routes */}
+                          <Route element={<Layout />}>
+                            <Route path="/" element={<Home />} />
+                            <Route path="/produtos" element={<Products />} />
+                            <Route path="/produto/:id" element={<ProductDetail />} />
+                            <Route path="/carrinho" element={<Cart />} />
+                            <Route path="/checkout" element={<Checkout />} />
+                            <Route path="/checkout/sucesso" element={<CheckoutSuccess />} />
+                            <Route path="/sobre" element={<About />} />
+                            <Route path="/contato" element={<Contact />} />
+                            <Route path="/auth" element={<Auth />} />
+                            <Route path="/conta" element={<Auth />} />
+                            <Route path="/perfil" element={<Profile />} />
+                            <Route path="/pedido/:orderId" element={<OrderTracking />} />
+                            <Route path="/admin" element={<Admin />} />
+                          </Route>
 
-                    {/* CRM Routes - Protected for employees only */}
-                    <Route path="/crm" element={
-                      <ProtectedRoute requireEmployee={true}>
-                        <CRMLayout />
-                      </ProtectedRoute>
-                    }>
-                      <Route index element={<CRMDashboard />} />
-                      <Route path="colaboradores" element={
-                        <ProtectedRoute requireEmployee={true}>
-                          <EmployeeDirectoryPage />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="admin" element={
-                        <ProtectedRoute requiredModule="admin">
-                          <AdminCRMDashboard />
-                        </ProtectedRoute>
-                      } />
+                          {/* CRM Routes - RESTORING ... */}
+                          <Route path="/crm" element={<ProtectedRoute allowedRoles={['admin', 'manager', 'editor', 'rh', 'financeiro', 'marketing', 'comercial', 'logistica', 'juridico', 'tech', 'ecommerce', 'compras', 'manutencao', 'tecnico']}><CRMLayout /></ProtectedRoute>}>
+                            <Route index element={<CRMDashboard />} />
 
-                      <Route path="admin/configuracoes" element={
-                        <ProtectedRoute requiredModule="admin">
-                          <SystemSettingsPage />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="configuracoes" element={
-                        <ProtectedRoute requiredModule="admin">
-                          <SystemSettingsPage />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="admin/usuarios" element={
-                        <ProtectedRoute requiredModule="admin">
-                          <AdminUsersPage />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="admin/permissoes" element={
-                        <ProtectedRoute requiredModule="admin">
-                          <AdminPermissionsPage />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="admin/solicitacoes-setores" element={
-                        <ProtectedRoute requiredModule="admin">
-                          <SectorRequestsPage currentSector="admin" sectorName="Administração" />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="diretoria" element={
-                        <ProtectedRoute requiredModule="admin">
-                          <DiretoriaDashboard />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="diretoria/*" element={
-                        <ProtectedRoute requiredModule="admin">
-                          <DiretoriaDashboard />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="cientifica" element={
-                        <ProtectedRoute requiredModule="admin">
-                          <CientificaDashboard />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="cientifica/*" element={
-                        <ProtectedRoute requiredModule="admin">
-                          <CientificaDashboard />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="admin/*" element={
-                        <ProtectedRoute requiredModule="admin">
-                          <AdminCRMDashboard />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="rh" element={
-                        <ProtectedRoute requiredModule="rh">
-                          <RHDashboard />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="rh/meu-perfil" element={
-                        <ProtectedRoute requireEmployee={true}>
-                          <EmployeeProfilePage />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="rh/admissao" element={
-                        <ProtectedRoute requiredModule="rh">
-                          <RHAdmissaoPage />
-                        </ProtectedRoute>
-                      } />
+                            {/* Principal */}
+                            <Route path="intranet" element={<IntranetPage />} />
+                            <Route path="rh/meu-perfil" element={<EmployeeProfilePage />} />
+                            <Route path="colaboradores" element={<EmployeeDirectoryPage />} />
+                            <Route path="biblioteca" element={<KnowledgeBasePage />} />
+                            <Route path="checklist/planilha-jean" element={<PlanilhaJeanPage />} />
+                            <Route path="controle-processos" element={<ProcessControlPage />} />
 
-                      <Route path="rh/demissao" element={
-                        <ProtectedRoute requiredModule="rh">
-                          <DemissaoPage />
-                        </ProtectedRoute>
-                      } />
+                            {/* Admin */}
+                            <Route path="admin" element={<AdminCRMDashboard />} />
+                            <Route path="admin/usuarios" element={<AdminUsersPage />} />
+                            <Route path="admin/permissoes" element={<AdminPermissionsPage />} />
+                            <Route path="admin/admissao" element={<DepartmentAdmissaoPage department="admin" />} />
+                            <Route path="admin/solicitacoes-setores" element={<SectorRequestsWrapper department="admin" />} />
+                            <Route path="integracoes/sap" element={<SapIntegrationPage />} />
 
-                      <Route path="rh/solicitacoes-setores" element={
-                        <ProtectedRoute requiredModule="rh">
-                          <SectorRequestsPage currentSector="rh" sectorName="Compras" />
-                        </ProtectedRoute>
-                      } />
+                            {/* Científica */}
+                            <Route path="cientifica" element={<CientificaDashboard />} />
+                            <Route path="cientifica/apresentacoes" element={<ScientificPresentationsPage />} />
+                            <Route path="cientifica/admissao" element={<DepartmentAdmissaoPage department="cientifica" />} />
+                            <Route path="cientifica/solicitacoes-setores" element={<SectorRequestsWrapper department="cientifica" />} />
 
-                      <Route path="rh/*" element={
-                        <ProtectedRoute requiredModule="rh">
-                          <RHDashboard />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="rh/funcionario/:id" element={
-                        <ProtectedRoute requiredModule="rh">
-                          <EmployeeProfilePage />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="financeiro" element={
-                        <ProtectedRoute requiredModule="financeiro">
-                          <FinanceiroDashboard />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="financeiro/admissao" element={
-                        <ProtectedRoute requiredModule="financeiro">
-                          <FinanceiroAdmissaoPage />
-                        </ProtectedRoute>
-                      } />
+                            {/* Comercial */}
+                            <Route path="comercial" element={<ComercialDashboard />} />
+                            <Route path="comercial/franquias" element={<FranquiasPage />} />
+                            <Route path="comercial/admissao" element={<ComercialAdmissaoPage />} />
+                            <Route path="comercial/:subdepartment" element={<ComercialSubDepartmentPage />} />
 
-                      <Route path="financeiro/solicitacoes-setores" element={
-                        <ProtectedRoute requiredModule="financeiro">
-                          <SectorRequestsPage currentSector="financeiro" sectorName="Financeiro" />
-                        </ProtectedRoute>
-                      } />
+                            {/* Compras */}
+                            <Route path="compras" element={<ComprasDashboard />} />
+                            <Route path="compras/admissao" element={<DepartmentAdmissaoPage department="compras" />} />
+                            <Route path="compras/veiculos" element={<ComprasVeiculosPage />} />
+                            <Route path="compras/solicitacoes-setores" element={<SectorRequestsWrapper department="compras" />} />
 
-                      <Route path="financeiro/*" element={
-                        <ProtectedRoute requiredModule="financeiro">
-                          <FinanceiroDashboard />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="marketing" element={
-                        <ProtectedRoute requiredModule="marketing">
-                          <MarketingDashboard />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="marketing/campanhas" element={
-                        <ProtectedRoute requiredModule="marketing">
-                          <MarketingCampaignsPage />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="marketing/admissao" element={
-                        <ProtectedRoute requiredModule="marketing">
-                          <MarketingAdmissaoPage />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="marketing/solicitacao-insumos" element={
-                        <ProtectedRoute requiredModule="marketing">
-                          <MarketingSolicitacaoPage />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="marketing/solicitacoes" element={
-                        <ProtectedRoute requiredModule="marketing">
-                          <MarketingRequestsListPage />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="marketing/gerenciar-solicitacoes" element={
-                        <ProtectedRoute requiredModule="marketing">
-                          <MarketingRequestsManagementPage />
-                        </ProtectedRoute>
-                      } />
+                            {/* E-commerce */}
+                            <Route path="ecommerce" element={<EcommerceDashboard />} />
+                            <Route path="ecommerce/pedidos" element={<EcommercePedidosPage />} />
+                            <Route path="ecommerce/produtos" element={<EcommerceProdutosPage />} />
+                            <Route path="ecommerce/categorias" element={<EcommerceCategoriasPage />} />
+                            <Route path="ecommerce/clientes" element={<EcommerceCustomersPage />} />
+                            <Route path="ecommerce/cms" element={<EcommerceCMSPage />} />
+                            <Route path="ecommerce/cupons" element={<EcommerceCuponsPage />} />
+                            <Route path="ecommerce/admissao" element={<EcommerceAdmissaoPage />} />
+                            <Route path="ecommerce/solicitacoes-setores" element={<SectorRequestsWrapper department="ecommerce" />} />
 
-                      <Route path="marketing/solicitacoes-setores" element={
-                        <ProtectedRoute requiredModule="marketing">
-                          <SectorRequestsPage currentSector="marketing" sectorName="Marketing" />
-                        </ProtectedRoute>
-                      } />
+                            {/* Financeiro */}
+                            <Route path="financeiro" element={<FinanceiroDashboard />} />
+                            <Route path="financeiro/admissao" element={<FinanceiroAdmissaoPage />} />
+                            <Route path="financeiro/solicitacoes-setores" element={<SectorRequestsWrapper department="financeiro" />} />
 
-                      <Route path="marketing/*" element={
-                        <ProtectedRoute requiredModule="marketing">
-                          <MarketingDashboard />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="comercial" element={
-                        <ProtectedRoute requiredModule="comercial">
-                          <ComercialDashboard />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="comercial/admissao" element={
-                        <ProtectedRoute requiredModule="comercial">
-                          <ComercialAdmissaoPage />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="comercial/:subdepartment" element={
-                        <ProtectedRoute requiredModule="comercial">
-                          <ComercialSubDepartmentPage />
-                        </ProtectedRoute>
-                      } />
+                            {/* Jurídico */}
+                            <Route path="juridico" element={<JuridicoDashboard />} />
+                            <Route path="juridico/admissao" element={<JuridicoAdmissaoPage />} />
+                            <Route path="juridico/solicitacoes-setores" element={<SectorRequestsWrapper department="juridico" />} />
 
-                      <Route path="comercial/solicitacoes-setores" element={
-                        <ProtectedRoute requiredModule="comercial">
-                          <SectorRequestsPage currentSector="comercial" sectorName="Comercial" />
-                        </ProtectedRoute>
-                      } />
+                            {/* Logística */}
+                            <Route path="logistica" element={<LogisticaDashboard />} />
+                            <Route path="logistica/admissao" element={<LogisticaAdmissaoPage />} />
+                            <Route path="logistica/pedidos" element={<LogisticaPedidosPage />} />
+                            <Route path="logistica/solicitacoes-setores" element={<SectorRequestsWrapper department="logistica" />} />
 
-                      <Route path="comercial/*" element={
-                        <ProtectedRoute requiredModule="comercial">
-                          <ComercialDashboard />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="logistica" element={
-                        <ProtectedRoute requiredModule="logistica">
-                          <LogisticaDashboard />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="logistica/admissao" element={
-                        <ProtectedRoute requiredModule="logistica">
-                          <LogisticaAdmissaoPage />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="logistica/pedidos" element={
-                        <ProtectedRoute requiredModule="logistica">
-                          <LogisticaPedidosPage />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="logistica/estoque" element={
-                        <ProtectedRoute requiredModule="logistica">
-                          <LogisticaEstoquePage />
-                        </ProtectedRoute>
-                      } />
+                            {/* Manutenção */}
+                            <Route path="manutencao" element={<ManutencaoDashboard />} />
+                            <Route path="manutencao/admissao" element={<DepartmentAdmissaoPage department="manutencao" />} />
+                            <Route path="manutencao/solicitacoes-setores" element={<SectorRequestsWrapper department="manutencao" />} />
 
-                      <Route path="logistica/solicitacoes-setores" element={
-                        <ProtectedRoute requiredModule="logistica">
-                          <SectorRequestsPage currentSector="logistica" sectorName="Logística" />
-                        </ProtectedRoute>
-                      } />
+                            {/* Marketing */}
+                            <Route path="marketing" element={<MarketingDashboard />} />
+                            <Route path="marketing/admissao" element={<MarketingAdmissaoPage />} />
+                            <Route path="marketing/campanhas" element={<MarketingCampaignsPage />} />
+                            <Route path="marketing/solicitacoes" element={<MarketingSolicitacaoPage />} />
+                            <Route path="marketing/solicitacoes-setores" element={<SectorRequestsWrapper department="marketing" />} />
 
-                      <Route path="logistica/*" element={
-                        <ProtectedRoute requiredModule="logistica">
-                          <LogisticaDashboard />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="juridico" element={
-                        <ProtectedRoute requiredModule="juridico">
-                          <JuridicoDashboard />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="juridico/admissao" element={
-                        <ProtectedRoute requiredModule="juridico">
-                          <JuridicoAdmissaoPage />
-                        </ProtectedRoute>
-                      } />
+                            {/* RH */}
+                            <Route path="rh" element={<RHDashboard />} />
+                            <Route path="rh/operacoes" element={<HROperationsPage />} />
+                            <Route path="rh/solicitacoes-setores" element={<SectorRequestsWrapper department="rh" />} />
 
-                      <Route path="juridico/contratos" element={
-                        <ProtectedRoute requiredModule="juridico">
-                          <JuridicoDashboard />
-                        </ProtectedRoute>
-                      } />
-
-                      <Route path="juridico/solicitacoes-setores" element={
-                        <ProtectedRoute requiredModule="juridico">
-                          <SectorRequestsPage currentSector="juridico" sectorName="Jurídico" />
-                        </ProtectedRoute>
-                      } />
-
-                      <Route path="juridico/*" element={
-                        <ProtectedRoute requiredModule="juridico">
-                          <JuridicoDashboard />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="tech/admissao" element={
-                        <ProtectedRoute requiredModule="tech">
-                          <TechAdmissaoPage />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="tech/demissao" element={
-                        <ProtectedRoute requiredModule="tech">
-                          <DemissaoPage />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="tech/tickets" element={
-                        <ProtectedRoute requiredModule="tech">
-                          <TechTicketsPage />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="tech/kb" element={
-                        <ProtectedRoute requiredModule="tech">
-                          <TechKBPage />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="tech/ativos" element={
-                        <ProtectedRoute requiredModule="tech">
-                          <TechAssetsPage />
-                        </ProtectedRoute>
-                      } />
-
-                      <Route path="tech/solicitacoes-setores" element={
-                        <ProtectedRoute requiredModule="tech">
-                          <SectorRequestsPage currentSector="tech" sectorName="Tech Digital" />
-                        </ProtectedRoute>
-                      } />
-
-                      <Route path="tech/*" element={
-                        <ProtectedRoute requiredModule="tech">
-                          <TechDashboard />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="ecommerce" element={
-                        <ProtectedRoute requiredModule="ecommerce">
-                          <EcommerceDashboard />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="ecommerce/admissao" element={
-                        <ProtectedRoute requiredModule="ecommerce">
-                          <EcommerceAdmissaoPage />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="ecommerce/produtos" element={
-                        <ProtectedRoute requiredModule="ecommerce">
-                          <EcommerceProdutosPage />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="ecommerce/categorias" element={
-                        <ProtectedRoute requiredModule="ecommerce">
-                          <EcommerceCategoriasPage />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="ecommerce/pedidos" element={
-                        <ProtectedRoute requiredModule="ecommerce">
-                          <EcommercePedidosPage />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="ecommerce/clientes" element={
-                        <ProtectedRoute requiredModule="ecommerce">
-                          <EcommerceCustomersPage />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="ecommerce/cupons" element={
-                        <ProtectedRoute requiredModule="ecommerce">
-                          <EcommerceCuponsPage />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="ecommerce/cms" element={
-                        <ProtectedRoute requiredModule="ecommerce">
-                          <EcommerceCMSPage />
-                        </ProtectedRoute>
-                      } />
-
-                      <Route path="ecommerce/solicitacoes-setores" element={
-                        <ProtectedRoute requiredModule="ecommerce">
-                          <SectorRequestsPage currentSector="ecommerce" sectorName="E-commerce" />
-                        </ProtectedRoute>
-                      } />
-
-                      <Route path="ecommerce/*" element={
-                        <ProtectedRoute requiredModule="ecommerce">
-                          <EcommerceDashboard />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="compras" element={
-                        <ProtectedRoute requiredModule="admin">
-                          <ComprasDashboard />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="compras/solicitacoes-setores" element={
-                        <ProtectedRoute requiredModule="admin">
-                          <SectorRequestsPage currentSector="compras" sectorName="Compras" />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="manutencao" element={
-                        <ProtectedRoute requiredModule="admin">
-                          <ManutencaoDashboard />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="manutencao/solicitacoes-setores" element={
-                        <ProtectedRoute requiredModule="admin">
-                          <SectorRequestsPage currentSector="manutencao" sectorName="Manutenção" />
-                        </ProtectedRoute>
-                      } />
-                    </Route>
-
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </BrowserRouter>
-              </WishlistProvider>
-            </CartProvider>
-          </AuthProvider>
-        </CMSProvider>
-      </TooltipProvider>
-    </HelmetProvider>
-  </QueryClientProvider >
-);
+                            {/* Tech/TI */}
+                            <Route path="tech" element={<TechDashboard />} />
+                            <Route path="tech/admissao" element={<TechAdmissaoPage />} />
+                            <Route path="tech/tickets" element={<TechTicketsPage />} />
+                            <Route path="tech/inventario" element={<InventoryPage />} />
+                            <Route path="tech/kb" element={<TechKBPage />} />
+                            <Route path="tech/solicitacoes-setores" element={<SectorRequestsWrapper department="tech" />} />
+                            <Route path="ecommerce/categorias" element={<EcommerceCategoriasPage />} />
+                            <Route path="ecommerce/clientes" element={<EcommerceCustomersPage />} />
+                            <Route path="ecommerce/cms" element={<EcommerceCMSPage />} />
+                            <Route path="ecommerce/cupons" element={<EcommerceCuponsPage />} />
+                            <Route path="ecommerce/admissao" element={<EcommerceAdmissaoPage />} />
+                          </Route>
+                        </Routes>
+                      </Suspense>
+                    </BrowserRouter>
+                  </WishlistProvider>
+                </CartProvider>
+              </AuthProvider>
+            </CMSProvider>
+          </TooltipProvider>
+        </HelmetProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
+  );
+};
 
 export default App;
