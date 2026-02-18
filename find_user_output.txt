@@ -1,0 +1,16 @@
+Starting search for Reginaldo...
+Profiles found: []
+Departments found: [
+  {
+    "id": "77451bca-f3ca-4936-8129-007cfb472506",
+    "name": "Tech Digital"
+  },
+  {
+    "id": "e967e1ee-df63-4147-a432-13116c7f5f16",
+    "name": "Tech / Suporte"
+  },
+  {
+    "id": "71859902-f49b-4d8c-9a8c-a8cbb4138a2d",
+    "name": "Tech TI"
+  }
+]

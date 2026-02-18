@@ -1,0 +1,104 @@
+﻿
+> types_utf8.txt:16:    Tables: {
+  types_utf8.txt:17:      admission_notifications: {
+  types_utf8.txt:18:        Row: {
+  types_utf8.txt:19:          admission_process_id: string
+  types_utf8.txt:20:          created_at: string
+  types_utf8.txt:21:          id: string
+  types_utf8.txt:22:          link_token: string | null
+  types_utf8.txt:23:          metadata: Json | null
+  types_utf8.txt:24:          notification_type: string
+  types_utf8.txt:25:          read_at: string | null
+  types_utf8.txt:26:          sent_at: string | null
+  types_utf8.txt:27:          status: string
+  types_utf8.txt:28:          target_department: string
+  types_utf8.txt:29:          target_email: string | null
+  types_utf8.txt:30:          target_step: string
+  types_utf8.txt:31:          updated_at: string
+  types_utf8.txt:32:        }
+  types_utf8.txt:33:        Insert: {
+  types_utf8.txt:34:          admission_process_id: string
+  types_utf8.txt:35:          created_at?: string
+  types_utf8.txt:36:          id?: string
+  types_utf8.txt:37:          link_token?: string | null
+  types_utf8.txt:38:          metadata?: Json | null
+  types_utf8.txt:39:          notification_type?: string
+  types_utf8.txt:40:          read_at?: string | null
+  types_utf8.txt:41:          sent_at?: string | null
+  types_utf8.txt:42:          status?: string
+  types_utf8.txt:43:          target_department: string
+  types_utf8.txt:44:          target_email?: string | null
+  types_utf8.txt:45:          target_step: string
+  types_utf8.txt:46:          updated_at?: string
+  types_utf8.txt:47:        }
+  types_utf8.txt:48:        Update: {
+  types_utf8.txt:49:          admission_process_id?: string
+  types_utf8.txt:50:          created_at?: string
+  types_utf8.txt:51:          id?: string
+  types_utf8.txt:52:          link_token?: string | null
+  types_utf8.txt:53:          metadata?: Json | null
+  types_utf8.txt:54:          notification_type?: string
+  types_utf8.txt:55:          read_at?: string | null
+  types_utf8.txt:56:          sent_at?: string | null
+  types_utf8.txt:57:          status?: string
+  types_utf8.txt:58:          target_department?: string
+  types_utf8.txt:59:          target_email?: string | null
+  types_utf8.txt:60:          target_step?: string
+  types_utf8.txt:61:          updated_at?: string
+  types_utf8.txt:62:        }
+  types_utf8.txt:63:        Relationships: [
+  types_utf8.txt:64:          {
+  types_utf8.txt:65:            foreignKeyName: "admission_notifications_admission_process_id_fkey"
+  types_utf8.txt:66:            columns: ["admission_process_id"]
+  types_utf8.txt:67:            isOneToOne: false
+  types_utf8.txt:68:            referencedRelation: "admission_processes"
+  types_utf8.txt:69:            referencedColumns: ["id"]
+  types_utf8.txt:70:          },
+  types_utf8.txt:71:        ]
+  types_utf8.txt:72:      }
+  types_utf8.txt:73:      admission_processes: {
+  types_utf8.txt:74:        Row: {
+  types_utf8.txt:75:          accesses_released: string[] | null
+  types_utf8.txt:76:          admission_date: string
+  types_utf8.txt:77:          branch: string
+  types_utf8.txt:78:          buddy_mentor: string | null
+  types_utf8.txt:79:          contract_type: string
+  types_utf8.txt:80:          cpf: string
+  types_utf8.txt:81:          created_at: string
+  types_utf8.txt:82:          created_by: string | null
+  types_utf8.txt:83:          current_step: string
+  types_utf8.txt:84:          department: string
+  types_utf8.txt:85:          display_name: string | null
+  types_utf8.txt:86:          documents_completed_at: string | null
+  types_utf8.txt:87:          documents_pending: string[] | null
+  types_utf8.txt:88:          documents_received: string[] | null
+  types_utf8.txt:89:          email_created: string | null
+  types_utf8.txt:90:          email_distribution_lists: string[] | null
+  types_utf8.txt:91:          email_required: boolean | null
+  types_utf8.txt:92:          employee_name: string
+  types_utf8.txt:93:          equipment_delivered: string[] | null
+  types_utf8.txt:94:          general_tests_done: string | null
+  types_utf8.txt:95:          hr_completed_at: string | null
+  types_utf8.txt:96:          hr_completed_by: string | null
+  types_utf8.txt:97:          hr_observations: string | null
+  types_utf8.txt:98:          id: string
+  types_utf8.txt:99:          it_completion_date: string | null
+  types_utf8.txt:100:          it_observations: string | null
+  types_utf8.txt:101:          it_responsible: string | null
+  types_utf8.txt:102:          manager_completed_at: string | null
+  types_utf8.txt:103:          manager_completed_by: string | null
+  types_utf8.txt:104:          manager_email: string | null
+  types_utf8.txt:105:          manager_name: string
+  types_utf8.txt:106:          manager_observations: string | null
+  types_utf8.txt:107:          microsoft_licenses: string[] | null
+  types_utf8.txt:108:          needs_headset: boolean | null
+  types_utf8.txt:109:          needs_keyboard: boolean | null
+  types_utf8.txt:110:          needs_laptop: boolean | null
+  types_utf8.txt:111:          needs_monitor: boolean | null
+  types_utf8.txt:112:          needs_mouse: boolean | null
+  types_utf8.txt:113:          needs_printer: boolean | null
+  types_utf8.txt:114:          network_folders_released: string | null
+  types_utf8.txt:115:          position: string
+  types_utf8.txt:116:          printers_configured: string | null
+
+

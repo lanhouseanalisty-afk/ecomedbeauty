@@ -1,0 +1,100 @@
+﻿        Relationships: [
+          {
+            foreignKeyName: "legal_contracts_party_account_id_fkey"
+            columns: ["party_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      loyalty_points: {
+        Row: {
+          balance: number
+          created_at: string
+          id: string
+          total_earned: number
+          total_redeemed: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          id?: string
+          total_earned?: number
+          total_redeemed?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          id?: string
+          total_earned?: number
+          total_redeemed?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      marketing_assets: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          campaign_id: string | null
+          channel: string | null
+          created_at: string | null
+          dimensions: Json | null
+          file_size: number | null
+          file_url: string | null
+          id: string
+          name: string
+          status: string | null
+          type: string
+          version: number | null
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          campaign_id?: string | null
+          channel?: string | null
+          created_at?: string | null
+          dimensions?: Json | null
+          file_size?: number | null
+          file_url?: string | null
+          id?: string
+          name: string
+          status?: string | null
+          type: string
+          version?: number | null
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          campaign_id?: string | null
+          channel?: string | null
+          created_at?: string | null
+          dimensions?: Json | null
+          file_size?: number | null
+          file_url?: string | null
+          id?: string
+          name?: string
+          status?: string | null
+          type?: string
+          version?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketing_assets_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "marketing_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketing_campaigns: {
+        Row: {
+          budget: number | null
+          channels: string[] | null

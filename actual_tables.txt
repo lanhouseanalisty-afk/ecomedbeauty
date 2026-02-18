@@ -1,0 +1,241 @@
+﻿
+  types_utf8.txt:17: 
+     admission_notifi
+cations: {
+> types_utf8.txt:18: 
+       Row: {
+  types_utf8.txt:73: 
+     
+admission_processes: 
+{
+> types_utf8.txt:74: 
+       Row: {
+  
+types_utf8.txt:250:  
+    attendance: {
+> 
+types_utf8.txt:251:  
+      Row: {
+  
+types_utf8.txt:297:  
+    audit_logs: {
+> 
+types_utf8.txt:298:  
+      Row: {
+  
+types_utf8.txt:339:  
+    carriers: {
+> 
+types_utf8.txt:340:  
+      Row: {
+  
+types_utf8.txt:384:  
+    
+chat_conversations: {
+> 
+types_utf8.txt:385:  
+      Row: {
+  
+types_utf8.txt:416:  
+    chat_messages: {
+> 
+types_utf8.txt:417:  
+      Row: {
+  
+types_utf8.txt:448:  
+    
+compliance_items: {
+> 
+types_utf8.txt:449:  
+      Row: {
+  
+types_utf8.txt:502:  
+    cost_centers: {
+> 
+types_utf8.txt:503:  
+      Row: {
+  
+types_utf8.txt:540:  
+    coupons: {
+> 
+types_utf8.txt:541:  
+      Row: {
+  
+types_utf8.txt:582:  
+    crm_accounts: {
+> 
+types_utf8.txt:583:  
+      Row: {
+  
+types_utf8.txt:654:  
+    crm_activities: {
+> 
+types_utf8.txt:655:  
+      Row: {
+  
+types_utf8.txt:734:  
+    crm_contacts: {
+> 
+types_utf8.txt:735:  
+      Row: {
+  
+types_utf8.txt:805:  
+    crm_leads: {
+> 
+types_utf8.txt:806:  
+      Row: {
+  
+types_utf8.txt:895:  
+    
+crm_opportunities: {
+> 
+types_utf8.txt:896:  
+      Row: {
+  
+types_utf8.txt:1000: 
+     crm_pipelines: {
+> 
+types_utf8.txt:1001: 
+       Row: {
+  
+types_utf8.txt:1027: 
+     departments: {
+> 
+types_utf8.txt:1028: 
+       Row: {
+  
+types_utf8.txt:1077: 
+     
+ecommerce_carts: {
+> 
+types_utf8.txt:1078: 
+       Row: {
+  
+types_utf8.txt:1103: 
+     
+ecommerce_customers: 
+{
+> 
+types_utf8.txt:1104: 
+       Row: {
+  
+types_utf8.txt:1136: 
+     
+ecommerce_orders: {
+> 
+types_utf8.txt:1137: 
+       Row: {
+  
+types_utf8.txt:1171: 
+     ecommerce_search
+_history: {
+> 
+types_utf8.txt:1172: 
+       Row: {
+  
+types_utf8.txt:1200: 
+     employee_post_co
+mments: {
+> 
+types_utf8.txt:1201: 
+       Row: {
+  
+types_utf8.txt:1232: 
+     
+employee_post_likes: 
+{
+> 
+types_utf8.txt:1233: 
+       Row: {
+  
+types_utf8.txt:1258: 
+     employee_posts: 
+{
+> 
+types_utf8.txt:1259: 
+       Row: {
+  
+types_utf8.txt:1296: 
+     employees: {
+> 
+types_utf8.txt:1297: 
+       Row: {
+  
+types_utf8.txt:1393: 
+     fin_invoices: {
+> 
+types_utf8.txt:1394: 
+       Row: {
+  
+types_utf8.txt:1467: 
+     fin_payments: {
+> 
+types_utf8.txt:1468: 
+       Row: {
+  
+types_utf8.txt:1521: 
+     
+financial_accounts: {
+> 
+types_utf8.txt:1522: 
+       Row: {
+  
+types_utf8.txt:1557: 
+     
+hr_checklist_items: {
+> 
+types_utf8.txt:1558: 
+       Row: {
+  
+types_utf8.txt:1598: 
+     hr_checklists: {
+> 
+types_utf8.txt:1599: 
+       Row: {
+  
+types_utf8.txt:1628: 
+     hr_employee_chec
+klist_items: {
+> 
+types_utf8.txt:1629: 
+       Row: {
+  
+types_utf8.txt:1676: 
+     hr_employee_chec
+klists: {
+> 
+types_utf8.txt:1677: 
+       Row: {
+  
+types_utf8.txt:1727: 
+     inventory: {
+> 
+types_utf8.txt:1728: 
+       Row: {
+  
+types_utf8.txt:1786: 
+     kb_articles: {
+> 
+types_utf8.txt:1787: 
+       Row: {
+  
+types_utf8.txt:1848: 
+     leads: {
+> 
+types_utf8.txt:1849: 
+       Row: {
+  
+types_utf8.txt:1887: 
+     leave_requests: 
+{
+> 
+types_utf8.txt:1888: 
+       Row: {
+  
+types_utf8.txt:1944: 
+     legal_cases: {
+> 
+types_utf8.txt:1945: 
+       Row: {
+
+

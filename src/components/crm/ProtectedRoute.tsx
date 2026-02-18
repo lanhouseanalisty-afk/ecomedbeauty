@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserRole } from '@/hooks/useUserRole';
 import { Loader2, ShieldAlert, Home } from 'lucide-react';
@@ -8,19 +8,28 @@ import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 
 interface ProtectedRouteProps {
-  children: ReactNode;
+  children?: ReactNode;
   requiredModule?: string;
-  requiredRoles?: string[];
+  requiredPermission?: string;
+  allowedRoles?: string[];
   requireEmployee?: boolean;
 }
 
-export function ProtectedRoute({ children, requiredModule, requiredRoles, requireEmployee = true }: ProtectedRouteProps) {
-  const { user, loading: authLoading, isEmployee } = useAuth();
-  const { loading: roleLoading, canAccessModule, hasAnyRole, isAdmin } = useUserRole();
+export function ProtectedRoute({
+  children,
+  requiredModule,
+  requiredPermission,
+  allowedRoles,
+  requireEmployee = true
+}: ProtectedRouteProps) {
+  const { user, loading: authLoading, isEmployee, roles, permissions } = useAuth();
+  const { canAccessModule, hasPermission, hasAnyRole, isAdmin } = useUserRole();
   const location = useLocation();
 
+  console.log(`[ProtectedRoute] Path=${location.pathname}, Module=${requiredModule}, Permission=${requiredPermission}, User=${user?.email}, isEmployee=${isEmployee}, roles=${roles.join(',')}, permissions=${permissions.join(',')}`);
+
   // Show loading while checking auth
-  if (authLoading || roleLoading) {
+  if (authLoading) {
     return (
       <div className="flex h-full min-h-[400px] items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -30,30 +39,38 @@ export function ProtectedRoute({ children, requiredModule, requiredRoles, requir
 
   // Redirect to auth if not logged in
   if (!user) {
+    console.log('[ProtectedRoute] No user found, redirecting to auth');
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
   // Check if employee access is required but user is a customer
   if (requireEmployee && !isEmployee) {
+    console.warn('[ProtectedRoute] Employee required but user is not an employee.');
     return <CustomerRedirect />;
   }
 
-  // Check module access
+  // Check module access (Main Gate)
   if (requiredModule && !canAccessModule(requiredModule)) {
+    console.warn(`[ProtectedRoute] Access denied for module: ${requiredModule}`);
     return <AccessDenied module={requiredModule} />;
   }
 
-  // Check specific roles
-  if (requiredRoles && requiredRoles.length > 0 && !isAdmin) {
-    const hasRequiredRole = requiredRoles.some(role => 
-      hasAnyRole(role as any)
-    );
+  // Check granular permission (Sub-Gate)
+  if (requiredPermission && !hasPermission(requiredPermission)) {
+    console.warn(`[ProtectedRoute] Access denied for specific permission: ${requiredPermission}`);
+    return <AccessDenied module={requiredPermission} />;
+  }
+
+  // Check specific roles (Legacy/Extra check)
+  if (allowedRoles && allowedRoles.length > 0 && !isAdmin) {
+    const hasRequiredRole = allowedRoles.some(role => hasAnyRole(role as any));
     if (!hasRequiredRole) {
+      console.warn(`[ProtectedRoute] Access denied. Required roles: ${allowedRoles.join(',')}`);
       return <AccessDenied />;
     }
   }
 
-  return <>{children}</>;
+  return children ? <>{children}</> : <Outlet />;
 }
 
 function CustomerRedirect() {
@@ -97,8 +114,8 @@ function AccessDenied({ module }: { module?: string }) {
           </div>
           <CardTitle>Acesso Negado</CardTitle>
           <CardDescription>
-            {module 
-              ? `Você não tem permissão para acessar o módulo ${module.charAt(0).toUpperCase() + module.slice(1)}.`
+            {module
+              ? `Você não tem permissão para acessar ${module}.`
               : 'Você não tem permissão para acessar esta página.'}
           </CardDescription>
         </CardHeader>

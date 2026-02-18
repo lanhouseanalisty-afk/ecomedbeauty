@@ -5,7 +5,7 @@ export function Footer() {
   return (
     <footer className="bg-[#2b0f54] text-white pt-16 pb-8 relative overflow-hidden">
       {/* Background Pattern/Overlay */}
-      <div className="absolute inset-0 bg-[url('/medbeauty/footer-bg.jpg')] opacity-10 bg-cover bg-center mix-blend-overlay"></div>
+      <div className="absolute inset-0 opacity-10 bg-cover bg-center mix-blend-overlay"></div>
 
       <div className="mx-auto max-w-[1400px] px-6 lg:px-8 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">

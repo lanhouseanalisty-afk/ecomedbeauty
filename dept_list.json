@@ -1,0 +1,107 @@
+[
+  {
+    "id": "68d9a5ba-ed8b-4d06-a6cb-be030b45f3f2",
+    "code": "ADMIN",
+    "name": "Administração"
+  },
+  {
+    "id": "78cc1018-9aac-427c-bd5d-420b3185302e",
+    "code": "FIN",
+    "name": "Financeiro"
+  },
+  {
+    "id": "3b1395df-21a7-42ed-b735-665ef393dd2b",
+    "code": "MKT",
+    "name": "Marketing"
+  },
+  {
+    "id": "acd2d5f8-fef2-449f-8468-fafa017212e8",
+    "code": "COM",
+    "name": "Comercial"
+  },
+  {
+    "id": "0e80a854-1526-43b9-9041-756e2c6a806b",
+    "code": "LOG",
+    "name": "Logística"
+  },
+  {
+    "id": "5bcc2477-61b4-4d07-a8fa-6b224eda7ce5",
+    "code": "JUR",
+    "name": "Jurídico"
+  },
+  {
+    "id": "77451bca-f3ca-4936-8129-007cfb472506",
+    "code": "TECH",
+    "name": "Tech Digital"
+  },
+  {
+    "id": "1f034234-0d3c-4cfb-82be-cd658367848c",
+    "code": "ECOM",
+    "name": "E-commerce"
+  },
+  {
+    "id": "146ed0a2-ea34-4a59-9b9f-3d8a592d7d6a",
+    "code": "rh",
+    "name": "RH"
+  },
+  {
+    "id": "e967e1ee-df63-4147-a432-13116c7f5f16",
+    "code": "tech",
+    "name": "Tech / Suporte"
+  },
+  {
+    "id": "e66f78cf-43a1-486f-9c06-7c598e8c92c7",
+    "code": "diretoria",
+    "name": "Diretoria"
+  },
+  {
+    "id": "427345c2-9823-4c45-9379-7351814cd12e",
+    "code": "cientifica",
+    "name": "Científica"
+  },
+  {
+    "id": "2f5bccbe-d888-422a-9177-9496728edce7",
+    "code": "com_inside",
+    "name": "Inside Sales"
+  },
+  {
+    "id": "cd5417ce-7d47-4d02-bb60-bcf9a6a3d78e",
+    "code": "com_sudeste",
+    "name": "Sudeste"
+  },
+  {
+    "id": "f8b41011-9c94-4b02-93e6-d81b31761b78",
+    "code": "com_sul",
+    "name": "Sul"
+  },
+  {
+    "id": "0e0d8742-c0e1-41c7-947f-d967694b1440",
+    "code": "com_centro",
+    "name": "Centro"
+  },
+  {
+    "id": "cc002c31-60fd-43a4-b5e6-e32fe0d5243e",
+    "code": "com_norte",
+    "name": "Norte"
+  },
+  {
+    "id": "c1b91eb3-69cd-454d-9b86-30968740e330",
+    "code": "RH",
+    "name": "Recursos Humanos"
+  },
+  {
+    "id": "27aed6e1-4d11-4df7-a28f-de37ee98522f",
+    "code": "manutencao",
+    "name": "Manutenção"
+  },
+  {
+    "id": "fc523e37-cd35-405d-bbd0-797891e081c1",
+    "code": "COMPRAS",
+    "name": "Compras"
+  },
+  {
+    "id": "71859902-f49b-4d8c-9a8c-a8cbb4138a2d",
+    "code": "TECH_TI",
+    "name": "Tech TI"
+  }
+]

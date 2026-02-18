@@ -12,12 +12,16 @@ import {
     CheckCircle,
     TrendingUp,
     Loader2,
-    RefreshCw
+    RefreshCw,
+    ShieldAlert
 } from "lucide-react";
+import { useUserRole } from "@/hooks/useUserRole";
 
 export default function MarketingRequestsManagementPage() {
     const navigate = useNavigate();
     const { getAllRequests, updateRequestStatus, loading } = useMarketingRequest();
+    const { canEditModule } = useUserRole();
+    const canEdit = canEditModule('marketing');
     const [requests, setRequests] = useState<MarketingRequest[]>([]);
     const [refreshing, setRefreshing] = useState(false);
 
@@ -92,10 +96,18 @@ export default function MarketingRequestsManagementPage() {
                             <RefreshCw className={`mr-2 h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
                             Atualizar
                         </Button>
-                        <Button onClick={() => navigate("/crm/marketing/solicitacao-insumos")}>
-                            <Plus className="mr-2 h-4 w-4" />
-                            Nova Solicitação
-                        </Button>
+                        {canEdit && (
+                            <Button onClick={() => navigate("/crm/marketing/solicitacao-insumos")}>
+                                <Plus className="mr-2 h-4 w-4" />
+                                Nova Solicitação
+                            </Button>
+                        )}
+                        {!canEdit && (
+                            <div className="flex items-center gap-2 px-3 py-1 bg-amber-50 rounded border border-amber-200">
+                                <ShieldAlert className="h-4 w-4 text-amber-600" />
+                                <span className="text-xs text-amber-600 font-medium">Somente Leitura</span>
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -161,7 +173,7 @@ export default function MarketingRequestsManagementPage() {
                             requests={requests}
                             onStatusChange={handleStatusChange}
                             onRefresh={loadRequests}
-                            isManager={true}
+                            isManager={canEdit}
                         />
                     </CardContent>
                 </Card>

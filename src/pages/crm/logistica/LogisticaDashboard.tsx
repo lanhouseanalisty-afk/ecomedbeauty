@@ -11,7 +11,8 @@ import {
   Warehouse,
   BarChart3,
   Eye,
-  RefreshCw
+  RefreshCw,
+  FileText
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -107,6 +108,10 @@ export default function LogisticaDashboard() {
         </div>
         <div className="flex gap-2 items-center">
           <Badge variant="outline" className="h-9 px-4 text-sm hidden md:flex">Gestora: Luciana Borri</Badge>
+          <Button onClick={() => window.location.href = "/crm/intranet/contratos/novo?sector=logistica"} variant="outline" className="gap-2">
+            <FileText className="h-4 w-4" />
+            Solicitar Contrato
+          </Button>
           <DataExport
             data={filteredShipments}
             filename="envios"

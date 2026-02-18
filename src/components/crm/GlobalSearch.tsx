@@ -29,7 +29,7 @@ import { Badge } from "@/components/ui/badge";
 
 const pages = [
     { title: "Dashboard Principal", url: "/crm", icon: LayoutDashboard },
-    { title: "Colaboradores", url: "/crm/colaboradores", icon: Users },
+
     { title: "Mural de Avisos", url: "/crm/intranet", icon: Megaphone },
     { title: "Biblioteca Interna", url: "/crm/biblioteca", icon: FileText },
     { title: "Administração", url: "/crm/admin", icon: Building2 },

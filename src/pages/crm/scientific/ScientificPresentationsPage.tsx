@@ -137,6 +137,13 @@ export default function ScientificPresentationsPage() {
                     <p className="text-muted-foreground">Repositório central de estudos, vídeos, PowerPoint e protocolos.</p>
                 </div>
 
+                <div className="flex gap-2 items-center">
+                    <Button onClick={() => window.location.href = "/crm/intranet/contratos/novo?sector=cientifica"} variant="outline" className="gap-2">
+                        <FileText className="h-4 w-4" />
+                        Solicitar Contrato
+                    </Button>
+                </div>
+
                 {canManage && (
                     <Dialog open={isUploadOpen} onOpenChange={setIsUploadOpen}>
                         <DialogTrigger asChild>

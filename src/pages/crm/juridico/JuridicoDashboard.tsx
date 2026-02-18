@@ -175,66 +175,19 @@ export default function JuridicoDashboard() {
     setSummarizingId(contract.id);
 
     try {
-      // Direct Client-Side Call to Google Gemini (Bypassing Supabase Function issues)
-      const API_KEY = "AIzaSyBNT7p3CJRZuDBqOuwgZ5VPK5DM1SKYA3M"; // Key #3
-
-      const systemPrompt = 'Você é um assistente jurídico sênior especializado em gestão de contratos da MedBeauty. Sua função é analisar metadados de contratos e gerar resumos executivos claros e objetivos. Identifique explicitamente datas críticas e valores financeiros.';
-
-      const userMessage = `Analise o seguinte contrato e gere um resumo executivo destacando os pontos principais, riscos e prazos.
-              
-              Dados do Contrato:
-              - Título: ${contract.title}
-              - Parte: ${contract.party_name}
-              - Tipo: ${contract.type}
-              - Valor: ${contract.value ? formatCurrency(contract.value) : 'Não informado'}
-              - Início: ${formatDate(contract.start_date)}
-              - Fim: ${contract.end_date ? formatDate(contract.end_date) : 'Indeterminado'}
-              - Número: ${contract.contract_number}
-              
-              Seja conciso, profissional e foque no que um gestor precisa saber.`;
-
-      // Strategy: Try the newly discovered 2.5 models, then 2.0
-      // List from API: gemini-2.5-flash, gemini-2.5-pro, gemini-2.0-flash
-      const modelsToTry = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.5-pro", "gemini-2.0-flash-001"];
-      let summary = null;
-      let errorLog = [];
-
-      for (const model of modelsToTry) {
-        try {
-          // Using 'v1beta' endpoint
-          const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${API_KEY}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{
-                role: "user",
-                parts: [{ text: `[INSTRUÇÃO]: ${systemPrompt}\n\n[CONTRATO]: ${userMessage}` }]
-              }]
-            })
-          });
-
-          if (!response.ok) {
-            const errData = await response.json().catch(() => ({}));
-            const msg = errData.error?.message || `Status ${response.status}`;
-
-            // Specific handling for Rate Limit (Quota)
-            if (response.status === 429) {
-              console.warn(`Model ${model} hit rate limit. Waiting 2s before next...`);
-              await new Promise(resolve => setTimeout(resolve, 2000));
-            }
-
-            errorLog.push(`${model}: ${msg}`);
-            continue;
-          }
-
-          const json = await response.json();
-          summary = json.candidates?.[0]?.content?.parts?.[0]?.text;
-
-          if (summary) break; // Success
-
-        } catch (e: any) {
-          errorLog.push(`${model}: ${e.message}`);
+      const { data, error } = await supabase.functions.invoke('chat-ai', {
+        body: {
+          messages: [{ role: 'user', content: userMessage }],
+          systemPrompt: 'Você é um assistente jurídico sênior especializado em gestão de contratos da MedBeauty. Sua função é analisar metadados de contratos e gerar resumos executivos claros e objetivos. Identifique explicitamente datas críticas e valores financeiros.'
         }
+      });
+
+      if (error) throw error;
+
+      summary = data.choices?.[0]?.message?.content || data.reply || "";
+
+      if (!summary) {
+        throw new Error("Resposta da IA vazia");
       }
 
       if (!summary) {

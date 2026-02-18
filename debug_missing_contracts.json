@@ -1,0 +1,117 @@
+{
+  "departments": [
+    {
+      "id": "68d9a5ba-ed8b-4d06-a6cb-be030b45f3f2",
+      "name": "Administração",
+      "code": "ADMIN"
+    },
+    {
+      "id": "78cc1018-9aac-427c-bd5d-420b3185302e",
+      "name": "Financeiro",
+      "code": "FIN"
+    },
+    {
+      "id": "3b1395df-21a7-42ed-b735-665ef393dd2b",
+      "name": "Marketing",
+      "code": "MKT"
+    },
+    {
+      "id": "acd2d5f8-fef2-449f-8468-fafa017212e8",
+      "name": "Comercial",
+      "code": "COM"
+    },
+    {
+      "id": "0e80a854-1526-43b9-9041-756e2c6a806b",
+      "name": "Logística",
+      "code": "LOG"
+    },
+    {
+      "id": "5bcc2477-61b4-4d07-a8fa-6b224eda7ce5",
+      "name": "Jurídico",
+      "code": "JUR"
+    },
+    {
+      "id": "77451bca-f3ca-4936-8129-007cfb472506",
+      "name": "Tech Digital",
+      "code": "TECH"
+    },
+    {
+      "id": "1f034234-0d3c-4cfb-82be-cd658367848c",
+      "name": "E-commerce",
+      "code": "ECOM"
+    },
+    {
+      "id": "146ed0a2-ea34-4a59-9b9f-3d8a592d7d6a",
+      "name": "RH",
+      "code": "rh"
+    },
+    {
+      "id": "e967e1ee-df63-4147-a432-13116c7f5f16",
+      "name": "Tech / Suporte",
+      "code": "tech"
+    },
+    {
+      "id": "e66f78cf-43a1-486f-9c06-7c598e8c92c7",
+      "name": "Diretoria",
+      "code": "diretoria"
+    },
+    {
+      "id": "427345c2-9823-4c45-9379-7351814cd12e",
+      "name": "Científica",
+      "code": "cientifica"
+    },
+    {
+      "id": "2f5bccbe-d888-422a-9177-9496728edce7",
+      "name": "Inside Sales",
+      "code": "com_inside"
+    },
+    {
+      "id": "cd5417ce-7d47-4d02-bb60-bcf9a6a3d78e",
+      "name": "Sudeste",
+      "code": "com_sudeste"
+    },
+    {
+      "id": "f8b41011-9c94-4b02-93e6-d81b31761b78",
+      "name": "Sul",
+      "code": "com_sul"
+    },
+    {
+      "id": "0e0d8742-c0e1-41c7-947f-d967694b1440",
+      "name": "Centro",
+      "code": "com_centro"
+    },
+    {
+      "id": "cc002c31-60fd-43a4-b5e6-e32fe0d5243e",
+      "name": "Norte",
+      "code": "com_norte"
+    },
+    {
+      "id": "c1b91eb3-69cd-454d-9b86-30968740e330",
+      "name": "Recursos Humanos",
+      "code": "RH"
+    },
+    {
+      "id": "27aed6e1-4d11-4df7-a28f-de37ee98522f",
+      "name": "Manutenção",
+      "code": "manutencao"
+    },
+    {
+      "id": "fc523e37-cd35-405d-bbd0-797891e081c1",
+      "name": "Compras",
+      "code": "COMPRAS"
+    },
+    {
+      "id": "71859902-f49b-4d8c-9a8c-a8cbb4138a2d",
+      "name": "Tech TI",
+      "code": "TECH_TI"
+    }
+  ],
+  "latest_contracts": null,
+  "error_depts": null,
+  "error_contracts": {
+    "code": "42501",
+    "details": null,
+    "hint": null,
+    "message": "permission denied for table users"
+  }
+}

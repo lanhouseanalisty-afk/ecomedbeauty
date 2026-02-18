@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Message } from "@/components/chat/ChatMessage";
+import { generateUUID } from "@/lib/utils";
 
 const getSessionId = (): string => {
   let sessionId = localStorage.getItem("medbeauty_session_id");
   if (!sessionId) {
-    sessionId = crypto.randomUUID();
+    sessionId = generateUUID();
     localStorage.setItem("medbeauty_session_id", sessionId);
   }
   return sessionId;

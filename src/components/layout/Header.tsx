@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom"; // Added useLocation
 import { cn } from "@/lib/utils";
-import { Search, ShoppingBag, Heart, User, Menu, X } from "lucide-react";
+import { Search, ShoppingBag, Heart, User, Menu, X, LogOut, LayoutDashboard, Settings, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useCart } from "@/contexts/CartContext";
@@ -10,6 +10,14 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCMS } from "@/contexts/CMSContext";
 import { CMSText } from "@/components/cms/CMSText";
 import { ProductSearch } from "@/components/products/ProductSearch";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -102,25 +110,71 @@ export function Header() {
             </Sheet>
 
             {!user ? (
-              <>
-                <LinkComponent {...linkProps("/conta")}>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="text-white/70 hover:text-white hover:bg-white/5 rounded-full transition-colors">
                     <User className="h-5 w-5" />
                   </Button>
-                </LinkComponent>
-
-                <LinkComponent {...linkProps("/conta")}>
-                  <Button variant="ghost" size="sm" className="hidden lg:flex text-[#ECB546] hover:bg-[#ECB546]/10 hover:text-[#ECB546] transition-colors font-medium">
-                    Cadastre-se
-                  </Button>
-                </LinkComponent>
-              </>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56 bg-[#2b0f54] border-white/10 text-white" align="end">
+                  <DropdownMenuLabel className="text-[#ECB546]">Acesse sua conta</DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-white/10" />
+                  <DropdownMenuItem asChild>
+                    <Link to="/conta?role=customer" className="cursor-pointer flex items-center gap-2 hover:bg-white/5 focus:bg-white/5 text-white">
+                      <ShoppingBag className="h-4 w-4" />
+                      <span>Entrar como Cliente</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/conta?role=employee" className="cursor-pointer flex items-center gap-2 hover:bg-white/5 focus:bg-white/5 text-white">
+                      <Building2 className="h-4 w-4" />
+                      <span>Entrar como Colaborador</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-white/10" />
+                  <DropdownMenuItem asChild>
+                    <Link to="/conta" className="cursor-pointer text-[11px] text-white/50 hover:text-white">
+                      Criar nova conta
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
-              <LinkComponent {...linkProps("/perfil")}>
-                <Button variant="ghost" size="icon" className="text-white/70 hover:text-white hover:bg-white/5 rounded-full transition-colors">
-                  <User className="h-5 w-5" />
-                </Button>
-              </LinkComponent>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="text-white/70 hover:text-white hover:bg-white/5 rounded-full transition-colors">
+                    <User className="h-5 w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56 bg-[#2b0f54] border-white/10 text-white" align="end">
+                  <DropdownMenuLabel className="text-[#ECB546] truncate">
+                    {user.email}
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-white/10" />
+                  {isEmployee && (
+                    <DropdownMenuItem asChild>
+                      <Link to="/crm" className="cursor-pointer flex items-center gap-2 hover:bg-white/5 focus:bg-white/5 text-white">
+                        <LayoutDashboard className="h-4 w-4" />
+                        <span>Painel CRM</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem asChild>
+                    <Link to="/perfil" className="cursor-pointer flex items-center gap-2 hover:bg-white/5 focus:bg-white/5 text-white">
+                      <User className="h-4 w-4" />
+                      <span>Meu Perfil</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-white/10" />
+                  <DropdownMenuItem
+                    className="cursor-pointer flex items-center gap-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 focus:bg-red-500/10"
+                    onClick={() => signOut()}
+                  >
+                    <LogOut className="h-4 w-4" />
+                    <span>Sair</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
 
             <div className="h-4 w-[1px] bg-white/10 mx-2" />

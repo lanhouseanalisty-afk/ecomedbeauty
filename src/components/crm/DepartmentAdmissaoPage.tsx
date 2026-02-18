@@ -38,6 +38,7 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
+import { ShieldAlert } from "lucide-react";
 
 const stepLabels: Record<string, string> = {
   rh: "RH",
@@ -87,7 +88,8 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
     completeAdmission
   } = useDepartmentAdmissions(departmentSlug);
 
-  const { isAdmin } = useUserRole();
+  const { isAdmin, canEditModule } = useUserRole();
+  const canEdit = canEditModule('rh') || canEditModule(departmentSlug);
   const isTech = departmentSlug === 'tech';
   const isCompras = departmentSlug === 'compras';
 
@@ -114,6 +116,8 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
         : pendingProcesses.filter(p => p.current_step === 'gestor');
   const awaitingIT = pendingProcesses.filter(p => p.current_step === 'ti');
   const completedProcesses = processes?.filter(p => p.status === 'completed' && (isAdmin || isTech ? true : p.target_department === departmentSlug)) || [];
+
+  const canShowActions = canEdit || isAdmin;
 
   const getProgressValue = (step: string) => {
     const steps = ['rh', 'gestor', 'ti', 'rh_review', 'colaborador', 'concluido'];
@@ -354,20 +358,28 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
         </div>
 
         {/* SIMULADOR DE PAPEL */}
-        <div className="flex items-center gap-2 bg-muted p-1 px-3 rounded-full text-xs">
-          <span className="text-muted-foreground">Simular:</span>
-          <select
-            value={simulationRole}
-            onChange={(e) => setSimulationRole(e.target.value as any)}
-            className="bg-transparent border-none focus:ring-0 cursor-pointer font-bold text-primary"
-          >
-            <option value="rh">RH</option>
-            <option value="gestor">Gestor</option>
-            <option value="ti">TI</option>
-            <option value="compras">Compras</option>
-            <option value="admin">Admin</option>
-          </select>
-        </div>
+        {isAdmin && (
+          <div className="flex items-center gap-2 bg-muted p-1 px-3 rounded-full text-xs">
+            <span className="text-muted-foreground">Simular:</span>
+            <select
+              value={simulationRole}
+              onChange={(e) => setSimulationRole(e.target.value as any)}
+              className="bg-transparent border-none focus:ring-0 cursor-pointer font-bold text-primary"
+            >
+              <option value="rh">RH</option>
+              <option value="gestor">Gestor</option>
+              <option value="ti">TI</option>
+              <option value="compras">Compras</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+        )}
+        {!canEdit && !isAdmin && (
+          <div className="flex items-center gap-2 px-3 py-1 bg-amber-50 rounded border border-amber-200">
+            <ShieldAlert className="h-4 w-4 text-amber-600" />
+            <span className="text-xs text-amber-600 font-medium whitespace-nowrap">Modo Leitura</span>
+          </div>
+        )}
       </div>
 
       {/* Stats */}
@@ -477,10 +489,17 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                         <Badge variant="outline" className="text-purple-600 border-purple-300">
                           Aguardando suas definições
                         </Badge>
-                        <Button onClick={() => setSelectedProcess(process.id)}>
-                          <Send className="h-4 w-4 mr-2" />
-                          Preencher
-                        </Button>
+                        {canShowActions ? (
+                          <Button onClick={() => setSelectedProcess(process.id)}>
+                            <Send className="h-4 w-4 mr-2" />
+                            Preencher
+                          </Button>
+                        ) : (
+                          <Button variant="outline" onClick={() => setSelectedProcess(process.id)}>
+                            <Eye className="h-4 w-4 mr-2" />
+                            Ver
+                          </Button>
+                        )}
                       </div>
                     </div>
                   </CardContent>

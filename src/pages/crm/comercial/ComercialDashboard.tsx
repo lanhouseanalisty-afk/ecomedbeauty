@@ -17,7 +17,10 @@ import {
   Globe,
   Star,
   MapPin,
+  FileText,
+  ShieldAlert
 } from "lucide-react";
+import { useUserRole } from "@/hooks/useUserRole";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -67,6 +70,8 @@ export default function ComercialDashboard() {
   const [selectedLead, setSelectedLead] = useState<any>(null);
   const { leads, isLoading, createLead, updateLead, deleteLead } = useLeads();
   const { opportunities } = useOpportunities();
+  const { canEditModule } = useUserRole();
+  const canEdit = canEditModule('comercial');
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState<"list" | "kanban">("list");
 
@@ -189,112 +194,126 @@ export default function ComercialDashboard() {
         </div>
         <div className="flex gap-2 items-center">
           <Badge variant="outline" className="h-9 px-4 text-sm hidden md:flex">Gestor Inside Sales: Cesar Camargo</Badge>
+
+          <Button onClick={() => window.location.href = "/crm/intranet/contratos/novo?sector=comercial"} variant="outline" className="gap-2 shadow-sm hover:shadow-md transition-all">
+            <FileText className="h-4 w-4" />
+            Solicitar Contrato
+          </Button>
+
           <Button variant="outline" onClick={() => setIsSearchDialogOpen(true)} className="shadow-sm hover:shadow-md transition-all">
             <Globe className="mr-2 h-4 w-4 text-blue-500" />
             Buscar Leads Externos
           </Button>
 
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="shadow-sm hover:shadow-md transition-all hover:scale-105 active:scale-95 bg-gradient-to-r from-primary to-orange-600 text-white">
-                <Plus className="mr-2 h-4 w-4" />
-                Novo Lead
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px]">
-              <DialogHeader>
-                <DialogTitle>Novo Lead</DialogTitle>
-                <DialogDescription>
-                  Cadastre um novo lead manualmente no sistema.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="first_name">Nome</Label>
-                    <Input
-                      id="first_name"
-                      value={newLead.first_name}
-                      onChange={(e) => setNewLead({ ...newLead, first_name: e.target.value })}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="last_name">Sobrenome</Label>
-                    <Input
-                      id="last_name"
-                      value={newLead.last_name}
-                      onChange={(e) => setNewLead({ ...newLead, last_name: e.target.value })}
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={newLead.email}
-                      onChange={(e) => setNewLead({ ...newLead, email: e.target.value })}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="phone">Telefone</Label>
-                    <Input
-                      id="phone"
-                      value={newLead.phone}
-                      onChange={(e) => setNewLead({ ...newLead, phone: e.target.value })}
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="company">Empresa</Label>
-                    <Input
-                      id="company"
-                      value={newLead.company}
-                      onChange={(e) => setNewLead({ ...newLead, company: e.target.value })}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="source">Origem</Label>
-                    <Select
-                      value={newLead.source}
-                      onValueChange={(value) => setNewLead({ ...newLead, source: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="website">Website</SelectItem>
-                        <SelectItem value="referral">Indicação</SelectItem>
-                        <SelectItem value="google_ads">Google Ads</SelectItem>
-                        <SelectItem value="social_media">Redes Sociais</SelectItem>
-                        <SelectItem value="event">Evento</SelectItem>
-                        <SelectItem value="other">Outro</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="notes">Observações</Label>
-                  <Textarea
-                    id="notes"
-                    value={newLead.notes}
-                    onChange={(e) => setNewLead({ ...newLead, notes: e.target.value })}
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  Cancelar
+          {canEdit ? (
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="shadow-sm hover:shadow-md transition-all hover:scale-105 active:scale-95 bg-gradient-to-r from-primary to-orange-600 text-white">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Novo Lead
                 </Button>
-                <Button onClick={handleCreateLead} disabled={createLead.isPending}>
-                  {createLead.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Cadastrar
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[500px]">
+                {/* ... existing dialog content ... */}
+                <DialogHeader>
+                  <DialogTitle>Novo Lead</DialogTitle>
+                  <DialogDescription>
+                    Cadastre um novo lead manualmente no sistema.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="first_name">Nome</Label>
+                      <Input
+                        id="first_name"
+                        value={newLead.first_name}
+                        onChange={(e) => setNewLead({ ...newLead, first_name: e.target.value })}
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="last_name">Sobrenome</Label>
+                      <Input
+                        id="last_name"
+                        value={newLead.last_name}
+                        onChange={(e) => setNewLead({ ...newLead, last_name: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="email">Email</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={newLead.email}
+                        onChange={(e) => setNewLead({ ...newLead, email: e.target.value })}
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="phone">Telefone</Label>
+                      <Input
+                        id="phone"
+                        value={newLead.phone}
+                        onChange={(e) => setNewLead({ ...newLead, phone: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="company">Empresa</Label>
+                      <Input
+                        id="company"
+                        value={newLead.company}
+                        onChange={(e) => setNewLead({ ...newLead, company: e.target.value })}
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="source">Origem</Label>
+                      <Select
+                        value={newLead.source}
+                        onValueChange={(value) => setNewLead({ ...newLead, source: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="website">Website</SelectItem>
+                          <SelectItem value="referral">Indicação</SelectItem>
+                          <SelectItem value="google_ads">Google Ads</SelectItem>
+                          <SelectItem value="social_media">Redes Sociais</SelectItem>
+                          <SelectItem value="event">Evento</SelectItem>
+                          <SelectItem value="other">Outro</SelectItem>
+                        </SelectContent>
+                      </VillageSelect>
+                    </div>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="notes">Observações</Label>
+                    <Textarea
+                      id="notes"
+                      value={newLead.notes}
+                      onChange={(e) => setNewLead({ ...newLead, notes: e.target.value })}
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                    Cancelar
+                  </Button>
+                  <Button onClick={handleCreateLead} disabled={createLead.isPending}>
+                    {createLead.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Cadastrar
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          ) : (
+            <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 rounded border border-amber-200">
+              <ShieldAlert className="h-4 w-4 text-amber-600" />
+              <span className="text-xs text-amber-600 font-medium whitespace-nowrap">Modo Leitura</span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -444,46 +463,54 @@ export default function ComercialDashboard() {
                               <DropdownMenuItem className="cursor-pointer" onClick={() => setSelectedLead(lead)}>
                                 Ver Perfil Completo
                               </DropdownMenuItem>
-                              <DropdownMenuItem className="cursor-pointer">Editar Informações</DropdownMenuItem>
-                              <DropdownMenuSeparator />
+                              {canEdit && (
+                                <>
+                                  <DropdownMenuItem className="cursor-pointer">Editar Informações</DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                </>
+                              )}
                               <DropdownMenuItem className="cursor-pointer">
                                 <Phone className="mr-2 h-3.5 w-3.5" /> Ligar
                               </DropdownMenuItem>
                               <DropdownMenuItem className="cursor-pointer">
                                 <Mail className="mr-2 h-3.5 w-3.5" /> Enviar Email
                               </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <DropdownMenuItem className="cursor-pointer" onSelect={(e) => e.preventDefault()}>
-                                    Alterar Status
+                              {canEdit && (
+                                <>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <DropdownMenuItem className="cursor-pointer" onSelect={(e) => e.preventDefault()}>
+                                        Alterar Status
+                                      </DropdownMenuItem>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent side="left" align="start">
+                                      <DropdownMenuItem onClick={() => handleUpdateStatus(lead.id, 'new')}>
+                                        Novo
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem onClick={() => handleUpdateStatus(lead.id, 'contacted')}>
+                                        Contatado
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem onClick={() => handleUpdateStatus(lead.id, 'qualified')}>
+                                        Qualificado
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem onClick={() => handleUpdateStatus(lead.id, 'converted')}>
+                                        Convertido
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem onClick={() => handleUpdateStatus(lead.id, 'lost')}>
+                                        Perdido
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem
+                                    className="cursor-pointer text-destructive focus:text-destructive"
+                                    onClick={() => handleDeleteLead(lead.id)}
+                                  >
+                                    Remover Lead
                                   </DropdownMenuItem>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent side="left" align="start">
-                                  <DropdownMenuItem onClick={() => handleUpdateStatus(lead.id, 'new')}>
-                                    Novo
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleUpdateStatus(lead.id, 'contacted')}>
-                                    Contatado
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleUpdateStatus(lead.id, 'qualified')}>
-                                    Qualificado
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleUpdateStatus(lead.id, 'converted')}>
-                                    Convertido
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleUpdateStatus(lead.id, 'lost')}>
-                                    Perdido
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem
-                                className="cursor-pointer text-destructive focus:text-destructive"
-                                onClick={() => handleDeleteLead(lead.id)}
-                              >
-                                Remover Lead
-                              </DropdownMenuItem>
+                                </>
+                              )}
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </TableCell>

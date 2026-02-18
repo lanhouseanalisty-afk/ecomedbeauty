@@ -14,8 +14,12 @@ import {
   AlertTriangle,
   CheckCircle,
   Clock,
-  Download
+  Download,
+  Download,
+  FileText,
+  ShieldAlert
 } from "lucide-react";
+import { useUserRole } from "@/hooks/useUserRole";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -70,6 +74,8 @@ export default function FinanceiroDashboard() {
   const { invoices, isLoading, createInvoice } = useInvoices();
   const { data: stats } = useFinancialStats();
   const { data: realCashFlowData } = useMonthlyCashflow();
+  const { canEditModule } = useUserRole();
+  const canEdit = canEditModule('financeiro');
 
   const [newInvoice, setNewInvoice] = useState({
     invoice_number: "",
@@ -193,89 +199,105 @@ export default function FinanceiroDashboard() {
         </div>
         <div className="flex gap-2 items-center">
           <Badge variant="outline" className="h-9 px-4 text-sm hidden md:flex">Gestor: Lucas Voltarelli</Badge>
-          <DataExport data={filteredInvoices} filename="faturas" columns={exportColumns} />
-          <Button variant="outline" onClick={() => {
-            setNewInvoice({ ...newInvoice, type: 'payable' });
-            setIsDialogOpen(true);
-          }}>
-            <ArrowDownRight className="mr-2 h-4 w-4" />
-            Nova Despesa
+
+          <Button onClick={() => window.location.href = "/crm/intranet/contratos/novo?sector=financeiro"} variant="outline" className="gap-2">
+            <FileText className="h-4 w-4" />
+            Solicitar Contrato
           </Button>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button onClick={() => setNewInvoice({ ...newInvoice, type: 'receivable' })}>
-                <ArrowUpRight className="mr-2 h-4 w-4" />
-                Nova Receita
+
+          <DataExport data={filteredInvoices} filename="faturas" columns={exportColumns} />
+
+          {canEdit ? (
+            <>
+              <Button variant="outline" onClick={() => {
+                setNewInvoice({ ...newInvoice, type: 'payable' });
+                setIsDialogOpen(true);
+              }}>
+                <ArrowDownRight className="mr-2 h-4 w-4" />
+                Nova Despesa
               </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle>Nova Fatura</DialogTitle>
-                <DialogDescription>
-                  Registre uma nova fatura no sistema.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="invoice_number">Número da Fatura</Label>
-                  <Input
-                    id="invoice_number"
-                    placeholder="INV-001"
-                    value={newInvoice.invoice_number}
-                    onChange={(e) => setNewInvoice({ ...newInvoice, invoice_number: e.target.value })}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label>Tipo</Label>
-                    <Select
-                      value={newInvoice.type}
-                      onValueChange={(value) => setNewInvoice({ ...newInvoice, type: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="receivable">Receita</SelectItem>
-                        <SelectItem value="payable">Despesa</SelectItem>
-                      </SelectContent>
-                    </Select>
+              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button onClick={() => setNewInvoice({ ...newInvoice, type: 'receivable' })}>
+                    <ArrowUpRight className="mr-2 h-4 w-4" />
+                    Nova Receita
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px]">
+                  <DialogHeader>
+                    <DialogTitle>Nova Fatura</DialogTitle>
+                    <DialogDescription>
+                      Registre uma nova fatura no sistema.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="invoice_number">Número da Fatura</Label>
+                      <Input
+                        id="invoice_number"
+                        placeholder="INV-001"
+                        value={newInvoice.invoice_number}
+                        onChange={(e) => setNewInvoice({ ...newInvoice, invoice_number: e.target.value })}
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="grid gap-2">
+                        <Label>Tipo</Label>
+                        <VillageSelect
+                          value={newInvoice.type}
+                          onValueChange={(value) => setNewInvoice({ ...newInvoice, type: value })}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="receivable">Receita</SelectItem>
+                            <SelectItem value="payable">Despesa</SelectItem>
+                          </SelectContent>
+                        </VillageSelect>
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="total">Valor (R$)</Label>
+                        <Input
+                          id="total"
+                          type="number"
+                          value={newInvoice.subtotal}
+                          onChange={(e) => setNewInvoice({
+                            ...newInvoice,
+                            subtotal: Number(e.target.value),
+                            total: Number(e.target.value)
+                          })}
+                        />
+                      </div>
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="due_date">Vencimento</Label>
+                      <Input
+                        id="due_date"
+                        type="date"
+                        value={newInvoice.due_date}
+                        onChange={(e) => setNewInvoice({ ...newInvoice, due_date: e.target.value })}
+                      />
+                    </div>
                   </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="total">Valor (R$)</Label>
-                    <Input
-                      id="total"
-                      type="number"
-                      value={newInvoice.subtotal}
-                      onChange={(e) => setNewInvoice({
-                        ...newInvoice,
-                        subtotal: Number(e.target.value),
-                        total: Number(e.target.value)
-                      })}
-                    />
-                  </div>
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="due_date">Vencimento</Label>
-                  <Input
-                    id="due_date"
-                    type="date"
-                    value={newInvoice.due_date}
-                    onChange={(e) => setNewInvoice({ ...newInvoice, due_date: e.target.value })}
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  Cancelar
-                </Button>
-                <Button onClick={handleCreateInvoice} disabled={createInvoice.isPending}>
-                  {createInvoice.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Criar Fatura
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                      Cancelar
+                    </Button>
+                    <Button onClick={handleCreateInvoice} disabled={createInvoice.isPending}>
+                      {createInvoice.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      Criar Fatura
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </>
+          ) : (
+            <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 rounded border border-amber-200">
+              <ShieldAlert className="h-4 w-4 text-amber-600" />
+              <span className="text-xs text-amber-600 font-medium whitespace-nowrap">Modo Leitura</span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -406,20 +428,26 @@ export default function FinanceiroDashboard() {
                         <TableCell>{formatDate(invoice.due_date)}</TableCell>
                         <TableCell>{getStatusBadge(invoice.status)}</TableCell>
                         <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem>Ver Detalhes</DropdownMenuItem>
-                              <DropdownMenuItem>Registrar Pagamento</DropdownMenuItem>
-                              <DropdownMenuItem>Editar</DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-destructive">Cancelar</DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                          {canEdit ? (
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon">
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem>Ver Detalhes</DropdownMenuItem>
+                                <DropdownMenuItem>Registrar Pagamento</DropdownMenuItem>
+                                <DropdownMenuItem>Editar</DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem className="text-destructive">Cancelar</DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          ) : (
+                            <Button variant="ghost" size="icon" disabled>
+                              <FileText className="h-4 w-4" />
+                            </Button>
+                          )}
                         </TableCell>
                       </TableRow>
                     ))}

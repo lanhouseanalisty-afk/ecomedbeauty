@@ -5,6 +5,7 @@ import {
     Plus,
     Search,
     FileUp,
+    Download,
     Laptop,
     Smartphone,
     Tablet,
@@ -17,8 +18,10 @@ import {
     ArrowUpAZ,
     ArrowDownZA,
     Check,
-    ChevronsUpDown
+    ChevronsUpDown,
+    ShieldAlert
 } from "lucide-react";
+import { useUserRole } from "@/hooks/useUserRole";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -69,6 +72,8 @@ export default function InventoryPage() {
     const [activeSubTab, setActiveSubTab] = useState<'notebook' | 'tablet' | 'smartphone' | 'chip'>('notebook');
     const [searchTerm, setSearchTerm] = useState("");
     const [loading, setLoading] = useState(true);
+    const { canEditModule, isAdmin } = useUserRole();
+    const canEdit = canEditModule('tech');
 
     // Sort Config
     const [sortConfig, setSortConfig] = useState({ key: '', direction: 'asc' });
@@ -500,6 +505,70 @@ export default function InventoryPage() {
         }
     }
 
+    const handleExportExcel = () => {
+        try {
+            // Prepare data for export with Portuguese headers
+            const exportData = sortedItems.map(item => {
+                const baseData: Record<string, string> = {
+                    'Patrimônio': item.asset_tag,
+                    'Tipo': activeSubTab,
+                };
+
+                if (activeSubTab === 'chip') {
+                    return {
+                        ...baseData,
+                        'Número da Linha': item.asset_tag,
+                        'Usuário': item.assigned_to_name || 'Disponível',
+                        'Status': item.assigned_to_name && item.assigned_to_name !== 'Disponível' && item.assigned_to_name !== '*' && item.assigned_to_name !== '**' ? 'Em Uso' : (item.status === 'available' ? 'Disponível' : item.status === 'in_use' ? 'Em Uso' : item.status === 'maintenance' ? 'Manutenção' : item.status === 'broken' ? 'Defeito' : item.status)
+                    };
+                } else if (activeSubTab === 'tablet' || activeSubTab === 'smartphone') {
+                    return {
+                        ...baseData,
+                        'Modelo': item.model,
+                        'Marca': item.brand,
+                        'Nº de Série': item.serial_number || '',
+                        'Responsável': item.assigned_to_name || 'Disponível',
+                        'Empresa': item.company || '',
+                        'Observações': item.notes || '',
+                        'Status': item.status === 'available' ? 'Disponível' : item.status === 'in_use' ? 'Em Uso' : item.status === 'maintenance' ? 'Manutenção' : item.status === 'broken' ? 'Defeito' : item.status
+                    };
+                } else {
+                    // notebook
+                    return {
+                        ...baseData,
+                        'Equipamento': item.model,
+                        'Marca': item.brand,
+                        'Hostname': item.hostname || '',
+                        'Responsável': item.assigned_to_name || 'Disponível',
+                        'Serial Number': item.serial_number || '',
+                        'Setor': item.location || '',
+                        'Empresa': item.company || '',
+                        'Observações': item.notes || '',
+                        'Status': item.assigned_to_name && item.assigned_to_name !== 'Disponível' && item.assigned_to_name !== '*' && item.assigned_to_name !== '**' ? 'Em Uso' : (item.status === 'available' ? 'Disponível' : item.status === 'in_use' ? 'Em Uso' : item.status === 'maintenance' ? 'Manutenção' : item.status === 'broken' ? 'Defeito' : item.status)
+                    };
+                }
+            });
+
+            // Create worksheet
+            const worksheet = XLSX.utils.json_to_sheet(exportData);
+
+            // Create workbook
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, activeSubTab.charAt(0).toUpperCase() + activeSubTab.slice(1));
+
+            // Generate filename with current date
+            const date = new Date().toISOString().split('T')[0];
+            const filename = `inventario_${activeSubTab}_${date}.xlsx`;
+
+            // Save file
+            XLSX.writeFile(workbook, filename);
+
+            toast.success(`Arquivo exportado com sucesso: ${filename}`);
+        } catch (err) {
+            console.error('Export error:', err);
+            toast.error('Erro ao exportar arquivo Excel');
+        }
+    };
 
 
 
@@ -718,6 +787,12 @@ export default function InventoryPage() {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
+                {!canEdit && !isAdmin && (
+                    <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 rounded border border-amber-200">
+                        <ShieldAlert className="h-4 w-4 text-amber-600" />
+                        <span className="text-xs text-amber-600 font-medium whitespace-nowrap">Modo Leitura</span>
+                    </div>
+                )}
             </div>
 
 
@@ -736,31 +811,42 @@ export default function InventoryPage() {
                         </div>
                         <div className="flex items-center gap-2">
 
-                            <div className="flex gap-2">
-                                <div className="relative">
-                                    <input
-                                        type="file"
-                                        accept=".xlsx, .xls, .csv"
-                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                        onChange={handleImportExcel}
-                                        disabled={loading}
-                                    />
-                                    <Button variant="outline" className="gap-2 border-rose-gold/20 text-rose-gold-dark hover:bg-rose-gold/5">
-                                        <FileUp className="w-4 h-4" />
-                                        Importar Planilha (Nome)
+                            {(canEdit || isAdmin) && (
+                                <div className="flex gap-2">
+                                    <div className="relative">
+                                        <input
+                                            type="file"
+                                            accept=".xlsx, .xls, .csv"
+                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                            onChange={handleImportExcel}
+                                            disabled={loading}
+                                        />
+                                        <Button variant="outline" className="gap-2 border-rose-gold/20 text-rose-gold-dark hover:bg-rose-gold/5">
+                                            <FileUp className="w-4 h-4" />
+                                            Importar Planilha
+                                        </Button>
+                                    </div>
+                                    <Button
+                                        variant="outline"
+                                        onClick={handleExportExcel}
+                                        disabled={loading || sortedItems.length === 0}
+                                        className="gap-2 border-rose-gold/20 text-rose-gold-dark hover:bg-rose-gold/5"
+                                    >
+                                        <Download className="w-4 h-4" />
+                                        Exportar Excel
+                                    </Button>
+                                    <Button
+                                        variant="destructive"
+                                        onClick={handleDeleteAll}
+                                        className="gap-2 bg-red-100 text-red-700 hover:bg-red-200 border-none"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                        Zerar Tudo
                                     </Button>
                                 </div>
-                                <Button
-                                    variant="destructive"
-                                    onClick={handleDeleteAll}
-                                    className="gap-2 bg-red-100 text-red-700 hover:bg-red-200 border-none"
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                    Zerar Tudo
-                                </Button>
-                            </div>
+                            )}
 
-                            {selectedIds.length > 0 && (
+                            {(canEdit || isAdmin) && selectedIds.length > 0 && (
                                 <Button
                                     variant="destructive"
                                     onClick={handleBulkDelete}
@@ -771,16 +857,18 @@ export default function InventoryPage() {
                                 </Button>
                             )}
 
-                            <Button
-                                onClick={() => {
-                                    setEditingAsset({});
-                                    setIsAssetModalOpen(true);
-                                }}
-                                className="bg-rose-gold hover:bg-rose-gold-dark text-white gap-2"
-                            >
-                                <Plus className="w-4 h-4" />
-                                Novo Ativo
-                            </Button>
+                            {(canEdit || isAdmin) && (
+                                <Button
+                                    onClick={() => {
+                                        setEditingAsset({});
+                                        setIsAssetModalOpen(true);
+                                    }}
+                                    className="bg-rose-gold hover:bg-rose-gold-dark text-white gap-2"
+                                >
+                                    <Plus className="w-4 h-4" />
+                                    Novo Ativo
+                                </Button>
+                            )}
                         </div>
                     </div>
                 </CardHeader>
@@ -856,8 +944,14 @@ export default function InventoryPage() {
                                                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                                 if ((e.target as any).tagName === 'INPUT') return;
 
-                                                setEditingAsset(item);
-                                                setIsAssetModalOpen(true);
+                                                if (canEdit || isAdmin) {
+                                                    setEditingAsset(item);
+                                                    setIsAssetModalOpen(true);
+                                                } else {
+                                                    // Optional: Show a "Read only" message or just open in read-only mode (which it already is since we hid the Save button)
+                                                    setEditingAsset(item);
+                                                    setIsAssetModalOpen(true);
+                                                }
                                             }}
                                         >
                                             <TableCell className="pl-6">
@@ -1095,10 +1189,14 @@ export default function InventoryPage() {
                     </div>
 
                     <div className="flex justify-end gap-2 mt-4">
-                        <Button variant="ghost" onClick={() => setIsAssetModalOpen(false)}>Cancelar</Button>
-                        <Button onClick={handleSaveAsset} disabled={actionLoading} className="bg-rose-gold text-white">
-                            {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Salvar"}
+                        <Button variant="ghost" onClick={() => setIsAssetModalOpen(false)}>
+                            {canEdit || isAdmin ? "Cancelar" : "Fechar"}
                         </Button>
+                        {(canEdit || isAdmin) && (
+                            <Button onClick={handleSaveAsset} disabled={actionLoading} className="bg-rose-gold text-white">
+                                {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Salvar"}
+                            </Button>
+                        )}
                     </div>
                 </DialogContent>
             </Dialog>

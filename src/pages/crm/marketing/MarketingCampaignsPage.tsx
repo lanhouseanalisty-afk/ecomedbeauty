@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { Textarea } from "@/components/ui/textarea";
 import {
     DropdownMenu,
@@ -32,6 +33,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useCampaigns } from "@/hooks/useMarketing";
+import { useUserRole } from "@/hooks/useUserRole";
 import { formatCurrency } from "@/lib/utils";
 import { EmptyState } from "@/components/crm/shared/EmptyState";
 
@@ -39,6 +41,8 @@ export default function MarketingCampaignsPage() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
     const { campaigns, isLoading, createCampaign } = useCampaigns();
+    const { canEditModule } = useUserRole();
+    const canEdit = canEditModule('marketing');
 
     const [newCampaign, setNewCampaign] = useState({
         name: "",
@@ -122,95 +126,96 @@ export default function MarketingCampaignsPage() {
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                        <DialogTrigger asChild>
-                            <Button>
-                                <Plus className="mr-2 h-4 w-4" />
-                                Nova Campanha
-                            </Button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-[500px]">
-                            <DialogHeader>
-                                <DialogTitle>Nova Campanha</DialogTitle>
-                                <DialogDescription>
-                                    Configure uma nova campanha de marketing.
-                                </DialogDescription>
-                            </DialogHeader>
-                            <div className="grid gap-4 py-4">
-                                <div className="grid gap-2">
-                                    <Label htmlFor="name">Nome da Campanha</Label>
-                                    <Input
-                                        id="name"
-                                        value={newCampaign.name}
-                                        onChange={(e) => setNewCampaign({ ...newCampaign, name: e.target.value })}
-                                    />
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="type">Tipo</Label>
-                                        <select
-                                            id="type"
-                                            value={newCampaign.type}
-                                            onChange={(e) => setNewCampaign({ ...newCampaign, type: e.target.value })}
-                                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                                        >
-                                            <option value="awareness">Awareness</option>
-                                            <option value="leads">Geração de Leads</option>
-                                            <option value="conversion">Conversão</option>
-                                            <option value="retention">Retenção</option>
-                                            <option value="remarketing">Remarketing</option>
-                                        </select>
-                                    </div>
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="budget">Orçamento (R$)</Label>
-                                        <Input
-                                            id="budget"
-                                            type="number"
-                                            value={newCampaign.budget}
-                                            onChange={(e) => setNewCampaign({ ...newCampaign, budget: Number(e.target.value) })}
-                                        />
-                                    </div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="start_date">Data Início</Label>
-                                        <Input
-                                            id="start_date"
-                                            type="date"
-                                            value={newCampaign.start_date}
-                                            onChange={(e) => setNewCampaign({ ...newCampaign, start_date: e.target.value })}
-                                        />
-                                    </div>
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="end_date">Data Fim</Label>
-                                        <Input
-                                            id="end_date"
-                                            type="date"
-                                            value={newCampaign.end_date}
-                                            onChange={(e) => setNewCampaign({ ...newCampaign, end_date: e.target.value })}
-                                        />
-                                    </div>
-                                </div>
-                                <div className="grid gap-2">
-                                    <Label htmlFor="description">Descrição</Label>
-                                    <Textarea
-                                        id="description"
-                                        value={newCampaign.description}
-                                        onChange={(e) => setNewCampaign({ ...newCampaign, description: e.target.value })}
-                                    />
-                                </div>
-                            </div>
-                            <DialogFooter>
-                                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                                    Cancelar
+                    {canEdit && (
+                        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                            <DialogTrigger asChild>
+                                <Button>
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Nova Campanha
                                 </Button>
-                                <Button onClick={handleCreateCampaign} disabled={createCampaign.isPending}>
-                                    {createCampaign.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                    Criar Campanha
-                                </Button>
-                            </DialogFooter>
-                        </DialogContent>
-                    </Dialog>
+                            </DialogTrigger>
+                            <DialogContent className="sm:max-w-[500px]">
+                                <DialogHeader>
+                                    <DialogTitle>Nova Campanha</DialogTitle>
+                                    <DialogDescription>
+                                        Configure uma nova campanha de marketing.
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <div className="grid gap-4 py-4">
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="name">Nome da Campanha</Label>
+                                        <Input
+                                            id="name"
+                                            value={newCampaign.name}
+                                            onChange={(e) => setNewCampaign({ ...newCampaign, name: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="type">Tipo</Label>
+                                            <select
+                                                id="type"
+                                                value={newCampaign.type}
+                                                onChange={(e) => setNewCampaign({ ...newCampaign, type: e.target.value })}
+                                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                            >
+                                                <option value="awareness">Awareness</option>
+                                                <option value="leads">Geração de Leads</option>
+                                                <option value="conversion">Conversão</option>
+                                                <option value="retention">Retenção</option>
+                                                <option value="remarketing">Remarketing</option>
+                                            </select>
+                                        </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="budget">Orçamento (R$)</Label>
+                                            <CurrencyInput
+                                                id="budget"
+                                                value={newCampaign.budget}
+                                                onValueChange={(val) => setNewCampaign({ ...newCampaign, budget: val || 0 })}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="start_date">Data Início</Label>
+                                            <Input
+                                                id="start_date"
+                                                type="date"
+                                                value={newCampaign.start_date}
+                                                onChange={(e) => setNewCampaign({ ...newCampaign, start_date: e.target.value })}
+                                            />
+                                        </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="end_date">Data Fim</Label>
+                                            <Input
+                                                id="end_date"
+                                                type="date"
+                                                value={newCampaign.end_date}
+                                                onChange={(e) => setNewCampaign({ ...newCampaign, end_date: e.target.value })}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="description">Descrição</Label>
+                                        <Textarea
+                                            id="description"
+                                            value={newCampaign.description}
+                                            onChange={(e) => setNewCampaign({ ...newCampaign, description: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+                                <DialogFooter>
+                                    <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                                        Cancelar
+                                    </Button>
+                                    <Button onClick={handleCreateCampaign} disabled={createCampaign.isPending}>
+                                        {createCampaign.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                        Criar Campanha
+                                    </Button>
+                                </DialogFooter>
+                            </DialogContent>
+                        </Dialog>
+                    )}
                 </div>
             </div>
 

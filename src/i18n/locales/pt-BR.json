@@ -1,0 +1,341 @@
+{
+    "common": {
+        "welcome": "Bem-vindo ao EcomedBeauty",
+        "login": "Entrar",
+        "logout": "Sair",
+        "settings": "Configurações",
+        "profile": "Perfil",
+        "dashboard": "Dashboard",
+        "admissions": "Admissão & Demissão",
+        "processControl": "Controle de Processos",
+        "nfeControl": "Controle de NFE",
+        "sectorRequests": "Solicitações entre Setores",
+        "myProfile": "Meu Perfil",
+        "employees": "Colaboradores"
+    },
+    "auth": {
+        "email": "Email",
+        "password": "Senha",
+        "submit": "Entrar",
+        "forgotPassword": "Esqueceu a senha?"
+    },
+    "compliance": {
+        "title": "Compliance",
+        "subtitle": "Compromisso com Ética e Integridade",
+        "mission": {
+            "title": "Nossa Missão",
+            "description": "A área de Compliance existe para assegurar que todas as atividades sejam conduzidas com <1>ética, transparência e responsabilidade</1>. Nosso compromisso é garantir conformidade com leis, normas, políticas internas e padrões internacionais, promovendo um ambiente seguro, íntegro e alinhado aos valores da organização.",
+            "cards": {
+                "preventRisks": {
+                    "title": "Prevenir Riscos",
+                    "desc": "Legais, operacionais e reputacionais"
+                },
+                "ethicalCulture": {
+                    "title": "Cultura Ética",
+                    "desc": "Em todos os níveis da organização"
+                },
+                "responsibleDecisions": {
+                    "title": "Decisões Responsáveis",
+                    "desc": "Incentivar escolhas corretas"
+                },
+                "totalCompliance": {
+                    "title": "Conformidade Total",
+                    "desc": "Colaboradores, fornecedores e parceiros"
+                }
+            }
+        },
+        "principles": {
+            "title": "Princípios Fundamentais",
+            "integrity": {
+                "title": "Integridade",
+                "desc": "Agir de forma honesta em todas as situações"
+            },
+            "transparency": {
+                "title": "Transparência",
+                "desc": "Clareza nas informações e decisões"
+            },
+            "responsibility": {
+                "title": "Responsabilidade",
+                "desc": "Assumir consequências e atuar com consciência"
+            },
+            "equity": {
+                "title": "Equidade",
+                "desc": "Tratar todos com respeito e justiça"
+            },
+            "compliance": {
+                "title": "Conformidade",
+                "desc": "Obedecer leis, regulamentos e políticas internas"
+            },
+            "lgpd": {
+                "title": "Proteção de Dados (LGPD)",
+                "desc": "Cuidado com informações pessoais e confidenciais"
+            }
+        },
+        "codeOfConduct": {
+            "title": "Código de Conduta",
+            "description": "Orienta o comportamento esperado dentro da empresa",
+            "items": [
+                "Condutas éticas obrigatórias",
+                "Proibições contra assédio, discriminação, fraude e suborno",
+                "Regras sobre conflitos de interesse",
+                "Uso adequado de recursos, informações e bens da empresa"
+            ]
+        },
+        "whistleblowerChannel": {
+            "title": "Canal de Denúncia",
+            "description": "Seguro, sigiloso e acessível - Denúncias anônimas protegidas",
+            "intro": "Você pode relatar de forma anônima:",
+            "items": [
+                "Fraudes",
+                "Assédio",
+                "Corrupção",
+                "Má conduta",
+                "Violações"
+            ],
+            "footer": "✓ Total confidencialidade • ✓ Equipe independente • ✓ Proteção ao denunciante"
+        },
+        "antiCorruption": {
+            "title": "Política Anticorrupção",
+            "description": "Tolerância zero contra qualquer prática ilícita",
+            "items": [
+                "Condutas proibidas relacionadas a suborno e vantagens indevidas",
+                "Regras para relacionamento com setores públicos e privados",
+                "Diretrizes sobre presentes, brindes, viagens e hospitalidade",
+                "Critérios de contratação e avaliação de terceiros"
+            ]
+        },
+        "lgpd": {
+            "title": "Compromisso com a LGPD",
+            "description": "Proteção de dados pessoais e privacidade",
+            "secureStorage": {
+                "title": "Armazenamento Seguro",
+                "desc": "Processos seguros de tratamento de dados"
+            },
+            "transparency": {
+                "title": "Transparência",
+                "desc": "Clareza no uso de informações"
+            },
+            "strictControls": {
+                "title": "Controles Rigorosos",
+                "desc": "Acesso e confidencialidade"
+            }
+        },
+        "assistant": {
+            "title": "Assistente de Compliance",
+            "description": "Tire suas dúvidas sobre ética, compliance e políticas da empresa",
+            "placeholder": "Pergunte sobre código de conduta, denúncias, LGPD, anticorrupção...",
+            "suggestedTitle": "Perguntas sugeridas:",
+            "suggestions": [
+                "Como fazer uma denúncia?",
+                "O que é conflito de interesse?",
+                "Como funciona a LGPD?",
+                "O que é assédio moral?"
+            ],
+            "emptyError": "Por favor, digite uma pergunta"
+        },
+        "footer": {
+            "title": "A Ética é um Pilar Fundamental",
+            "description": "Manter um ambiente íntegro, seguro e confiável é responsabilidade de todos. O fortalecimento da cultura de Compliance depende da participação ativa dos colaboradores, do uso correto dos canais de denúncia e do compromisso com nossos valores."
+        }
+    },
+    "sidebar": {
+        "sections": {
+            "main": "Principal",
+            "intranet": "Intranet Medbeauty",
+            "departments": "Setores"
+        },
+        "menu": {
+            "dashboard": "Dashboard",
+            "myProfile": "Meu Perfil",
+            "noticeBoard": "Mural de Avisos",
+            "myContracts": "Meus Contratos",
+            "internalLibrary": "Biblioteca Interna",
+            "jeansSpreadsheet": "Planilha do Jean",
+            "employeeDirectory": "Diretório do Time",
+            "corporateStore": "Loja Corporativa",
+            "ideaBank": "Innovation Hub",
+            "productPricing": "Precificação de Produtos",
+            "inputRequests": "Solicitação de Insumos",
+            "administration": "Administração",
+            "users": "Usuários",
+            "integrationSAP": "Integração SAP B1",
+            "scientific": "Científica",
+            "scientificPresentations": "Apresentações Científicas",
+            "commercial": "Comercial",
+            "leads": "Leads",
+            "insideSales": "Inside Sales",
+            "franchises": "Franquias",
+            "regions": {
+                "southeast": "Sudeste",
+                "south": "Sul",
+                "center": "Centro",
+                "north": "Norte"
+            },
+            "purchasing": "Compras",
+            "vehicles": "Veículos",
+            "ecommerce": "E-commerce",
+            "products": "Produtos",
+            "categories": "Categorias",
+            "orders": "Pedidos",
+            "customers": "Clientes",
+            "coupons": "Cupons",
+            "finance": "Financeiro",
+            "legal": "Jurídico",
+            "contracts": "Contratos",
+            "compliance": "Compliance",
+            "logistics": "Logística",
+            "inputsOrders": "Pedidos Insumos",
+            "maintenance": "Manutenção",
+            "marketing": "Marketing",
+            "campaigns": "Campanhas",
+            "humanResources": "Recursos Humanos",
+            "techTI": "Tech TI",
+            "tickets": "Chamados",
+            "inventory": "Inventário",
+            "knowledgeBase": "Base de Conhecimento"
+        },
+        "footer": {
+            "goToStore": "Ir para Loja",
+            "corporateCRM": "CRM Corporativo"
+        }
+    },
+    "reports": {
+        "tech": {
+            "kpi": {
+                "totalTickets": "Total de Tickets",
+                "slaBreached": "SLA Violados",
+                "avgTime": "Tempo Médio Resolução",
+                "resolutionRate": "Taxa de Resolução",
+                "sub": {
+                    "vsLastMonth": "+20% em relação ao mês anterior",
+                    "lateTickets": "Tickets atrasados",
+                    "avgHours": "Média em horas",
+                    "finishedTickets": "Tickets finalizados"
+                }
+            },
+            "charts": {
+                "byStatus": "Tickets por Status",
+                "byStatusDesc": "Distribuição atual do volume de chamados",
+                "priority": "Prioridade",
+                "priorityDesc": "Classificação de urgência dos tickets"
+            },
+            "operator": {
+                "title": "Relatórios por Operador",
+                "subtitle": "Métricas individuais de desempenho e produtividade",
+                "exportPDF": "Exportar PDF",
+                "exportExcel": "Exportar Excel",
+                "selectLabel": "Selecionar Operador:",
+                "selectPlaceholder": "Todos os operadores",
+                "allOperators": "Todos os Operadores",
+                "workload": "Carga de Trabalho Atual",
+                "inProgress": "Em Andamento",
+                "pending": "Pendentes",
+                "resolved": "Resolvidos",
+                "resolution": "Resolução",
+                "slaCompliance": "Conformidade SLA",
+                "table": {
+                    "operator": "Operador",
+                    "total": "Total",
+                    "resolved": "Resolvidos",
+                    "rate": "Taxa Resolução",
+                    "avgTime": "Tempo Médio",
+                    "sla": "SLA",
+                    "inProgress": "Em Andamento"
+                },
+                "messages": {
+                    "selectFirst": "Selecione um operador primeiro",
+                    "exporting": "Exportando relatório de {{name}} em {{format}}...",
+                    "soon": "Funcionalidade de exportação será implementada em breve"
+                }
+            }
+        }
+    },
+    "admin": {
+        "users": {
+            "title": "Administração de Usuários",
+            "subtitle": "Gerencie funções e permissões dos funcionários",
+            "stats": {
+                "total": "Total de Usuários",
+                "admins": "Administradores",
+                "managers": "Gestores",
+                "noRole": "Sem Função"
+            },
+            "table": {
+                "title": "Funcionários Cadastrados",
+                "description": "Atribua funções e permissões para cada funcionário",
+                "searchPlaceholder": "Buscar por nome, email, função...",
+                "headers": {
+                    "name": "Nome",
+                    "email": "Email",
+                    "function": "Função (RH)",
+                    "department": "Departamento",
+                    "systemRole": "Função do Sistema",
+                    "permissions": "Permissões",
+                    "actions": "Ações"
+                },
+                "empty": "Nenhum funcionário encontrado",
+                "actions": {
+                    "edit": "Editar"
+                }
+            },
+            "roles": {
+                "admin": "Administrador",
+                "manager": "Gestor",
+                "tech_digital": "Tech Digital",
+                "analyst": "Analista",
+                "editor": "Editor",
+                "rh": "RH",
+                "financeiro": "Financeiro",
+                "marketing": "Marketing",
+                "comercial": "Comercial",
+                "logistica": "Logística",
+                "juridico": "Jurídico",
+                "tech": "Tech TI",
+                "ecommerce": "E-commerce",
+                "compras": "Compras",
+                "manutencao": "Manutenção",
+                "tecnico": "Técnico",
+                "cientifica": "Científica",
+                "user": "Usuário",
+                "noRole": "Sem Função"
+            },
+            "roleDescriptions": {
+                "admin": "Acesso total ao sistema",
+                "manager": "Gerenciar equipe e aprovar solicitações",
+                "tech_digital": "Suporte técnico e TI",
+                "analyst": "Visualizar relatórios e dados",
+                "user": "Acesso básico ao sistema"
+            },
+            "permissions": {
+                "view_reports": "Visualizar Relatórios",
+                "manage_tickets": "Gerenciar Tickets",
+                "manage_nfe": "Gerenciar NFE",
+                "manage_employees": "Gerenciar Funcionários",
+                "manage_inventory": "Gerenciar Inventário",
+                "approve_requests": "Aprovar Solicitações",
+                "view_compliance": "Acessar Compliance",
+                "manage_contracts": "Gerenciar Contratos",
+                "manage_marketing": "Gerenciar Marketing",
+                "manage_commercial": "Gerenciar Comercial",
+                "manage_finance": "Gerenciar Financeiro",
+                "manage_logistics": "Gerenciar Logística",
+                "manage_hr": "Gerenciar RH",
+                "manage_ecommerce": "Gerenciar E-commerce",
+                "manage_legal": "Gerenciar Jurídico",
+                "manage_scientific": "Gerenciar Científica",
+                "manage_purchasing": "Gerenciar Compras",
+                "manage_maintenance": "Gerenciar Manutenção",
+                "access_intranet": "Acessar Intranet",
+                "manage_sap": "Gerenciar Integração SAP",
+                "view_analytics": "Visualizar Analytics",
+                "specificPermissions": "Permissões Específicas"
+            },
+            "dialog": {
+                "title": "Gerenciar Permissões",
+                "description": "Defina a função e permissões específicas para este usuário",
+                "cancel": "Cancelar",
+                "save": "Salvar Permissões"
+            }
+        }
+    }
+}

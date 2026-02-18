@@ -68,7 +68,7 @@ export function useMarketingRequest() {
                 extra_materials: data.extra_materials || null,
                 approver_id: data.approver_id || null,
                 approver_name: data.approver_name || null,
-                status: 'approved',
+                status: 'pending',
                 created_by: user.id,
             };
 

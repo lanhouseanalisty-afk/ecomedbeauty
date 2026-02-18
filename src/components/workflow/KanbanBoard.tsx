@@ -4,6 +4,9 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { Maximize2, Minimize2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface Task {
     id: string;
@@ -25,6 +28,7 @@ const COLUMN_CONFIG = [
 
 export function KanbanBoard() {
     const [tasks, setTasks] = useState<Task[]>([]);
+    const [isFullScreen, setIsFullScreen] = useState(false);
     const navigate = useNavigate();
     const { roles } = useAuth();
 
@@ -55,23 +59,52 @@ export function KanbanBoard() {
         fetchTasks();
     }, [userSector]);
 
+    useEffect(() => {
+        const handleEsc = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') setIsFullScreen(false);
+        };
+        window.addEventListener('keydown', handleEsc);
+        return () => window.removeEventListener('keydown', handleEsc);
+    }, []);
+
     const getColumnTasks = (status: string) => {
         return tasks.filter(t => t.status === status);
     };
 
     return (
-        <div className="space-y-4">
-            <div className="flex justify-between items-center bg-white p-4 rounded-lg shadow-sm">
+        <div className={cn(
+            "space-y-4 transition-all duration-300",
+            isFullScreen ? "fixed inset-0 z-[100] bg-slate-50 p-6 overflow-y-auto" : ""
+        )}>
+            <div className="flex justify-between items-center bg-white p-4 rounded-lg shadow-sm border">
                 <h2 className="text-xl font-semibold">Quadro de Tarefas - {userSector?.toUpperCase()}</h2>
-                <button
-                    onClick={() => navigate('/crm/tarefas/nova')}
-                    className="bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-bold py-2 px-4 rounded shadow-md transform hover:scale-105 transition-all text-sm flex items-center gap-2"
-                >
-                    + Nova Nota
-                </button>
+                <div className="flex items-center gap-2">
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setIsFullScreen(!isFullScreen)}
+                        className="text-muted-foreground hover:text-primary transition-colors"
+                        title={isFullScreen ? "Sair da Tela Cheia" : "Tela Cheia"}
+                    >
+                        {isFullScreen ? (
+                            <><Minimize2 className="h-4 w-4 mr-2" /> Minimizar</>
+                        ) : (
+                            <><Maximize2 className="h-4 w-4 mr-2" /> Tela Cheia</>
+                        )}
+                    </Button>
+                    <button
+                        onClick={() => navigate('/crm/tarefas/nova')}
+                        className="bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-bold py-2 px-4 rounded shadow-md transform hover:scale-105 transition-all text-sm flex items-center gap-2"
+                    >
+                        + Nova Nota
+                    </button>
+                </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 h-[600px]">
+            <div className={cn(
+                "grid grid-cols-1 md:grid-cols-4 gap-4 transition-all duration-300",
+                isFullScreen ? "h-[calc(100vh-140px)]" : "h-[600px]"
+            )}>
                 {COLUMN_CONFIG.map(col => (
                     <div key={col.id} className="flex flex-col h-full bg-slate-50/50 rounded-xl border p-2">
                         <div className={`p-3 rounded-lg font-semibold mb-3 ${col.color} text-center shadow-sm`}>

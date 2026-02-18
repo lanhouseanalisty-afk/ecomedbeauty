@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
@@ -38,7 +39,7 @@ export function ContractFormModal({ open, onOpenChange, onSubmit, contract }: Co
       toast.error("Preencha os campos obrigatórios");
       return;
     }
-    
+
     setLoading(true);
     try {
       await onSubmit({
@@ -80,8 +81,8 @@ export function ContractFormModal({ open, onOpenChange, onSubmit, contract }: Co
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="title">Título *</Label>
-                <Input 
-                  id="title" 
+                <Input
+                  id="title"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   placeholder="Nome do contrato"
@@ -89,8 +90,8 @@ export function ContractFormModal({ open, onOpenChange, onSubmit, contract }: Co
               </div>
               <div className="space-y-2">
                 <Label htmlFor="type">Tipo *</Label>
-                <Select 
-                  value={formData.type} 
+                <Select
+                  value={formData.type}
                   onValueChange={(value) => setFormData({ ...formData, type: value })}
                 >
                   <SelectTrigger>
@@ -107,8 +108,8 @@ export function ContractFormModal({ open, onOpenChange, onSubmit, contract }: Co
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="party_name">Parte Contratante *</Label>
-                <Input 
-                  id="party_name" 
+                <Input
+                  id="party_name"
                   value={formData.party_name}
                   onChange={(e) => setFormData({ ...formData, party_name: e.target.value })}
                   placeholder="Nome da empresa/pessoa"
@@ -116,8 +117,8 @@ export function ContractFormModal({ open, onOpenChange, onSubmit, contract }: Co
               </div>
               <div className="space-y-2">
                 <Label htmlFor="party_document">CNPJ/CPF</Label>
-                <Input 
-                  id="party_document" 
+                <Input
+                  id="party_document"
                   value={formData.party_document}
                   onChange={(e) => setFormData({ ...formData, party_document: e.target.value })}
                   placeholder="00.000.000/0000-00"
@@ -127,19 +128,17 @@ export function ContractFormModal({ open, onOpenChange, onSubmit, contract }: Co
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="value">Valor (R$)</Label>
-                <Input 
-                  id="value" 
-                  type="number"
-                  step="0.01"
+                <CurrencyInput
+                  id="value"
                   value={formData.value}
-                  onChange={(e) => setFormData({ ...formData, value: e.target.value })}
-                  placeholder="0.00"
+                  onValueChange={(val) => setFormData({ ...formData, value: val || 0 })}
+                  placeholder="0,00"
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="start_date">Início</Label>
-                <Input 
-                  id="start_date" 
+                <Input
+                  id="start_date"
                   type="date"
                   value={formData.start_date}
                   onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
@@ -147,8 +146,8 @@ export function ContractFormModal({ open, onOpenChange, onSubmit, contract }: Co
               </div>
               <div className="space-y-2">
                 <Label htmlFor="end_date">Término</Label>
-                <Input 
-                  id="end_date" 
+                <Input
+                  id="end_date"
                   type="date"
                   value={formData.end_date}
                   onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
@@ -157,8 +156,8 @@ export function ContractFormModal({ open, onOpenChange, onSubmit, contract }: Co
             </div>
             <div className="space-y-2">
               <Label htmlFor="payment_terms">Condições de Pagamento</Label>
-              <Input 
-                id="payment_terms" 
+              <Input
+                id="payment_terms"
                 value={formData.payment_terms}
                 onChange={(e) => setFormData({ ...formData, payment_terms: e.target.value })}
                 placeholder="Ex: 30 dias após emissão da NF"
@@ -166,8 +165,8 @@ export function ContractFormModal({ open, onOpenChange, onSubmit, contract }: Co
             </div>
             <div className="space-y-2">
               <Label htmlFor="terms_summary">Resumo dos Termos</Label>
-              <Textarea 
-                id="terms_summary" 
+              <Textarea
+                id="terms_summary"
                 value={formData.terms_summary}
                 onChange={(e) => setFormData({ ...formData, terms_summary: e.target.value })}
                 placeholder="Principais cláusulas e condições..."
@@ -179,7 +178,7 @@ export function ContractFormModal({ open, onOpenChange, onSubmit, contract }: Co
                 <Label htmlFor="auto_renew" className="font-medium">Renovação Automática</Label>
                 <p className="text-sm text-muted-foreground">O contrato será renovado automaticamente</p>
               </div>
-              <Switch 
+              <Switch
                 id="auto_renew"
                 checked={formData.auto_renew}
                 onCheckedChange={(checked) => setFormData({ ...formData, auto_renew: checked })}
@@ -188,8 +187,8 @@ export function ContractFormModal({ open, onOpenChange, onSubmit, contract }: Co
             {formData.auto_renew && (
               <div className="space-y-2">
                 <Label htmlFor="renewal_notice_days">Dias de Aviso para Renovação</Label>
-                <Input 
-                  id="renewal_notice_days" 
+                <Input
+                  id="renewal_notice_days"
                   type="number"
                   value={formData.renewal_notice_days}
                   onChange={(e) => setFormData({ ...formData, renewal_notice_days: e.target.value })}

@@ -8,7 +8,8 @@ import {
   Users,
   MoreHorizontal,
   Loader2,
-  Layout
+  Layout,
+  FileText
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -142,7 +143,14 @@ export default function EcommerceDashboard() {
           <h1 className="font-serif text-3xl font-bold">E-commerce</h1>
           <p className="text-muted-foreground">Gestão de produtos, pedidos e loja virtual</p>
         </div>
-
+        <div className="flex gap-2 items-center">
+          <Button asChild variant="outline" className="gap-2">
+            <Link to="/crm/intranet/contratos/novo?sector=ecommerce">
+              <FileText className="h-4 w-4" />
+              Solicitar Contrato
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <Tabs defaultValue="overview" className="space-y-6">

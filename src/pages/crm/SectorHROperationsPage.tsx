@@ -3,6 +3,8 @@ import { UserPlus, UserMinus, Briefcase } from "lucide-react";
 import DepartmentAdmissaoPage from "@/components/crm/DepartmentAdmissaoPage";
 import DepartmentDemissaoPage from "@/components/crm/DepartmentDemissaoPage";
 import { Card } from "@/components/ui/card";
+import { useUserRole } from "@/hooks/useUserRole";
+import { ShieldAlert } from "lucide-react";
 
 interface SectorHROperationsPageProps {
     departmentSlug: string;
@@ -10,6 +12,9 @@ interface SectorHROperationsPageProps {
 }
 
 export default function SectorHROperationsPage({ departmentSlug, departmentName }: SectorHROperationsPageProps) {
+    const { canEditModule } = useUserRole();
+    const canEdit = canEditModule('rh') || canEditModule(departmentSlug);
+
     return (
         <div className="container mx-auto p-4 md:p-8 space-y-8 animate-in fade-in duration-500">
             <div className="flex flex-col gap-2">
@@ -20,6 +25,12 @@ export default function SectorHROperationsPage({ departmentSlug, departmentName 
                 <p className="text-muted-foreground text-lg">
                     Gestão de processos de entrada e saída de colaboradores do setor.
                 </p>
+                {!canEdit && (
+                    <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 rounded border border-amber-200 w-fit">
+                        <ShieldAlert className="h-4 w-4 text-amber-600" />
+                        <span className="text-sm text-amber-600 font-medium">Modo Somente Leitura (Apenas gestores do setor podem realizar operações)</span>
+                    </div>
+                )}
             </div>
 
             <Card className="p-1 bg-muted/30 border-rose-gold/10">

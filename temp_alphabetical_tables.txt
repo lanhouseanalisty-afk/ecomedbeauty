@@ -1,0 +1,1000 @@
+﻿      admission_notifications: {
+        Row: {
+          admission_process_id: string
+          created_at: string
+          id: string
+          link_token: string | null
+          metadata: Json | null
+          notification_type: string
+          read_at: string | null
+          sent_at: string | null
+          status: string
+          target_department: string
+          target_email: string | null
+          target_step: string
+          updated_at: string
+        }
+        Insert: {
+          admission_process_id: string
+          created_at?: string
+          id?: string
+          link_token?: string | null
+          metadata?: Json | null
+          notification_type?: string
+          read_at?: string | null
+          sent_at?: string | null
+          status?: string
+          target_department: string
+          target_email?: string | null
+          target_step: string
+          updated_at?: string
+        }
+        Update: {
+          admission_process_id?: string
+          created_at?: string
+          id?: string
+          link_token?: string | null
+          metadata?: Json | null
+          notification_type?: string
+          read_at?: string | null
+          sent_at?: string | null
+          status?: string
+          target_department?: string
+          target_email?: string | null
+          target_step?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admission_notifications_admission_process_id_fkey"
+            columns: ["admission_process_id"]
+            isOneToOne: false
+            referencedRelation: "admission_processes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      admission_processes: {
+        Row: {
+          accesses_released: string[] | null
+          admission_date: string
+          branch: string
+          buddy_mentor: string | null
+          contract_type: string
+          cpf: string
+          created_at: string
+          created_by: string | null
+          current_step: string
+          department: string
+          display_name: string | null
+          documents_completed_at: string | null
+          documents_pending: string[] | null
+          documents_received: string[] | null
+          email_created: string | null
+          email_distribution_lists: string[] | null
+          email_required: boolean | null
+          employee_name: string
+          equipment_delivered: string[] | null
+          general_tests_done: string | null
+          hr_completed_at: string | null
+          hr_completed_by: string | null
+          hr_observations: string | null
+          id: string
+          it_completion_date: string | null
+          it_observations: string | null
+          it_responsible: string | null
+          manager_completed_at: string | null
+          manager_completed_by: string | null
+          manager_email: string | null
+          manager_name: string
+          manager_observations: string | null
+          microsoft_licenses: string[] | null
+          needs_headset: boolean | null
+          needs_keyboard: boolean | null
+          needs_laptop: boolean | null
+          needs_monitor: boolean | null
+          needs_mouse: boolean | null
+          needs_printer: boolean | null
+          network_folders_released: string | null
+          position: string
+          printers_configured: string | null
+          salesforce_profile_created: string | null
+          sap_user_created: string | null
+          shared_folders: string[] | null
+          software_list: string[] | null
+          start_date: string
+          status: string
+          systems_list: string[] | null
+          target_department: string
+          ti_completed_at: string | null
+          ti_completed_by: string | null
+          updated_at: string
+          user_ad_created: boolean | null
+          vpn_configured: string | null
+          work_regime: string
+        }
+        Insert: {
+          accesses_released?: string[] | null
+          admission_date: string
+          branch: string
+          buddy_mentor?: string | null
+          contract_type: string
+          cpf: string
+          created_at?: string
+          created_by?: string | null
+          current_step?: string
+          department: string
+          display_name?: string | null
+          documents_completed_at?: string | null
+          documents_pending?: string[] | null
+          documents_received?: string[] | null
+          email_created?: string | null
+          email_distribution_lists?: string[] | null
+          email_required?: boolean | null
+          employee_name: string
+          equipment_delivered?: string[] | null
+          general_tests_done?: string | null
+          hr_completed_at?: string | null
+          hr_completed_by?: string | null
+          hr_observations?: string | null
+          id?: string
+          it_completion_date?: string | null
+          it_observations?: string | null
+          it_responsible?: string | null
+          manager_completed_at?: string | null
+          manager_completed_by?: string | null
+          manager_email?: string | null
+          manager_name: string
+          manager_observations?: string | null
+          microsoft_licenses?: string[] | null
+          needs_headset?: boolean | null
+          needs_keyboard?: boolean | null
+          needs_laptop?: boolean | null
+          needs_monitor?: boolean | null
+          needs_mouse?: boolean | null
+          needs_printer?: boolean | null
+          network_folders_released?: string | null
+          position: string
+          printers_configured?: string | null
+          salesforce_profile_created?: string | null
+          sap_user_created?: string | null
+          shared_folders?: string[] | null
+          software_list?: string[] | null
+          start_date: string
+          status?: string
+          systems_list?: string[] | null
+          target_department: string
+          ti_completed_at?: string | null
+          ti_completed_by?: string | null
+          updated_at?: string
+          user_ad_created?: boolean | null
+          vpn_configured?: string | null
+          work_regime: string
+        }
+        Update: {
+          accesses_released?: string[] | null
+          admission_date?: string
+          branch?: string
+          buddy_mentor?: string | null
+          contract_type?: string
+          cpf?: string
+          created_at?: string
+          created_by?: string | null
+          current_step?: string
+          department?: string
+          display_name?: string | null
+          documents_completed_at?: string | null
+          documents_pending?: string[] | null
+          documents_received?: string[] | null
+          email_created?: string | null
+          email_distribution_lists?: string[] | null
+          email_required?: boolean | null
+          employee_name?: string
+          equipment_delivered?: string[] | null
+          general_tests_done?: string | null
+          hr_completed_at?: string | null
+          hr_completed_by?: string | null
+          hr_observations?: string | null
+          id?: string
+          it_completion_date?: string | null
+          it_observations?: string | null
+          it_responsible?: string | null
+          manager_completed_at?: string | null
+          manager_completed_by?: string | null
+          manager_email?: string | null
+          manager_name?: string
+          manager_observations?: string | null
+          microsoft_licenses?: string[] | null
+          needs_headset?: boolean | null
+          needs_keyboard?: boolean | null
+          needs_laptop?: boolean | null
+          needs_monitor?: boolean | null
+          needs_mouse?: boolean | null
+          needs_printer?: boolean | null
+          network_folders_released?: string | null
+          position?: string
+          printers_configured?: string | null
+          salesforce_profile_created?: string | null
+          sap_user_created?: string | null
+          shared_folders?: string[] | null
+          software_list?: string[] | null
+          start_date?: string
+          status?: string
+          systems_list?: string[] | null
+          target_department?: string
+          ti_completed_at?: string | null
+          ti_completed_by?: string | null
+          updated_at?: string
+          user_ad_created?: boolean | null
+          vpn_configured?: string | null
+          work_regime?: string
+        }
+        Relationships: []
+      }
+      attendance: {
+        Row: {
+          break_minutes: number | null
+          clock_in: string | null
+          clock_out: string | null
+          created_at: string | null
+          date: string
+          employee_id: string
+          id: string
+          notes: string | null
+          overtime_minutes: number | null
+          status: string | null
+        }
+        Insert: {
+          break_minutes?: number | null
+          clock_in?: string | null
+          clock_out?: string | null
+          created_at?: string | null
+          date: string
+          employee_id: string
+          id?: string
+          notes?: string | null
+          overtime_minutes?: number | null
+          status?: string | null
+        }
+        Update: {
+          break_minutes?: number | null
+          clock_in?: string | null
+          clock_out?: string | null
+          created_at?: string | null
+          date?: string
+          employee_id?: string
+          id?: string
+          notes?: string | null
+          overtime_minutes?: number | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      audit_logs: {
+        Row: {
+          action: string
+          created_at: string | null
+          entity_id: string | null
+          entity_type: string
+          id: string
+          ip_address: unknown
+          module: Database["public"]["Enums"]["app_module"]
+          new_data: Json | null
+          old_data: Json | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+          ip_address?: unknown
+          module: Database["public"]["Enums"]["app_module"]
+          new_data?: Json | null
+          old_data?: Json | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+          ip_address?: unknown
+          module?: Database["public"]["Enums"]["app_module"]
+          new_data?: Json | null
+          old_data?: Json | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      carriers: {
+        Row: {
+          api_config: Json | null
+          cnpj: string | null
+          code: string
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          sla_days_max: number | null
+          sla_days_min: number | null
+          tracking_url_template: string | null
+        }
+        Insert: {
+          api_config?: Json | null
+          cnpj?: string | null
+          code: string
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          sla_days_max?: number | null
+          sla_days_min?: number | null
+          tracking_url_template?: string | null
+        }
+        Update: {
+          api_config?: Json | null
+          cnpj?: string | null
+          code?: string
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          sla_days_max?: number | null
+          sla_days_min?: number | null
+          tracking_url_template?: string | null
+        }
+        Relationships: []
+      }
+      chat_conversations: {
+        Row: {
+          created_at: string
+          id: string
+          lead_id: string | null
+          session_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lead_id?: string | null
+          session_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lead_id?: string | null
+          session_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_conversations_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          role: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          role: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "chat_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      compliance_items: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          due_date: string | null
+          evidence_url: string | null
+          id: string
+          last_audit_date: string | null
+          next_audit_date: string | null
+          notes: string | null
+          requirement: string | null
+          responsible_id: string | null
+          risk_level: string | null
+          status: string | null
+          title: string
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          due_date?: string | null
+          evidence_url?: string | null
+          id?: string
+          last_audit_date?: string | null
+          next_audit_date?: string | null
+          notes?: string | null
+          requirement?: string | null
+          responsible_id?: string | null
+          risk_level?: string | null
+          status?: string | null
+          title: string
+          type: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          due_date?: string | null
+          evidence_url?: string | null
+          id?: string
+          last_audit_date?: string | null
+          next_audit_date?: string | null
+          notes?: string | null
+          requirement?: string | null
+          responsible_id?: string | null
+          risk_level?: string | null
+          status?: string | null
+          title?: string
+          type?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      cost_centers: {
+        Row: {
+          budget_annual: number | null
+          code: string
+          created_at: string | null
+          department_id: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+        }
+        Insert: {
+          budget_annual?: number | null
+          code: string
+          created_at?: string | null
+          department_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+        }
+        Update: {
+          budget_annual?: number | null
+          code?: string
+          created_at?: string | null
+          department_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cost_centers_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coupons: {
+        Row: {
+          code: string
+          created_at: string
+          current_uses: number
+          discount_type: string
+          discount_value: number
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          max_uses: number | null
+          min_order_value: number | null
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          current_uses?: number
+          discount_type: string
+          discount_value: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          min_order_value?: number | null
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          current_uses?: number
+          discount_type?: string
+          discount_value?: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          min_order_value?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      crm_accounts: {
+        Row: {
+          address: Json | null
+          annual_revenue: number | null
+          cnpj: string | null
+          cpf: string | null
+          created_at: string | null
+          custom_fields: Json | null
+          email: string | null
+          employee_count: number | null
+          id: string
+          industry: string | null
+          is_active: boolean | null
+          lgpd_consent_at: string | null
+          name: string
+          owner_id: string | null
+          phone: string | null
+          salesforce_id: string | null
+          sap_card_code: string | null
+          tags: string[] | null
+          type: string | null
+          updated_at: string | null
+          website: string | null
+        }
+        Insert: {
+          address?: Json | null
+          annual_revenue?: number | null
+          cnpj?: string | null
+          cpf?: string | null
+          created_at?: string | null
+          custom_fields?: Json | null
+          email?: string | null
+          employee_count?: number | null
+          id?: string
+          industry?: string | null
+          is_active?: boolean | null
+          lgpd_consent_at?: string | null
+          name: string
+          owner_id?: string | null
+          phone?: string | null
+          salesforce_id?: string | null
+          sap_card_code?: string | null
+          tags?: string[] | null
+          type?: string | null
+          updated_at?: string | null
+          website?: string | null
+        }
+        Update: {
+          address?: Json | null
+          annual_revenue?: number | null
+          cnpj?: string | null
+          cpf?: string | null
+          created_at?: string | null
+          custom_fields?: Json | null
+          email?: string | null
+          employee_count?: number | null
+          id?: string
+          industry?: string | null
+          is_active?: boolean | null
+          lgpd_consent_at?: string | null
+          name?: string
+          owner_id?: string | null
+          phone?: string | null
+          salesforce_id?: string | null
+          sap_card_code?: string | null
+          tags?: string[] | null
+          type?: string | null
+          updated_at?: string | null
+          website?: string | null
+        }
+        Relationships: []
+      }
+      crm_activities: {
+        Row: {
+          account_id: string | null
+          completed_at: string | null
+          contact_id: string | null
+          created_at: string | null
+          description: string | null
+          due_date: string | null
+          duration_minutes: number | null
+          id: string
+          lead_id: string | null
+          opportunity_id: string | null
+          outcome: string | null
+          owner_id: string | null
+          subject: string
+          type: string
+        }
+        Insert: {
+          account_id?: string | null
+          completed_at?: string | null
+          contact_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          due_date?: string | null
+          duration_minutes?: number | null
+          id?: string
+          lead_id?: string | null
+          opportunity_id?: string | null
+          outcome?: string | null
+          owner_id?: string | null
+          subject: string
+          type: string
+        }
+        Update: {
+          account_id?: string | null
+          completed_at?: string | null
+          contact_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          due_date?: string | null
+          duration_minutes?: number | null
+          id?: string
+          lead_id?: string | null
+          opportunity_id?: string | null
+          outcome?: string | null
+          owner_id?: string | null
+          subject?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_activities_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_activities_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "crm_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_activities_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_activities_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "crm_opportunities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_contacts: {
+        Row: {
+          account_id: string | null
+          address: Json | null
+          created_at: string | null
+          department: string | null
+          email: string | null
+          first_name: string
+          id: string
+          is_active: boolean | null
+          is_primary: boolean | null
+          last_name: string | null
+          lgpd_consent_at: string | null
+          mobile: string | null
+          opt_in_marketing: boolean | null
+          phone: string | null
+          position: string | null
+          preferences: Json | null
+          social_profiles: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          account_id?: string | null
+          address?: Json | null
+          created_at?: string | null
+          department?: string | null
+          email?: string | null
+          first_name: string
+          id?: string
+          is_active?: boolean | null
+          is_primary?: boolean | null
+          last_name?: string | null
+          lgpd_consent_at?: string | null
+          mobile?: string | null
+          opt_in_marketing?: boolean | null
+          phone?: string | null
+          position?: string | null
+          preferences?: Json | null
+          social_profiles?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          account_id?: string | null
+          address?: Json | null
+          created_at?: string | null
+          department?: string | null
+          email?: string | null
+          first_name?: string
+          id?: string
+          is_active?: boolean | null
+          is_primary?: boolean | null
+          last_name?: string | null
+          lgpd_consent_at?: string | null
+          mobile?: string | null
+          opt_in_marketing?: boolean | null
+          phone?: string | null
+          position?: string | null
+          preferences?: Json | null
+          social_profiles?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_contacts_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_leads: {
+        Row: {
+          company: string | null
+          converted_account_id: string | null
+          converted_at: string | null
+          converted_contact_id: string | null
+          created_at: string | null
+          custom_fields: Json | null
+          email: string | null
+          first_name: string
+          id: string
+          last_name: string | null
+          lgpd_consent_at: string | null
+          notes: string | null
+          opt_in_marketing: boolean | null
+          owner_id: string | null
+          phone: string | null
+          position: string | null
+          score: number | null
+          source: string | null
+          source_detail: string | null
+          status: Database["public"]["Enums"]["crm_lead_status"] | null
+          updated_at: string | null
+          utm_params: Json | null
+        }
+        Insert: {
+          company?: string | null
+          converted_account_id?: string | null
+          converted_at?: string | null
+          converted_contact_id?: string | null
+          created_at?: string | null
+          custom_fields?: Json | null
+          email?: string | null
+          first_name: string
+          id?: string
+          last_name?: string | null
+          lgpd_consent_at?: string | null
+          notes?: string | null
+          opt_in_marketing?: boolean | null
+          owner_id?: string | null
+          phone?: string | null
+          position?: string | null
+          score?: number | null
+          source?: string | null
+          source_detail?: string | null
+          status?: Database["public"]["Enums"]["crm_lead_status"] | null
+          updated_at?: string | null
+          utm_params?: Json | null
+        }
+        Update: {
+          company?: string | null
+          converted_account_id?: string | null
+          converted_at?: string | null
+          converted_contact_id?: string | null
+          created_at?: string | null
+          custom_fields?: Json | null
+          email?: string | null
+          first_name?: string
+          id?: string
+          last_name?: string | null
+          lgpd_consent_at?: string | null
+          notes?: string | null
+          opt_in_marketing?: boolean | null
+          owner_id?: string | null
+          phone?: string | null
+          position?: string | null
+          score?: number | null
+          source?: string | null
+          source_detail?: string | null
+          status?: Database["public"]["Enums"]["crm_lead_status"] | null
+          updated_at?: string | null
+          utm_params?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_leads_converted_account_id_fkey"
+            columns: ["converted_account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_leads_converted_contact_id_fkey"
+            columns: ["converted_contact_id"]
+            isOneToOne: false
+            referencedRelation: "crm_contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_opportunities: {
+        Row: {
+          account_id: string | null
+          actual_close_date: string | null
+          amount: number | null
+          contact_id: string | null
+          created_at: string | null
+          custom_fields: Json | null
+          expected_close_date: string | null
+          id: string
+          lead_id: string | null
+          lost_reason: string | null
+          name: string
+          next_step: string | null
+          notes: string | null
+          order_id: string | null
+          owner_id: string | null
+          pipeline_id: string | null
+          probability: number | null
+          source: string | null
+          stage: Database["public"]["Enums"]["opportunity_stage"] | null
+          updated_at: string | null
+        }
+        Insert: {
+          account_id?: string | null
+          actual_close_date?: string | null
+          amount?: number | null
+          contact_id?: string | null
+          created_at?: string | null
+          custom_fields?: Json | null
+          expected_close_date?: string | null
+          id?: string
+          lead_id?: string | null
+          lost_reason?: string | null
+          name: string
+          next_step?: string | null
+          notes?: string | null
+          order_id?: string | null
+          owner_id?: string | null
+          pipeline_id?: string | null
+          probability?: number | null
+          source?: string | null
+          stage?: Database["public"]["Enums"]["opportunity_stage"] | null
+          updated_at?: string | null
+        }
+        Update: {
+          account_id?: string | null
+          actual_close_date?: string | null
+          amount?: number | null
+          contact_id?: string | null
+          created_at?: string | null
+          custom_fields?: Json | null
+          expected_close_date?: string | null
+          id?: string
+          lead_id?: string | null
+          lost_reason?: string | null
+          name?: string
+          next_step?: string | null
+          notes?: string | null
+          order_id?: string | null
+          owner_id?: string | null
+          pipeline_id?: string | null
+          probability?: number | null
+          source?: string | null
+          stage?: Database["public"]["Enums"]["opportunity_stage"] | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_opportunities_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_opportunities_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "crm_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_opportunities_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_opportunities_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_opportunities_pipeline_id_fkey"
+            columns: ["pipeline_id"]
+            isOneToOne: false
+            referencedRelation: "crm_pipelines"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_pipelines: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          is_default: boolean | null
+          name: string
+          stages: Json
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          name: string
+          stages: Json
+        }

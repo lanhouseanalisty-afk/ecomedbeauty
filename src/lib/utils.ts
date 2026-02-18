@@ -137,3 +137,21 @@ export function isValidCPF(cpf: string): boolean {
   if (remainder === 10 || remainder === 11) remainder = 0;
   return remainder === parseInt(cleaned.charAt(10));
 }
+
+/**
+ * Generates a UUID v4 compatible string.
+ * Uses crypto.randomUUID() if available, otherwise falls back to a math-based generator.
+ * This is necessary because crypto.randomUUID is only available in secure contexts (HTTPS/localhost).
+ */
+export function generateUUID(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+
+  // Fallback for insecure contexts (HTTP via IP)
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}

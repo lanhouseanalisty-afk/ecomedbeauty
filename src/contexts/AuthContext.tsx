@@ -2,35 +2,34 @@ import { createContext, useContext, useState, useEffect, ReactNode, useRef } fro
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
+import { analytics } from "@/lib/analytics";
 
-type AppRole = Database['public']['Enums']['app_role'];
+type AppRole = Database["public"]["Enums"]["app_role"];
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
   roles: AppRole[];
+  permissions: string[];
+  departmentId: string | null;
+  departmentModule: string | null;
   isEmployee: boolean;
   isCustomer: boolean;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null; isEmployee?: boolean }>;
   signOut: () => Promise<void>;
-  checkUserRoles: (userId: string) => Promise<AppRole[]>;
+  checkUserRoles: (userId: string, email?: string) => Promise<{ roles: AppRole[]; permissions: string[] }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Employee roles - any role that grants access to CRM
-const EMPLOYEE_ROLES: AppRole[] = [
-  'admin',
-  'rh_manager',
-  'finance_manager',
-  'marketing_manager',
-  'sales_manager',
-  'logistics_manager',
-  'legal_manager',
-  'tech_support',
-  'ecommerce_manager'
+const EMPLOYEE_ROLES: string[] = [
+  "admin", "manager", "tech_digital", "analyst", "rh_manager", "finance_manager",
+  "marketing_manager", "sales_manager", "logistics_manager", "legal_manager",
+  "tech_support", "ecommerce_manager", "rh", "financeiro", "marketing",
+  "comercial", "logistica", "juridico", "tech", "ecommerce", "compras",
+  "manutencao", "tecnico", "editor", "auditor"
 ];
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -38,145 +37,164 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [roles, setRoles] = useState<AppRole[]>([]);
+  const [permissions, setPermissions] = useState<string[]>([]);
+  const [departmentId, setDepartmentId] = useState<string | null>(null);
+  const [departmentModule, setDepartmentModule] = useState<string | null>(null);
   const lastActiveUpdate = useRef<number>(0);
 
-  const isEmployee = roles.some(role => EMPLOYEE_ROLES.includes(role));
+  const isEmployee = roles.some(role => EMPLOYEE_ROLES.includes(role)) || roles.includes("admin");
   const isCustomer = !isEmployee && user !== null;
 
-  const checkUserRoles = async (userId: string): Promise<AppRole[]> => {
+  async function fetchDepartmentInfo(userId: string) {
     try {
-      const { data: userData } = await supabase.auth.getUser();
-      if (userData.user?.email === 'reginaldo.mazaro@ext.medbeauty.com.br') {
-        return ['admin'];
-      }
-
       const { data, error } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', userId);
+        .from("employees")
+        .select(`
+          department_id,
+          departments (
+            module_slug
+          )
+        `)
+        .eq("user_id", userId)
+        .maybeSingle();
 
-      if (error) {
-        console.error('Error fetching user roles:', error);
-        return [];
+      if (error) return { id: null, module: null };
+      if (data) {
+        const deptData = Array.isArray(data.departments) ? data.departments[0] : data.departments;
+        return {
+          id: data.department_id,
+          module: (deptData as any)?.module_slug || null
+        };
       }
-
-      return data?.map(r => r.role) || [];
+      return { id: null, module: null };
     } catch (error) {
-      console.error('Error in checkUserRoles:', error);
-      return [];
+      return { id: null, module: null };
     }
-  };
+  }
 
-  useEffect(() => {
-    // Set up auth state listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-
-      // Fetch roles asynchronously after state update
-      if (session?.user) {
-        // Track initial activity on login
-        updateLastSeen(session.user.id);
-
-        setTimeout(() => {
-          checkUserRoles(session.user.id).then(setRoles);
-          checkUserActiveStatus(session.user.id);
-        }, 0);
-      } else {
-        setRoles([]);
+  async function checkUserRoles(userId: string, email?: string): Promise<{ roles: AppRole[]; permissions: string[] }> {
+    try {
+      if (email?.toLowerCase() === "reginaldo.mazaro@ext.medbeauty.com.br") {
+        console.log('[AuthContext] Emergency bypass active for:', email);
+        return { roles: ["admin"], permissions: ["*"] };
       }
+      const { data, error } = await supabase
+        .from("user_roles")
+        .select("role, permissions")
+        .eq("user_id", userId);
 
-      setLoading(false);
-    });
+      if (error) return { roles: [], permissions: [] };
+      return {
+        roles: data?.map(r => r.role as AppRole) || [],
+        permissions: data?.[0]?.permissions || []
+      };
+    } catch (error) {
+      return { roles: [], permissions: [] };
+    }
+  }
 
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-
-      if (session?.user) {
-        updateLastSeen(session.user.id);
-        checkUserRoles(session.user.id).then(setRoles);
-        checkUserActiveStatus(session.user.id);
-      }
-
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  // Monitor activity based on window focus and navigation
-  useEffect(() => {
-    if (!user) return;
-
-    const handleActivity = () => {
-      updateLastSeen(user.id);
-    };
-
-    window.addEventListener('mousedown', handleActivity);
-    window.addEventListener('keydown', handleActivity);
-    window.addEventListener('focus', handleActivity);
-
-    return () => {
-      window.removeEventListener('mousedown', handleActivity);
-      window.removeEventListener('keydown', handleActivity);
-      window.removeEventListener('focus', handleActivity);
-    };
-  }, [user]);
-
-  const updateLastSeen = async (userId: string) => {
+  async function updateLastSeen(userId: string) {
     const now = Date.now();
-    // Throttle updates to once every 5 minutes
-    if (now - lastActiveUpdate.current < 5 * 60 * 1000) return;
-
+    if (now - lastActiveUpdate.current < 300000) return;
     lastActiveUpdate.current = now;
     try {
-      await supabase
-        .from('profiles')
-        .update({ last_seen_at: new Date().toISOString() })
-        .eq('id', userId);
+      await supabase.from("profiles").update({ last_seen_at: new Date().toISOString() }).eq("id", userId);
     } catch (error) {
-      console.error('Error updating last seen:', error);
+      console.error("Error updating last seen:", error);
     }
-  };
+  }
 
-  const checkUserActiveStatus = async (userId: string) => {
+  async function checkUserActiveStatus(userId: string) {
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('is_active')
-        .eq('id', userId)
-        .single();
-
-      if (error) throw error;
-
-      if (data && data.is_active === false) {
-        console.warn('User account is inactive. Signing out...');
-        signOut();
-      }
+      const { data } = await supabase.from("employees").select("status").eq("user_id", userId).maybeSingle();
+      if (data && data.status === "inactive") signOut();
     } catch (error) {
-      console.error('Error checking active status:', error);
+      console.error("Error checking user active status:", error);
     }
-  };
+  }
+
+  useEffect(() => {
+    let mounted = true;
+    const failsafe = setTimeout(() => {
+      if (mounted && loading) setLoading(false);
+    }, 10000);
+
+    const loadMetadata = async (userId: string, email?: string) => {
+      try {
+        const [authInfo, deptInfo] = await Promise.all([
+          Promise.race([
+            checkUserRoles(userId, email),
+            new Promise<{ roles: AppRole[]; permissions: string[] }>((res) => setTimeout(() => res({ roles: [], permissions: [] }), 5000))
+          ]),
+          Promise.race([
+            fetchDepartmentInfo(userId),
+            new Promise<{ id: any; module: any }>((res) => setTimeout(() => res({ id: null, module: null }), 5000))
+          ])
+        ]);
+
+        if (mounted) {
+          setRoles(authInfo.roles);
+          setPermissions(authInfo.permissions);
+          setDepartmentId(deptInfo.id);
+          setDepartmentModule(deptInfo.module);
+          checkUserActiveStatus(userId);
+          if (userId) analytics.identify(userId, { email, role: authInfo.roles.join(","), permissions: authInfo.permissions.join(",") });
+        }
+      } catch (err) {
+        console.error("[AuthContext] Error loading metadata:", err);
+      }
+    };
+
+    const initialize = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!mounted) return;
+        setSession(session);
+        setUser(session?.user ?? null);
+        if (session?.user) {
+          updateLastSeen(session.user.id);
+          await loadMetadata(session.user.id, session.user.email);
+        }
+      } catch (err) {
+        console.error('[AuthContext] Initialization error:', err);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    initialize();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return;
+      console.log('[AuthContext] Auth state change:', event);
+      setSession(session);
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        if (event === "SIGNED_IN" || event === "INITIAL_SESSION") {
+          await loadMetadata(session.user.id, session.user.email);
+        }
+      } else {
+        setRoles([]);
+        setPermissions([]);
+        setDepartmentId(null);
+        setDepartmentModule(null);
+      }
+      setLoading(false);
+    });
+
+    return () => {
+      mounted = false;
+      clearTimeout(failsafe);
+      subscription.unsubscribe();
+    };
+  }, []);
 
   const signUp = async (email: string, password: string, fullName: string) => {
     try {
-      const redirectUrl = `${window.location.origin}/`;
-
       const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: redirectUrl,
-          data: {
-            full_name: fullName,
-          },
-        },
+        email, password, options: { emailRedirectTo: `${window.location.origin}/`, data: { full_name: fullName } }
       });
-
-      if (error) throw error;
-      return { error: null };
+      return { error: error as Error };
     } catch (error) {
       return { error: error as Error };
     }
@@ -184,22 +202,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-
-      // Check user roles to determine if employee
-      let isEmployeeUser = false;
+      let isEmp = false;
       if (data.user) {
-        const userRoles = await checkUserRoles(data.user.id);
-        setRoles(userRoles);
-        isEmployeeUser = userRoles.some(role => EMPLOYEE_ROLES.includes(role));
+        const authInfo = await checkUserRoles(data.user.id, data.user.email);
+        setRoles(authInfo.roles);
+        setPermissions(authInfo.permissions);
+        const { id, module } = await fetchDepartmentInfo(data.user.id);
+        setDepartmentId(id);
+        setDepartmentModule(module);
+        isEmp = authInfo.roles.some(role => EMPLOYEE_ROLES.includes(role)) || authInfo.roles.includes("admin");
       }
-
-      return { error: null, isEmployee: isEmployeeUser };
+      return { error: null, isEmployee: isEmp };
     } catch (error) {
       return { error: error as Error };
     }
@@ -207,31 +222,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     setRoles([]);
+    setPermissions([]);
+    setDepartmentId(null);
+    setDepartmentModule(null);
     await supabase.auth.signOut();
   };
 
   return (
     <AuthContext.Provider value={{
-      user,
-      session,
-      loading,
-      roles,
-      isEmployee,
-      isCustomer,
-      signUp,
-      signIn,
-      signOut,
-      checkUserRoles
+      user, session, loading, roles, permissions, departmentId, departmentModule,
+      isEmployee, isCustomer, signUp, signIn, signOut, checkUserRoles
     }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
-export function useAuth() {
+export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
+  if (!context) throw new Error("useAuth must be used within an AuthProvider");
   return context;
-}
+};

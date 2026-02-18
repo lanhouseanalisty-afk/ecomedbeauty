@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Plus, Pencil, Trash2, Ticket, Calendar, Percent, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -377,36 +378,47 @@ export default function EcommerceCuponsPage() {
                   Valor do Desconto *
                   {formData.discount_type === "percentage" ? " (%)" : " (R$)"}
                 </Label>
-                <Input
-                  id="discount_value"
-                  type="number"
-                  step={formData.discount_type === "percentage" ? "1" : "0.01"}
-                  value={formData.discount_value}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      discount_value: parseFloat(e.target.value) || 0,
-                    })
-                  }
-                />
+                {formData.discount_type === "percentage" ? (
+                  <Input
+                    id="discount_value"
+                    type="number"
+                    step="1"
+                    value={formData.discount_value}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        discount_value: parseFloat(e.target.value) || 0,
+                      })
+                    }
+                  />
+                ) : (
+                  <CurrencyInput
+                    id="discount_value"
+                    value={formData.discount_value}
+                    onValueChange={(val) =>
+                      setFormData({
+                        ...formData,
+                        discount_value: val || 0,
+                      })
+                    }
+                  />
+                )}
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="min_order_value">Valor Mínimo do Pedido</Label>
-                <Input
+                <CurrencyInput
                   id="min_order_value"
-                  type="number"
-                  step="0.01"
                   value={formData.min_order_value}
-                  onChange={(e) =>
+                  onValueChange={(val) =>
                     setFormData({
                       ...formData,
-                      min_order_value: parseFloat(e.target.value) || 0,
+                      min_order_value: val || 0,
                     })
                   }
-                  placeholder="0.00"
+                  placeholder="0,00"
                 />
               </div>
               <div className="space-y-2">
@@ -466,8 +478,8 @@ export default function EcommerceCuponsPage() {
               {createCoupon.isPending || updateCoupon.isPending
                 ? "Salvando..."
                 : selectedCoupon
-                ? "Atualizar"
-                : "Criar Cupom"}
+                  ? "Atualizar"
+                  : "Criar Cupom"}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { generateUUID } from '@/lib/utils';
 
 export interface SectorRequest {
     id: string;
@@ -51,7 +52,7 @@ export function useSectorRequests(currentSector: string) {
             const requestId = generateRequestId(data.fromSector, data.toSector);
             const requestData: SectorRequest = {
                 ...data,
-                id: crypto.randomUUID(),
+                id: generateUUID(),
                 request_id: requestId,
                 status: 'pending',
                 created_at: new Date().toISOString()
@@ -130,7 +131,7 @@ export function useSectorRequests(currentSector: string) {
             }
 
             const newMessage: RequestMessage = {
-                id: crypto.randomUUID(),
+                id: generateUUID(),
                 sender,
                 content,
                 timestamp: new Date().toISOString()

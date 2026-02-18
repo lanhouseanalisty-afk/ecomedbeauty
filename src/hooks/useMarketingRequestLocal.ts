@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
 import type { MarketingRequest } from './useMarketingRequest';
+import { generateUUID } from '@/lib/utils';
 
 export function useMarketingRequestLocal() {
     const [loading, setLoading] = useState(false);
@@ -21,7 +22,7 @@ export function useMarketingRequestLocal() {
             const requestId = generateRequestId();
             const requestData = {
                 ...data,
-                id: crypto.randomUUID(),
+                id: generateUUID(),
                 request_id: requestId,
                 status: 'pending',
                 created_at: new Date().toISOString()

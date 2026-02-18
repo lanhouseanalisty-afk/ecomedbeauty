@@ -1,6 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingCart, Package, TrendingUp, DollarSign, Users } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ShoppingCart, Package, TrendingUp, DollarSign, Users, FileText } from "lucide-react";
 
 export default function ComprasDashboard() {
     const stats = [
@@ -41,9 +42,15 @@ export default function ComprasDashboard() {
                     <h1 className="font-serif text-3xl font-bold">Compras</h1>
                     <p className="text-muted-foreground">Gestão de Aquisições, Fornecedores e Frotas</p>
                 </div>
-                <Badge variant="outline" className="w-fit">
-                    Gestor: Gilcimar Gil
-                </Badge>
+                <div className="flex gap-2 items-center">
+                    <Badge variant="outline" className="w-fit">
+                        Gestor: Gilcimar Gil
+                    </Badge>
+                    <Button onClick={() => window.location.href = "/crm/intranet/contratos/novo?sector=compras"} variant="outline" className="gap-2">
+                        <FileText className="h-4 w-4" />
+                        Solicitar Contrato
+                    </Button>
+                </div>
             </div>
 
             <div className="space-y-6">

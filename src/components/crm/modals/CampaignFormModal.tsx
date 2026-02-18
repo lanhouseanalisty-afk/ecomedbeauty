@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
@@ -37,7 +38,7 @@ export function CampaignFormModal({ open, onOpenChange, onSubmit, campaign }: Ca
       toast.error("Nome e tipo são obrigatórios");
       return;
     }
-    
+
     setLoading(true);
     try {
       await onSubmit({
@@ -96,8 +97,8 @@ export function CampaignFormModal({ open, onOpenChange, onSubmit, campaign }: Ca
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Nome da Campanha *</Label>
-                <Input 
-                  id="name" 
+                <Input
+                  id="name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="Ex: Black Friday 2024"
@@ -105,8 +106,8 @@ export function CampaignFormModal({ open, onOpenChange, onSubmit, campaign }: Ca
               </div>
               <div className="space-y-2">
                 <Label htmlFor="type">Tipo *</Label>
-                <Select 
-                  value={formData.type} 
+                <Select
+                  value={formData.type}
                   onValueChange={(value) => setFormData({ ...formData, type: value })}
                 >
                   <SelectTrigger>
@@ -122,8 +123,8 @@ export function CampaignFormModal({ open, onOpenChange, onSubmit, campaign }: Ca
             </div>
             <div className="space-y-2">
               <Label htmlFor="objective">Objetivo</Label>
-              <Input 
-                id="objective" 
+              <Input
+                id="objective"
                 value={formData.objective}
                 onChange={(e) => setFormData({ ...formData, objective: e.target.value })}
                 placeholder="Ex: Aumentar vendas em 30%"
@@ -131,8 +132,8 @@ export function CampaignFormModal({ open, onOpenChange, onSubmit, campaign }: Ca
             </div>
             <div className="space-y-2">
               <Label htmlFor="description">Descrição</Label>
-              <Textarea 
-                id="description" 
+              <Textarea
+                id="description"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 placeholder="Detalhes da campanha..."
@@ -142,19 +143,17 @@ export function CampaignFormModal({ open, onOpenChange, onSubmit, campaign }: Ca
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="budget">Orçamento (R$)</Label>
-                <Input 
-                  id="budget" 
-                  type="number"
-                  step="0.01"
+                <CurrencyInput
+                  id="budget"
                   value={formData.budget}
-                  onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
-                  placeholder="0.00"
+                  onValueChange={(val) => setFormData({ ...formData, budget: val || 0 })}
+                  placeholder="0,00"
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="start_date">Início</Label>
-                <Input 
-                  id="start_date" 
+                <Input
+                  id="start_date"
                   type="date"
                   value={formData.start_date}
                   onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
@@ -162,21 +161,21 @@ export function CampaignFormModal({ open, onOpenChange, onSubmit, campaign }: Ca
               </div>
               <div className="space-y-2">
                 <Label htmlFor="end_date">Término</Label>
-                <Input 
-                  id="end_date" 
+                <Input
+                  id="end_date"
                   type="date"
                   value={formData.end_date}
                   onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
                 />
               </div>
             </div>
-            
+
             <div className="space-y-2">
               <Label>Canais</Label>
               <div className="grid grid-cols-2 gap-2">
                 {channelOptions.map((channel) => (
                   <div key={channel.value} className="flex items-center space-x-2">
-                    <Checkbox 
+                    <Checkbox
                       id={channel.value}
                       checked={formData.channels.includes(channel.value)}
                       onCheckedChange={(checked) => handleChannelChange(channel.value, checked as boolean)}
@@ -194,8 +193,8 @@ export function CampaignFormModal({ open, onOpenChange, onSubmit, campaign }: Ca
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-1">
                   <Label htmlFor="utm_source" className="text-xs text-muted-foreground">Source</Label>
-                  <Input 
-                    id="utm_source" 
+                  <Input
+                    id="utm_source"
                     value={formData.utm_source}
                     onChange={(e) => setFormData({ ...formData, utm_source: e.target.value })}
                     placeholder="google"
@@ -203,8 +202,8 @@ export function CampaignFormModal({ open, onOpenChange, onSubmit, campaign }: Ca
                 </div>
                 <div className="space-y-1">
                   <Label htmlFor="utm_medium" className="text-xs text-muted-foreground">Medium</Label>
-                  <Input 
-                    id="utm_medium" 
+                  <Input
+                    id="utm_medium"
                     value={formData.utm_medium}
                     onChange={(e) => setFormData({ ...formData, utm_medium: e.target.value })}
                     placeholder="cpc"
@@ -212,8 +211,8 @@ export function CampaignFormModal({ open, onOpenChange, onSubmit, campaign }: Ca
                 </div>
                 <div className="space-y-1">
                   <Label htmlFor="utm_campaign" className="text-xs text-muted-foreground">Campaign</Label>
-                  <Input 
-                    id="utm_campaign" 
+                  <Input
+                    id="utm_campaign"
                     value={formData.utm_campaign}
                     onChange={(e) => setFormData({ ...formData, utm_campaign: e.target.value })}
                     placeholder="black_friday_2024"

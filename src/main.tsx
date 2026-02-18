@@ -2,6 +2,7 @@ import { createRoot } from "react-dom/client";
 import { StrictMode } from "react";
 import App from "./App.tsx";
 import "./index.css";
+import "./i18n/config"; // Initialize i18n
 
 // Error Trap - Catch all errors before React even tries to render
 window.addEventListener('error', (event) => {

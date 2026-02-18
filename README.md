@@ -1,73 +1,77 @@
-# Welcome to your Lovable project
+# EcomedBeauty CRM
 
-## Project info
+Sistema de CRM e Gestão Empresarial integrado, desenvolvido para atender as necessidades dos departamentos da EcomedBeauty (RH, Comercial, Financeiro, Logística, Marketing, Jurídico, etc.).
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## 🚀 Sobre o Projeto
 
-## How can I edit this code?
+Este projeto é uma Single Page Application (SPA) moderna construída com React e TypeScript, focada em performance, usabilidade e modularidade. Integra-se com Supabase para backend e banco de dados.
 
-There are several ways of editing your application.
+### Principais Funcionalidades
 
-**Use Lovable**
+- **Gestão de Departamentos**: Módulos específicos para cada área da empresa.
+- **Controle de Acesso (RBAC)**: Visibilidade e permissões baseadas em cargos.
+- **Integrações**: Conexão com sistemas externos e ferramentas de automação.
+- **Dashboards**: Visualização de métricas e KPIs em tempo real.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+## 🛠️ Stack Tecnológica
 
-Changes made via Lovable will be committed automatically to this repo.
+- **Frontend**: [React](https://reactjs.org/), [TypeScript](https://www.typescriptlang.org/), [Vite](https://vitejs.dev/)
+- **UI & Estilo**: [Tailwind CSS](https://tailwindcss.com/), [Shadcn/UI](https://ui.shadcn.com/), [Lucide Icons](https://lucide.dev/)
+- **Estado & Data**: [TanStack Query](https://tanstack.com/query/latest), [Zustand](https://github.com/pmndrs/zustand) (se aplicável), Context API
+- **Backend & Auth**: [Supabase](https://supabase.com/)
+- **Testes**: [Vitest](https://vitest.dev/), [React Testing Library](https://testing-library.com/)
 
-**Use your preferred IDE**
+## 🏁 Instalação e Configuração
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Pré-requisitos
+- Node.js (versão 18 ou superior)
+- npm ou yarn
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Passo a Passo
 
-Follow these steps:
+1. **Clone o repositório**
+   ```bash
+   git clone https://github.com/seu-usuario/ecomedbeauty.git
+   cd ecomedbeauty
+   ```
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+2. **Instale as dependências**
+   ```bash
+   npm install
+   ```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+3. **Configure as variáveis de ambiente**
+   Copie o arquivo `.env.example` para `.env` e preencha as chaves necessárias (Supabase, Sentry, etc.).
+   ```bash
+   cp .env.example .env
+   ```
 
-# Step 3: Install the necessary dependencies.
-npm i
+4. **Inicie o servidor de desenvolvimento**
+   ```bash
+   npm run dev
+   ```
+   A aplicação estará disponível em `http://localhost:8080`.
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+## 📜 Scripts Disponíveis
 
-**Edit a file directly in GitHub**
+- `npm run dev`: Inicia o servidor de desenvolvimento.
+- `npm run build`: Compila a aplicação para produção.
+- `npm run preview`: Visualiza a versão de produção localmente.
+- `npm run lint`: Verifica problemas de linting no código.
+- `npm test`: Executa os testes unitários.
+- `npm run test:ui`: Executa testes com interface gráfica.
+- `npm run test:coverage`: Gera relatório de cobertura de testes.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 📚 Documentação Adicional
 
-**Use GitHub Codespaces**
+- [Arquitetura do Projeto](./ARCHITECTURE.md): Detalhes sobre a estrutura e decisões técnicas.
+- [Guia de Contribuição](./CONTRIBUTING.md): Padrões de código e como contribuir.
+- [Segurança](./SECURITY.md): Políticas de segurança e reporte de vulnerabilidades.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## 🤝 Contribuição
 
-## What technologies are used for this project?
+Contribuições são bem-vindas! Por favor, leia o [Guia de Contribuição](./CONTRIBUTING.md) para detalhes sobre nosso código de conduta e o processo de envio de pull requests.
 
-This project is built with:
+## 📄 Licença
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Este projeto é proprietário e confidencial da EcomedBeauty.

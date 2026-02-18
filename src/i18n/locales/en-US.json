@@ -1,0 +1,316 @@
+{
+    "common": {
+        "welcome": "Welcome to EcomedBeauty",
+        "login": "Login",
+        "logout": "Logout",
+        "settings": "Settings",
+        "profile": "Profile",
+        "dashboard": "Dashboard",
+        "admissions": "Admission & Termination",
+        "processControl": "Process Control",
+        "nfeControl": "NFE Control",
+        "sectorRequests": "Inter-sector Requests",
+        "myProfile": "My Profile",
+        "employees": "Employees"
+    },
+    "auth": {
+        "email": "Email",
+        "password": "Password",
+        "submit": "Login",
+        "forgotPassword": "Forgot password?"
+    },
+    "compliance": {
+        "title": "Compliance",
+        "subtitle": "Commitment to Ethics and Integrity",
+        "mission": {
+            "title": "Our Mission",
+            "description": "The Compliance area exists to ensure that all activities are conducted with <1>ethics, transparency, and responsibility</1>. Our commitment is to ensure compliance with laws, regulations, internal policies, and international standards, promoting a safe, integral environment aligned with the organization's values.",
+            "cards": {
+                "preventRisks": {
+                    "title": "Prevent Risks",
+                    "desc": "Legal, operational, and reputational"
+                },
+                "ethicalCulture": {
+                    "title": "Ethical Culture",
+                    "desc": "At all levels of the organization"
+                },
+                "responsibleDecisions": {
+                    "title": "Responsible Decisions",
+                    "desc": "Encourage correct choices"
+                },
+                "totalCompliance": {
+                    "title": "Total Compliance",
+                    "desc": "Employees, suppliers, and partners"
+                }
+            }
+        },
+        "principles": {
+            "title": "Fundamental Principles",
+            "integrity": {
+                "title": "Integrity",
+                "desc": "Act honestly in all situations"
+            },
+            "transparency": {
+                "title": "Transparency",
+                "desc": "Clarity in information and decisions"
+            },
+            "responsibility": {
+                "title": "Responsibility",
+                "desc": "Assume consequences and act consciously"
+            },
+            "equity": {
+                "title": "Equity",
+                "desc": "Treat everyone with respect and fairness"
+            },
+            "compliance": {
+                "title": "Compliance",
+                "desc": "Obey laws, regulations, and internal policies"
+            },
+            "lgpd": {
+                "title": "Data Protection (GDPR/LGPD)",
+                "desc": "Care for personal and confidential information"
+            }
+        },
+        "codeOfConduct": {
+            "title": "Code of Conduct",
+            "description": "Guides expected behavior within the company",
+            "items": [
+                "Mandatory ethical conduct",
+                "Prohibitions against harassment, discrimination, fraud, and bribery",
+                "Rules on conflicts of interest",
+                "Proper use of company resources, information, and assets"
+            ]
+        },
+        "whistleblowerChannel": {
+            "title": "Whistleblower Channel",
+            "description": "Secure, confidential, and accessible - Protected anonymous reporting",
+            "intro": "You can report anonymously:",
+            "items": [
+                "Fraud",
+                "Harassment",
+                "Corruption",
+                "Misconduct",
+                "Violations"
+            ],
+            "footer": "✓ Total confidentiality • ✓ Independent team • ✓ Whistleblower protection"
+        },
+        "antiCorruption": {
+            "title": "Anti-Corruption Policy",
+            "description": "Zero tolerance against any illicit practice",
+            "items": [
+                "Prohibited conduct related to bribery and undue advantages",
+                "Rules for relationships with public and private sectors",
+                "Guidelines on gifts, travel, and hospitality",
+                "Criteria for hiring and evaluating third parties"
+            ]
+        },
+        "lgpd": {
+            "title": "Commitment to Data Protection",
+            "description": "Protection of personal data and privacy",
+            "secureStorage": {
+                "title": "Secure Storage",
+                "desc": "Secure data processing procedures"
+            },
+            "transparency": {
+                "title": "Transparency",
+                "desc": "Clarity in the use of information"
+            },
+            "strictControls": {
+                "title": "Strict Controls",
+                "desc": "Access and confidentiality"
+            }
+        },
+        "assistant": {
+            "title": "Compliance Assistant",
+            "description": "Ask your questions about ethics, compliance, and company policies",
+            "placeholder": "Ask about code of conduct, reporting, data protection, anti-corruption...",
+            "suggestedTitle": "Suggested questions:",
+            "suggestions": [
+                "How to make a report?",
+                "What is a conflict of interest?",
+                "How does data protection work?",
+                "What is moral harassment?"
+            ],
+            "emptyError": "Please type a question"
+        },
+        "footer": {
+            "title": "Ethics is a Fundamental Pillar",
+            "description": "Maintaining an integral, secure, and reliable environment is everyone's responsibility. Strengthening the Compliance culture depends on the active participation of employees, the correct use of reporting channels, and commitment to our values."
+        }
+    },
+    "sidebar": {
+        "sections": {
+            "main": "Main",
+            "intranet": "Medbeauty Intranet",
+            "departments": "Departments"
+        },
+        "menu": {
+            "dashboard": "Dashboard",
+            "myProfile": "My Profile",
+            "employees": "Employees",
+            "noticeBoard": "Notice Board",
+            "myContracts": "My Contracts",
+            "internalLibrary": "Internal Library",
+            "jeansSpreadsheet": "Jean's Spreadsheet",
+            "employeeDirectory": "Team Directory",
+            "corporateStore": "Corporate Store",
+            "ideaBank": "Innovation Hub",
+            "productPricing": "Product Pricing",
+            "inputRequests": "Supplies Requests",
+            "administration": "Administration",
+            "users": "Users",
+            "integrationSAP": "SAP B1 Integration",
+            "scientific": "Scientific",
+            "scientificPresentations": "Scientific Presentations",
+            "commercial": "Commercial",
+            "leads": "Leads",
+            "insideSales": "Inside Sales",
+            "franchises": "Franchises",
+            "regions": {
+                "southeast": "Southeast",
+                "south": "South",
+                "center": "Center",
+                "north": "North"
+            },
+            "purchasing": "Purchasing",
+            "vehicles": "Vehicles",
+            "ecommerce": "E-commerce",
+            "products": "Products",
+            "categories": "Categories",
+            "orders": "Orders",
+            "customers": "Customers",
+            "coupons": "Coupons",
+            "finance": "Finance",
+            "legal": "Legal",
+            "contracts": "Contracts",
+            "compliance": "Compliance",
+            "logistics": "Logistics",
+            "inputsOrders": "Supplies Orders",
+            "maintenance": "Maintenance",
+            "marketing": "Marketing",
+            "campaigns": "Campaigns",
+            "humanResources": "Human Resources",
+            "techTI": "Tech IT",
+            "tickets": "Tickets",
+            "inventory": "Inventory",
+            "knowledgeBase": "Knowledge Base"
+        },
+        "footer": {
+            "goToStore": "Go to Store",
+            "corporateCRM": "Corporate CRM"
+        }
+    },
+    "reports": {
+        "tech": {
+            "kpi": {
+                "totalTickets": "Total Tickets",
+                "slaBreached": "SLA Breached",
+                "avgTime": "Avg Resolution Time",
+                "resolutionRate": "Resolution Rate",
+                "sub": {
+                    "vsLastMonth": "+20% vs last month",
+                    "lateTickets": "Late tickets",
+                    "avgHours": "Average in hours",
+                    "finishedTickets": "Finished tickets"
+                }
+            },
+            "charts": {
+                "byStatus": "Tickets by Status",
+                "byStatusDesc": "Current distribution of ticket volume",
+                "priority": "Priority",
+                "priorityDesc": "Ticket urgency classification"
+            },
+            "operator": {
+                "title": "Operator Reports",
+                "subtitle": "Individual performance and productivity metrics",
+                "exportPDF": "Export PDF",
+                "exportExcel": "Export Excel",
+                "selectLabel": "Select Operator:",
+                "selectPlaceholder": "All operators",
+                "allOperators": "All Operators",
+                "workload": "Current Workload",
+                "inProgress": "In Progress",
+                "pending": "Pending",
+                "resolved": "Resolved",
+                "resolution": "Resolution",
+                "slaCompliance": "SLA Compliance",
+                "table": {
+                    "operator": "Operator",
+                    "total": "Total",
+                    "resolved": "Resolved",
+                    "rate": "Resolution Rate",
+                    "avgTime": "Avg Time",
+                    "sla": "SLA",
+                    "inProgress": "In Progress"
+                },
+                "messages": {
+                    "selectFirst": "Select an operator first",
+                    "exporting": "Exporting report for {{name}} in {{format}}...",
+                    "soon": "Export functionality coming soon"
+                }
+            }
+        }
+    },
+    "admin": {
+        "users": {
+            "title": "User Administration",
+            "subtitle": "Manage employee roles and permissions",
+            "stats": {
+                "total": "Total Users",
+                "admins": "Administrators",
+                "managers": "Managers",
+                "noRole": "No Role"
+            },
+            "table": {
+                "title": "Registered Employees",
+                "description": "Assign roles and permissions for each employee",
+                "searchPlaceholder": "Search by name, email, role...",
+                "headers": {
+                    "name": "Name",
+                    "email": "Email",
+                    "function": "Role (HR)",
+                    "department": "Department",
+                    "systemRole": "System Role",
+                    "permissions": "Permissions",
+                    "actions": "Actions"
+                },
+                "empty": "No employees found",
+                "actions": {
+                    "edit": "Edit"
+                }
+            },
+            "roles": {
+                "admin": "Administrator",
+                "manager": "Manager",
+                "tech_digital": "Tech Digital",
+                "analyst": "Analyst",
+                "user": "User",
+                "noRole": "No Role"
+            },
+            "roleDescriptions": {
+                "admin": "Full system access",
+                "manager": "Manage team and approve requests",
+                "tech_digital": "Tech support and IT",
+                "analyst": "View reports and data",
+                "user": "Basic system access"
+            },
+            "permissions": {
+                "view_reports": "View Reports",
+                "manage_tickets": "Manage Tickets",
+                "manage_nfe": "Manage NFE",
+                "manage_employees": "Manage Employees",
+                "manage_inventory": "Manage Inventory",
+                "approve_requests": "Approve Requests",
+                "view_compliance": "Access Compliance",
+                "manage_contracts": "Manage Contracts",
+                "specificPermissions": "Specific Permissions"
+            },
+            "dialog": {
+                "title": "Manage Permissions",
+                "description": "Define specific role and permissions for this user",
+                "cancel": "Cancel",
+                "save": "Save Permissions"
+            }
+        }
+    }
+}

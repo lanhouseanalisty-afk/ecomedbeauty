@@ -10,6 +10,14 @@ import { QuickStats } from "@/components/crm/shared/QuickStats";
 import { KPIChart } from "@/components/crm/shared/KPIChart";
 import { formatCurrency } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Megaphone,
+  Target,
+  TrendingUp,
+  BarChart3,
+  FileText
+} from "lucide-react";
 
 const performanceData = [
   { name: "Sem 1", value: 12500 },
@@ -68,7 +76,10 @@ export default function MarketingDashboard() {
         </div>
         <div className="flex gap-2 items-center">
           <Badge variant="outline" className="h-9 px-4 text-sm hidden md:flex">Gestora: Viviane Toledo</Badge>
-          {/* Nova Campanha removed */}
+          <Button onClick={() => navigate("/crm/intranet/contratos/novo?sector=marketing")} variant="outline" className="gap-2">
+            <FileText className="h-4 w-4" />
+            Solicitar Contrato
+          </Button>
         </div>
       </div>
 

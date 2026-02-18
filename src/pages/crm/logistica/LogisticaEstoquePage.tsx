@@ -13,6 +13,7 @@ import {
     Loader2
 } from "lucide-react";
 import { useInventory, useWarehouses } from "@/hooks/useLogistica";
+import { useUserRole } from "@/hooks/useUserRole";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,6 +46,8 @@ export default function LogisticaEstoquePage() {
 
     const { data: inventory, isLoading } = useInventory();
     const { data: warehouses } = useWarehouses();
+    const { canEditModule } = useUserRole();
+    const canEdit = canEditModule('logistica');
 
     const filteredInventory = inventory?.filter(item => {
         const matchesSearch = item.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -116,10 +119,12 @@ export default function LogisticaEstoquePage() {
                         <Download className="mr-2 h-4 w-4" />
                         Exportar
                     </Button>
-                    <Button className="bg-gradient-to-r from-primary to-orange-600">
-                        <Plus className="mr-2 h-4 w-4" />
-                        Entrada de Estoque
-                    </Button>
+                    {canEdit && (
+                        <Button className="bg-gradient-to-r from-primary to-orange-600">
+                            <Plus className="mr-2 h-4 w-4" />
+                            Entrada de Estoque
+                        </Button>
+                    )}
                 </div>
             </div>
 
@@ -234,26 +239,32 @@ export default function LogisticaEstoquePage() {
                                                         </Badge>
                                                     </TableCell>
                                                     <TableCell>
-                                                        <DropdownMenu>
-                                                            <DropdownMenuTrigger asChild>
-                                                                <Button variant="ghost" size="icon">
-                                                                    <MoreHorizontal className="h-4 w-4" />
-                                                                </Button>
-                                                            </DropdownMenuTrigger>
-                                                            <DropdownMenuContent align="end">
-                                                                <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                                                                <DropdownMenuItem>
-                                                                    <ArrowRightLeft className="mr-2 h-4 w-4" /> Transferência
-                                                                </DropdownMenuItem>
-                                                                <DropdownMenuItem>
-                                                                    <Plus className="mr-2 h-4 w-4" /> Ajuste Manual
-                                                                </DropdownMenuItem>
-                                                                <DropdownMenuSeparator />
-                                                                <DropdownMenuItem>
-                                                                    <History className="mr-2 h-4 w-4" /> Ver Histórico
-                                                                </DropdownMenuItem>
-                                                            </DropdownMenuContent>
-                                                        </DropdownMenu>
+                                                        {canEdit ? (
+                                                            <DropdownMenu>
+                                                                <DropdownMenuTrigger asChild>
+                                                                    <Button variant="ghost" size="icon">
+                                                                        <MoreHorizontal className="h-4 w-4" />
+                                                                    </Button>
+                                                                </DropdownMenuTrigger>
+                                                                <DropdownMenuContent align="end">
+                                                                    <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                                                                    <DropdownMenuItem>
+                                                                        <ArrowRightLeft className="mr-2 h-4 w-4" /> Transferência
+                                                                    </DropdownMenuItem>
+                                                                    <DropdownMenuItem>
+                                                                        <Plus className="mr-2 h-4 w-4" /> Ajuste Manual
+                                                                    </DropdownMenuItem>
+                                                                    <DropdownMenuSeparator />
+                                                                    <DropdownMenuItem>
+                                                                        <History className="mr-2 h-4 w-4" /> Ver Histórico
+                                                                    </DropdownMenuItem>
+                                                                </DropdownMenuContent>
+                                                            </DropdownMenu>
+                                                        ) : (
+                                                            <Button variant="ghost" size="icon" disabled>
+                                                                <History className="h-4 w-4" />
+                                                            </Button>
+                                                        )}
                                                     </TableCell>
                                                 </TableRow>
                                             );

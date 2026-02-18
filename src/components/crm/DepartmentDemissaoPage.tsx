@@ -24,6 +24,7 @@ import { useTerminationProcesses, TerminationProcess } from "@/hooks/useTerminat
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useUserRole } from "@/hooks/useUserRole";
+import { ShieldAlert } from "lucide-react";
 
 const stepLabels: Record<string, string> = {
     rh: "RH (Início)",
@@ -59,7 +60,8 @@ export default function DepartmentDemissaoPage({ departmentSlug, departmentName 
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [viewingProcess, setViewingProcess] = useState<string | null>(null);
     const { employees } = useEmployees();
-    const { isAdmin } = useUserRole();
+    const { isAdmin, canEditModule } = useUserRole();
+    const canEdit = canEditModule('rh') || canEditModule(departmentSlug);
     const {
         processes,
         isLoading,
@@ -139,6 +141,12 @@ export default function DepartmentDemissaoPage({ departmentSlug, departmentName 
                         Gestão do processo de desligamento e checklist de saída
                     </p>
                 </div>
+                {!canEdit && !isAdmin && (
+                    <div className="flex items-center gap-2 px-3 py-1 bg-amber-50 rounded border border-amber-200 h-fit">
+                        <ShieldAlert className="h-4 w-4 text-amber-600" />
+                        <span className="text-xs text-amber-600 font-medium whitespace-nowrap">Modo Leitura</span>
+                    </div>
+                )}
             </div>
 
             {/* Cards de Status */}
@@ -226,7 +234,7 @@ export default function DepartmentDemissaoPage({ departmentSlug, departmentName 
                                             </div>
                                         </div>
                                         <Button onClick={() => setViewingProcess(process.id)}>
-                                            Completar Checklist
+                                            {canEdit || isAdmin ? "Completar Checklist" : "Ver Checklist"}
                                             <ArrowRight className="ml-2 h-4 w-4" />
                                         </Button>
                                     </CardContent>

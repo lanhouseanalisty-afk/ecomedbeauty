@@ -1,0 +1,86 @@
+[
+  {
+    "name": "Administração",
+    "code": "ADMIN"
+  },
+  {
+    "name": "Financeiro",
+    "code": "FIN"
+  },
+  {
+    "name": "Marketing",
+    "code": "MKT"
+  },
+  {
+    "name": "Comercial",
+    "code": "COM"
+  },
+  {
+    "name": "Logística",
+    "code": "LOG"
+  },
+  {
+    "name": "Jurídico",
+    "code": "JUR"
+  },
+  {
+    "name": "Tech Digital",
+    "code": "TECH"
+  },
+  {
+    "name": "E-commerce",
+    "code": "ECOM"
+  },
+  {
+    "name": "RH",
+    "code": "rh"
+  },
+  {
+    "name": "Tech / Suporte",
+    "code": "tech"
+  },
+  {
+    "name": "Diretoria",
+    "code": "diretoria"
+  },
+  {
+    "name": "Científica",
+    "code": "cientifica"
+  },
+  {
+    "name": "Inside Sales",
+    "code": "com_inside"
+  },
+  {
+    "name": "Sudeste",
+    "code": "com_sudeste"
+  },
+  {
+    "name": "Sul",
+    "code": "com_sul"
+  },
+  {
+    "name": "Centro",
+    "code": "com_centro"
+  },
+  {
+    "name": "Norte",
+    "code": "com_norte"
+  },
+  {
+    "name": "Recursos Humanos",
+    "code": "RH"
+  },
+  {
+    "name": "Manutenção",
+    "code": "manutencao"
+  },
+  {
+    "name": "Compras",
+    "code": "COMPRAS"
+  },
+  {
+    "name": "Tech TI",
+    "code": "TECH_TI"
+  }
+]

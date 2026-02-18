@@ -12,7 +12,17 @@ import {
   Send,
   User,
   TrendingUp,
-  Mail
+  Mail,
+  Sparkles,
+  Bot,
+  RefreshCw,
+  Bookmark,
+  AlertTriangle,
+  FileQuestion,
+  ShieldAlert,
+  Zap,
+  Link as LinkIcon,
+  ExternalLink
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -64,7 +74,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Sparkles, Bot, RefreshCw, Bookmark, AlertTriangle, FileQuestion, ShieldAlert, Zap } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+
 import { useTicketAI } from "@/hooks/useTicketAI";
 
 
@@ -103,6 +114,7 @@ export default function TechTicketsPage() {
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
   const [isNewTicketOpen, setIsNewTicketOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [showAllTickets, setShowAllTickets] = useState(false);
 
   // Chat & History State
   const { data: messages, isLoading: isLoadingMessages } = useTicketMessages(selectedTicketId);
@@ -126,11 +138,30 @@ export default function TechTicketsPage() {
   });
 
   // KB Suggestions logic
-  const kbSuggestions = kbArticles?.filter(article =>
-    newTicket.title.length > 3 &&
-    (article.title.toLowerCase().includes(newTicket.title.toLowerCase()) ||
-      article.content.toLowerCase().includes(newTicket.title.toLowerCase()))
-  ).slice(0, 3);
+  const kbSuggestions = kbArticles?.map(article => {
+    if (!newTicket.title || newTicket.title.length < 3) return { article, score: 0 };
+
+    const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9 ]/g, '').split(' ').filter(w => w.length > 3);
+    const ticketWords = normalize(newTicket.title);
+    const articleWords = normalize(article.title);
+    const tagWords = article.tags?.map((t: string) => t.toLowerCase()) || [];
+
+    let score = 0;
+    // Direct inclusion
+    if (article.title.toLowerCase().includes(newTicket.title.toLowerCase()) ||
+      newTicket.title.toLowerCase().includes(article.title.toLowerCase())) score += 20;
+
+    // Word overlap
+    const titleMatchCount = ticketWords.filter(word => articleWords.includes(word)).length;
+    const tagMatchCount = ticketWords.filter(word => tagWords.includes(word)).length;
+    score += (titleMatchCount * 10) + (tagMatchCount * 5);
+
+    return { article, score };
+  })
+    .filter(item => item.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .map(item => item.article)
+    .slice(0, 3);
 
   const [ticketToClose, setTicketToClose] = useState<{ id: string, status: string, childrenIds: string[] } | null>(null);
   const [isCloseDialogOpen, setIsCloseDialogOpen] = useState(false);
@@ -246,7 +277,14 @@ export default function TechTicketsPage() {
       t.status === statusTab ||
       (statusTab === 'pending' && (t.status === 'pending_user' || t.status === 'pending_vendor'));
 
-    return matchesSearch && matchesStatus;
+    const isUserRelated = !user ? true : (
+      t.assigned_to === user.id ||
+      t.requester_id === user.id
+    );
+
+    const matchesUserFilter = showAllTickets || isUserRelated;
+
+    return matchesSearch && matchesStatus && matchesUserFilter;
   });
 
   const handleRowClick = (ticketId: string) => {
@@ -309,6 +347,11 @@ export default function TechTicketsPage() {
       }));
       setIsNewTicketOpen(true);
     }
+  };
+
+  const handleAssignParent = (parentId: string | null) => {
+    if (!selectedTicketId) return;
+    updateTicket.mutate({ id: selectedTicketId, parent_id: parentId });
   };
 
   return (
@@ -425,162 +468,211 @@ export default function TechTicketsPage() {
                   }
                 </DialogDescription>
               </DialogHeader>
-              <div className="grid gap-6 py-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="title">Título do Problema *</Label>
-                  <Input
-                    id="title"
-                    placeholder="Ex: Impressora não conecta"
-                    value={newTicket.title}
-                    onChange={(e) => setNewTicket({ ...newTicket, title: e.target.value })}
-                  />
+              <ScrollArea className="max-h-[min(80vh,650px)] px-1">
+                <div className="space-y-6 py-4 pr-3">
 
-                  {kbSuggestions && kbSuggestions.length > 0 && (
-                    <div className="mt-2 bg-indigo-50 border border-indigo-100 rounded-md p-3 animate-in fade-in slide-in-from-top-1">
-                      <p className="text-[10px] font-bold text-indigo-700 uppercase tracking-wider mb-2 flex items-center gap-1">
-                        <Bookmark className="h-3 w-3" /> Sugestões da Base de Conhecimento
-                      </p>
-                      <div className="space-y-2">
-                        {kbSuggestions.map((article: any) => (
-                          <div
-                            key={article.id}
-                            className="bg-white p-2 rounded border border-indigo-200 shadow-sm flex items-center justify-between group hover:border-indigo-400 transition-colors cursor-pointer"
-                            onClick={() => window.open(`/kb/${article.id}`, '_blank')}
-                          >
-                            <span className="text-xs font-medium text-slate-700 truncate mr-2">{article.title}</span>
-                            <Button variant="ghost" size="icon" className="h-6 w-6 text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50">
-                              <ExternalLink className="h-3 w-3" />
-                            </Button>
+                  {/* Section: O Problema */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 pb-2 border-b">
+                      <div className="bg-red-100 p-1.5 rounded-md">
+                        <AlertCircle className="h-4 w-4 text-red-600" />
+                      </div>
+                      <h3 className="font-semibold text-slate-800">O que está acontecendo?</h3>
+                    </div>
+
+                    <div className="grid gap-3">
+                      <div className="grid gap-1.5">
+                        <Label htmlFor="title" className="text-slate-600 font-medium">Título do Problema <span className="text-red-500">*</span></Label>
+                        <Input
+                          id="title"
+                          placeholder="Ex: Impressora não conecta, Erro no SAP..."
+                          value={newTicket.title}
+                          onChange={(e) => setNewTicket({ ...newTicket, title: e.target.value })}
+                          className="font-medium text-base h-10 border-slate-300 focus-visible:ring-indigo-500"
+                        />
+
+                        {kbSuggestions && kbSuggestions.length > 0 && (
+                          <div className="mt-1 bg-indigo-50 border border-indigo-100 rounded-md p-3 animate-in fade-in slide-in-from-top-1">
+                            <p className="text-[10px] font-bold text-indigo-700 uppercase tracking-wider mb-2 flex items-center gap-1">
+                              <Bookmark className="h-3 w-3" /> Sugestões da Base de Conhecimento
+                            </p>
+                            <div className="space-y-2">
+                              {kbSuggestions.map((article: any) => (
+                                <div
+                                  key={article.id}
+                                  className="bg-white p-2 rounded border border-indigo-200 shadow-sm flex items-center justify-between group hover:border-indigo-400 transition-colors cursor-pointer"
+                                  onClick={() => window.open(`/kb/${article.id}`, '_blank')}
+                                >
+                                  <span className="text-xs font-medium text-slate-700 truncate mr-2">{article.title}</span>
+                                  <Button variant="ghost" size="icon" className="h-6 w-6 text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50">
+                                    <ExternalLink className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              ))}
+                            </div>
                           </div>
-                        ))}
+                        )}
+                      </div>
+
+                      <div className="grid gap-1.5">
+                        <Label htmlFor="description" className="text-slate-600 font-medium">Descrição Detalhada <span className="text-red-500">*</span></Label>
+                        <Textarea
+                          id="description"
+                          rows={4}
+                          placeholder="Descreva o problema com o máximo de detalhes possível..."
+                          value={newTicket.description}
+                          onChange={(e) => setNewTicket({ ...newTicket, description: e.target.value })}
+                          className="resize-none border-slate-300 focus-visible:ring-indigo-500"
+                        />
+                      </div>
+
+                      {/* Image Paste Area - Premium Look */}
+                      <div className="grid gap-1.5">
+                        <Label className="text-slate-600 font-medium">Evidência (Print/Foto)</Label>
+                        <div
+                          className={`group border-2 border-dashed rounded-lg h-32 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 ${pastedImage
+                            ? 'border-indigo-300 bg-indigo-50/30'
+                            : 'border-slate-300 bg-slate-50 hover:bg-indigo-50/50 hover:border-indigo-400'
+                            }`}
+                          onPaste={handlePaste}
+                          tabIndex={0}
+                        >
+                          {pastedImage ? (
+                            <div className="relative h-full w-full p-2 flex items-center justify-center">
+                              <img src={pastedImage} alt="Print" className="max-h-full max-w-full object-contain rounded-md shadow-sm" />
+                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg">
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setPastedImage(null);
+                                  }}
+                                  className="shadow-lg"
+                                >
+                                  Remover Imagem
+                                </Button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="text-center pointer-events-none p-4">
+                              <div className="bg-white p-2 rounded-full shadow-sm inline-flex mb-2 group-hover:scale-110 transition-transform">
+                                <Sparkles className="h-5 w-5 text-indigo-500" />
+                              </div>
+                              <p className="text-sm font-medium text-slate-700">Clique aqui e pressione <span className="font-mono bg-slate-200 px-1 rounded text-xs">Ctrl+V</span></p>
+                              <p className="text-xs text-slate-500 mt-1">para colar um print da tela</p>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label>Setor / Departamento</Label>
-                    <Input
-                      placeholder="Ex: Comercial, RH..."
-                      value={newTicket.department}
-                      onChange={(e) => setNewTicket({ ...newTicket, department: e.target.value })}
-                    />
                   </div>
-                  <div className="grid gap-2">
-                    <Label>Horário Ideal para Atendimento</Label>
-                    <Input
-                      placeholder="Ex: 08:00 às 12:00"
-                      value={newTicket.schedule}
-                      onChange={(e) => setNewTicket({ ...newTicket, schedule: e.target.value })}
-                    />
-                  </div>
-                </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label>Categoria *</Label>
-                    <Select
-                      value={newTicket.category_id}
-                      onValueChange={(value) => setNewTicket({ ...newTicket, category_id: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {categories?.map((cat) => (
-                          <SelectItem key={cat.id} value={cat.id}>
-                            {cat.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid gap-2">
-                    <Label>Prioridade</Label>
-                    <Select
-                      value={newTicket.priority}
-                      onValueChange={(value) => setNewTicket({ ...newTicket, priority: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="low">Baixa</SelectItem>
-                        <SelectItem value="medium">Média</SelectItem>
-                        <SelectItem value="high">Alta</SelectItem>
-                        <SelectItem value="critical">Crítica</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 gap-4">
-                  <div className="grid gap-2">
-                    <Label>Vincular Ativo (Opcional)</Label>
-                    <Select
-                      value={newTicket.asset_id}
-                      onValueChange={(value) => setNewTicket({ ...newTicket, asset_id: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione um equipamento..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">Nenhum</SelectItem>
-                        {assets?.map((asset: any) => (
-                          <SelectItem key={asset.id} value={asset.id}>
-                            [{asset.asset_tag}] {asset.model} - {asset.serial_number || 'S/N'}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="grid gap-2">
-                  <Label htmlFor="description">Descrição Detalhada *</Label>
-                  <Textarea
-                    id="description"
-                    rows={4}
-                    placeholder="Descreva o que aconteceu..."
-                    value={newTicket.description}
-                    onChange={(e) => setNewTicket({ ...newTicket, description: e.target.value })}
-                  />
-                </div>
-
-                <div className="grid gap-2">
-                  <Label>Print do Erro (Cole aqui com Ctrl+V)</Label>
-                  <div
-                    className="border-2 border-dashed rounded-md h-32 flex flex-col items-center justify-center text-muted-foreground cursor-pointer bg-slate-50 hover:bg-slate-100 transition-colors"
-                    onPaste={handlePaste}
-                    tabIndex={0}
-                  >
-                    {pastedImage ? (
-                      <div className="relative h-full w-full p-2 flex items-center justify-center group">
-                        <img src={pastedImage} alt="Print" className="max-h-full max-w-full object-contain" />
-                        <Button
-                          variant="destructive"
-                          size="icon"
-                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setPastedImage(null);
-                          }}
-                        >
-                          <span className="sr-only">Remover</span>
-                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
-                        </Button>
+                  {/* Section: Classificação */}
+                  <div className="grid md:grid-cols-2 gap-6 pt-2">
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 pb-2 border-b">
+                        <div className="bg-blue-100 p-1.5 rounded-md">
+                          <TrendingUp className="h-4 w-4 text-blue-600" />
+                        </div>
+                        <h3 className="font-semibold text-slate-800">Classificação</h3>
                       </div>
-                    ) : (
-                      <div className="text-center pointer-events-none">
-                        <p className="text-sm font-medium">Clique aqui e pressione Ctrl+V</p>
-                        <p className="text-xs">para colar um print da tela</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
 
-              </div>
+                      <div className="space-y-3">
+                        <div className="grid gap-1.5">
+                          <Label className="text-xs font-semibold uppercase text-slate-500">Categoria <span className="text-red-500">*</span></Label>
+                          <Select
+                            value={newTicket.category_id}
+                            onValueChange={(value) => setNewTicket({ ...newTicket, category_id: value })}
+                          >
+                            <SelectTrigger className="bg-white">
+                              <SelectValue placeholder="Selecione..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {categories?.map((cat) => (
+                                <SelectItem key={cat.id} value={cat.id}>
+                                  {cat.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="grid gap-1.5">
+                          <Label className="text-xs font-semibold uppercase text-slate-500">Prioridade</Label>
+                          <Select
+                            value={newTicket.priority}
+                            onValueChange={(value) => setNewTicket({ ...newTicket, priority: value })}
+                          >
+                            <SelectTrigger className="bg-white">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="low" className="text-slate-600">Baixa (Pode esperar)</SelectItem>
+                              <SelectItem value="medium" className="text-blue-600 font-medium">Média (Padrão)</SelectItem>
+                              <SelectItem value="high" className="text-orange-600 font-medium">Alta (Urgente)</SelectItem>
+                              <SelectItem value="critical" className="text-red-600 font-bold">Crítica (Sistema Parado)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </div>
+
+
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 pb-2 border-b">
+                        <div className="bg-emerald-100 p-1.5 rounded-md">
+                          <Clock className="h-4 w-4 text-emerald-600" />
+                        </div>
+                        <h3 className="font-semibold text-slate-800">Agendamento & Local</h3>
+                      </div>
+
+                      <div className="space-y-3">
+                        <div className="grid gap-1.5">
+                          <Label htmlFor="department" className="text-xs font-semibold uppercase text-slate-500">Departamento</Label>
+                          <Input
+                            id="department"
+                            placeholder="Ex: Comercial, RH..."
+                            value={newTicket.department}
+                            onChange={(e) => setNewTicket({ ...newTicket, department: e.target.value })}
+                            className="bg-white"
+                          />
+                        </div>
+                        <div className="grid gap-1.5">
+                          <Label htmlFor="schedule" className="text-xs font-semibold uppercase text-slate-500">Melhor Horário</Label>
+                          <Input
+                            id="schedule"
+                            placeholder="Ex: Manhã (08h-12h)"
+                            value={newTicket.schedule}
+                            onChange={(e) => setNewTicket({ ...newTicket, schedule: e.target.value })}
+                            className="bg-white"
+                          />
+                        </div>
+                        <div className="grid gap-1.5">
+                          <Label className="text-xs font-semibold uppercase text-slate-500">Ativo Relacionado</Label>
+                          <Select
+                            value={newTicket.asset_id}
+                            onValueChange={(value) => setNewTicket({ ...newTicket, asset_id: value })}
+                          >
+                            <SelectTrigger className="bg-white">
+                              <SelectValue placeholder="Opcional..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">Nenhum</SelectItem>
+                              {assets?.map((asset: any) => (
+                                <SelectItem key={asset.id} value={asset.id}>
+                                  [{asset.asset_tag}] {asset.model}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </ScrollArea>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setIsNewTicketOpen(false)}>
                   Cancelar
@@ -648,10 +740,25 @@ export default function TechTicketsPage() {
             <CardHeader className="pb-3 bg-slate-50/50">
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
-                  <CardTitle>Meus Chamados</CardTitle>
-                  <CardDescription>Acompanhe o status e SLA dos seus tickets.</CardDescription>
+                  <CardTitle>{showAllTickets ? "Todos os Chamados" : "Meus Chamados"}</CardTitle>
+                  <CardDescription>
+                    {showAllTickets
+                      ? "Visualizando todos os tickets do sistema."
+                      : "Acompanhe o status e SLA dos seus tickets."
+                    }
+                  </CardDescription>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-6">
+                  <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full border shadow-sm">
+                    <Label htmlFor="show-all" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground cursor-pointer">
+                      Ver Todos
+                    </Label>
+                    <Switch
+                      id="show-all"
+                      checked={showAllTickets}
+                      onCheckedChange={setShowAllTickets}
+                    />
+                  </div>
                   <div className="relative">
                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -751,10 +858,17 @@ export default function TechTicketsPage() {
                               onClick={() => handleRowClick(t.id)}
                             >
                               <TableCell className="font-mono font-medium text-primary">
-                                {t.ticket_number || t.id.slice(0, 8)}
+                                {(t as any).ticket_number || t.id?.slice(0, 8) || '---'}
                               </TableCell>
                               <TableCell className="font-medium">
-                                {t.title}
+                                <div className="flex flex-col">
+                                  <span className="truncate max-w-[300px]">{t.title}</span>
+                                  {t.parent_id && (
+                                    <span className="text-[9px] text-muted-foreground italic flex items-center gap-1 mt-0.5">
+                                      <LinkIcon className="h-2 w-2" /> Vinculado a {tickets?.find(parent => parent.id === t.parent_id)?.ticket_number || 'Principal'}
+                                    </span>
+                                  )}
+                                </div>
                               </TableCell>
                               <TableCell>
                                 <Badge variant="outline" className="font-normal">
@@ -881,13 +995,30 @@ export default function TechTicketsPage() {
             <SheetDescription className="line-clamp-2">
               {selectedTicket?.description}
             </SheetDescription>
-            <div className="mt-2 flex gap-2">
+            <div className="mt-2 flex flex-wrap gap-2 items-center">
               <Button size="sm" variant="outline" onClick={openChildTicketModal}>
                 <Plus className="mr-1 h-3 w-3" /> Criar Ticket Filho
               </Button>
+
+              <div className="flex items-center gap-2 bg-slate-100 p-1 px-2 rounded-md border border-slate-200">
+                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Vincular a Chamado Pai:</span>
+                <select
+                  className="h-6 text-[10px] border rounded-md px-2 bg-white focus:outline-none focus:ring-1 focus:ring-primary min-w-[140px]"
+                  value={(selectedTicket as any)?.parent_id || ''}
+                  onChange={(e) => handleAssignParent(e.target.value || null)}
+                >
+                  <option value="">Nenhum (Principal)</option>
+                  {tickets?.filter(t => t.id !== selectedTicketId && !t.parent_id).map(t => (
+                    <option key={t.id} value={t.id}>
+                      #{(t as any).ticket_number || t.id.slice(0, 8)} - {t.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               {(selectedTicket as any)?.parent_id && (
-                <Badge variant="secondary" className="ml-auto">
-                  Ticket Filho
+                <Badge variant="secondary" className="bg-amber-50 text-amber-700 border-amber-200">
+                  <LinkIcon className="mr-1 h-3 w-3" /> Ticket Filho
                 </Badge>
               )}
             </div>
@@ -1045,6 +1176,65 @@ export default function TechTicketsPage() {
                               </option>
                             ))}
                           </select>
+                        </div>
+
+                        {/* KB Link - Automatic */}
+                        <div className="col-span-2">
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                            <LinkIcon className="h-3 w-3" /> Base de Conhecimento Sugerida
+                          </p>
+                          <div className="min-h-[32px] flex items-center">
+                            {(() => {
+                              const match = kbArticles?.map(article => {
+                                if (!selectedTicket?.title) return { article, score: 0 };
+
+                                const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9 ]/g, '').split(' ').filter(w => w.length > 3);
+                                const ticketWords = normalize(selectedTicket.title);
+                                const articleWords = normalize(article.title);
+                                const tagWords = article.tags?.map((t: string) => t.toLowerCase()) || [];
+
+                                let score = 0;
+                                // Direct inclusion
+                                if (article.title.toLowerCase().includes(selectedTicket.title.toLowerCase()) ||
+                                  selectedTicket.title.toLowerCase().includes(article.title.toLowerCase())) score += 20;
+
+                                // Word overlap
+                                const titleMatchCount = ticketWords.filter(word => articleWords.includes(word)).length;
+                                const tagMatchCount = ticketWords.filter(word => tagWords.includes(word)).length;
+                                score += (titleMatchCount * 10) + (tagMatchCount * 5);
+
+                                return { article, score };
+                              })
+                                .filter(item => item.score > 0)
+                                .sort((a, b) => b.score - a.score)[0]?.article;
+
+                              if (match) {
+                                return (
+                                  <div className="flex items-center gap-2 bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-md border border-emerald-200 w-full animate-in fade-in duration-300">
+                                    <Sparkles className="h-4 w-4 text-emerald-500" />
+                                    <span className="text-xs font-medium truncate flex-1">
+                                      {match.title}
+                                    </span>
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-6 px-2 text-xs font-bold text-emerald-700 hover:text-emerald-900 hover:bg-emerald-100 -mr-1"
+                                      onClick={() => window.open(`/crm/tech/kb?search=${match.title}`, '_blank')}
+                                    >
+                                      Acessar <ExternalLink className="ml-1 h-3 w-3" />
+                                    </Button>
+                                  </div>
+                                );
+                              }
+
+                              return (
+                                <div className="flex items-center gap-2 bg-slate-50 text-slate-400 px-3 py-1.5 rounded-md border border-slate-200 w-full italic text-xs">
+                                  <AlertCircle className="h-4 w-4 opacity-50" />
+                                  <span>Em criação / Nenhum artigo encontrado</span>
+                                </div>
+                              );
+                            })()}
+                          </div>
                         </div>
 
                         {/* SLA Due Override */}

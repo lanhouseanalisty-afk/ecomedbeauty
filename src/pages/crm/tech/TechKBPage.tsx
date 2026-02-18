@@ -284,7 +284,10 @@ const CATEGORIES = [
 ];
 
 export default function TechKBPage() {
-    const [searchTerm, setSearchTerm] = useState("");
+    const [searchTerm, setSearchTerm] = useState(() => {
+        const params = new URLSearchParams(window.location.search);
+        return params.get('search') || "";
+    });
     const [activeCategory, setActiveCategory] = useState("all");
 
     const filteredArticles = KB_DATA.filter(article => {

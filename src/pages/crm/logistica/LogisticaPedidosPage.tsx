@@ -27,13 +27,17 @@ import {
     MapPin,
     Calendar,
     RefreshCw,
-    Loader2
+    Loader2,
+    ShieldAlert
 } from "lucide-react";
 import { useMarketingRequest, MarketingRequest } from "@/hooks/useMarketingRequest";
+import { useUserRole } from "@/hooks/useUserRole";
 import { format } from "date-fns";
 
 export default function LogisticaPedidosPage() {
     const { getAllRequests, updateRequestStatus, loading } = useMarketingRequest();
+    const { canEditModule } = useUserRole();
+    const canEdit = canEditModule('logistica');
     const [requests, setRequests] = useState<MarketingRequest[]>([]);
     const [refreshing, setRefreshing] = useState(false);
 
@@ -121,10 +125,18 @@ export default function LogisticaPedidosPage() {
                             Gerencie a expedição e entrega de materiais solicitados
                         </p>
                     </div>
-                    <Button onClick={handleRefresh} variant="outline" disabled={refreshing}>
-                        <RefreshCw className={`mr-2 h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
-                        Atualizar
-                    </Button>
+                    <div className="flex gap-2 items-center">
+                        {!canEdit && (
+                            <div className="flex items-center gap-2 px-3 py-1 bg-amber-50 rounded border border-amber-200">
+                                <ShieldAlert className="h-4 w-4 text-amber-600" />
+                                <span className="text-xs text-amber-600 font-medium">Somente Leitura</span>
+                            </div>
+                        )}
+                        <Button onClick={handleRefresh} variant="outline" disabled={refreshing}>
+                            <RefreshCw className={`mr-2 h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+                            Atualizar
+                        </Button>
+                    </div>
                 </div>
 
                 {/* Pending Shipments Card */}
@@ -234,25 +246,31 @@ export default function LogisticaPedidosPage() {
                                                 </Badge>
                                             </TableCell>
                                             <TableCell className="text-right">
-                                                {req.status === 'approved' && (
-                                                    <Button
-                                                        size="sm"
-                                                        onClick={() => handleStatusChange(req.id!, 'shipped')}
-                                                        className="bg-blue-600 hover:bg-blue-700"
-                                                    >
-                                                        <Truck className="h-4 w-4 mr-2" />
-                                                        Marcar Enviado
-                                                    </Button>
-                                                )}
-                                                {req.status === 'shipped' && (
-                                                    <Button
-                                                        size="sm"
-                                                        onClick={() => handleStatusChange(req.id!, 'delivered')}
-                                                        className="bg-green-600 hover:bg-green-700"
-                                                    >
-                                                        <Package className="h-4 w-4 mr-2" />
-                                                        Marcar Entregue
-                                                    </Button>
+                                                {canEdit ? (
+                                                    <>
+                                                        {req.status === 'approved' && (
+                                                            <Button
+                                                                size="sm"
+                                                                onClick={() => handleStatusChange(req.id!, 'shipped')}
+                                                                className="bg-blue-600 hover:bg-blue-700"
+                                                            >
+                                                                <Truck className="h-4 w-4 mr-2" />
+                                                                Marcar Enviado
+                                                            </Button>
+                                                        )}
+                                                        {req.status === 'shipped' && (
+                                                            <Button
+                                                                size="sm"
+                                                                onClick={() => handleStatusChange(req.id!, 'delivered')}
+                                                                className="bg-green-600 hover:bg-green-700"
+                                                            >
+                                                                <Package className="h-4 w-4 mr-2" />
+                                                                Marcar Entregue
+                                                            </Button>
+                                                        )}
+                                                    </>
+                                                ) : (
+                                                    <Badge variant="outline" className="text-muted-foreground">Bloqueado</Badge>
                                                 )}
                                             </TableCell>
                                         </TableRow>

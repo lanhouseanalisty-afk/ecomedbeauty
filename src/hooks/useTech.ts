@@ -173,22 +173,22 @@ export function useTechTeam() {
   return useQuery({
     queryKey: ['tech_team'],
     queryFn: async () => {
-      const { data: roles, error: rolesError } = await supabase
-        .from('user_roles')
-        .select('user_id')
-        .in('role', ['tech_support', 'admin', 'tech']);
+      // Buscar funcionários com função "Tech Digital"
+      const { data: employees, error } = await supabase
+        .from('employees')
+        .select('id, name, email, function')
+        .eq('function', 'Tech Digital')
+        .eq('status', 'active');
 
-      if (rolesError) throw rolesError;
+      if (error) throw error;
 
-      const userIds = [...new Set(roles.map(r => r.user_id))];
-
-      const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select('id, full_name, email, avatar_url')
-        .in('id', userIds);
-
-      if (profilesError) throw profilesError;
-      return profiles;
+      // Retornar no formato esperado pelos componentes
+      return employees?.map(emp => ({
+        id: emp.id,
+        name: emp.name,
+        email: emp.email,
+        full_name: emp.name // Compatibilidade com código existente
+      })) || [];
     },
   });
 }

@@ -1,0 +1,250 @@
+﻿
+>       
+legal_contracts: {
+          Row: {
+            
+auto_renew: boolean 
+| null
+            
+contract_number: 
+string
+            
+created_at: string | 
+null
+            
+currency: string | 
+null
+            
+document_url: string 
+| null
+            
+end_date: string | 
+null
+            id: 
+string
+            
+party_account_id: 
+string | null
+            
+party_document: 
+string | null
+            
+party_name: string | 
+null
+            
+payment_terms: 
+string | null
+            
+reminder_email: 
+string | null
+            
+reminder_enabled: 
+boolean | null
+            
+renewal_notice_days: 
+number | null
+            
+responsible_id: 
+string | null
+            
+signed_at: string | 
+null
+            
+signed_document_url: 
+string | null
+            signers: 
+Json | null
+            
+special_clauses: 
+string | null
+            
+start_date: string | 
+null
+            status: D
+atabase["public"]["En
+ums"]["contract_statu
+s"] | null
+            
+terms_summary: 
+string | null
+            title: 
+string
+            type: 
+string
+            
+updated_at: string | 
+null
+            value: 
+number | null
+          }
+          Insert: {
+            
+auto_renew?: boolean 
+| null
+            
+contract_number: 
+string
+            
+created_at?: string 
+| null
+            
+currency?: string | 
+null
+            
+document_url?: 
+string | null
+            
+end_date?: string | 
+null
+            id?: 
+string
+            
+party_account_id?: 
+string | null
+            
+party_document?: 
+string | null
+            
+party_name?: string 
+| null
+            
+payment_terms?: 
+string | null
+            
+reminder_email?: 
+string | null
+            
+reminder_enabled?: 
+boolean | null
+            renewal_n
+otice_days?: number 
+| null
+            
+responsible_id?: 
+string | null
+            
+signed_at?: string | 
+null
+            signed_do
+cument_url?: string 
+| null
+            
+signers?: Json | null
+            
+special_clauses?: 
+string | null
+            
+start_date?: string 
+| null
+            status?: 
+Database["public"]["E
+nums"]["contract_stat
+us"] | null
+>             
+foreignKeyName: "lega
+l_contracts_party_acc
+ount_id_fkey"
+              
+columns: 
+["party_account_id"]
+              
+isOneToOne: false
+              
+referencedRelation: 
+"crm_accounts"
+              
+referencedColumns: 
+["id"]
+            },
+          ]
+        }
+        
+loyalty_points: {
+          Row: {
+            balance: 
+number
+            
+created_at: string
+            id: 
+string
+            
+total_earned: number
+            
+total_redeemed: 
+number
+            
+updated_at: string
+            user_id: 
+string
+          }
+          Insert: {
+            
+balance?: number
+            
+created_at?: string
+            id?: 
+string
+            
+total_earned?: number
+            
+total_redeemed?: 
+number
+            
+updated_at?: string
+            user_id: 
+string
+          }
+          Update: {
+            
+balance?: number
+            
+created_at?: string
+            id?: 
+string
+            
+total_earned?: number
+            
+total_redeemed?: 
+number
+            
+updated_at?: string
+            
+user_id?: string
+          }
+          
+Relationships: []
+        }
+        
+marketing_assets: {
+          Row: {
+            
+approved_at: string 
+| null
+            
+approved_by: string 
+| null
+            
+campaign_id: string 
+| null
+            channel: 
+string | null
+            
+created_at: string | 
+null
+            
+dimensions: Json | 
+null
+            
+file_size: number | 
+null
+            
+file_url: string | 
+null
+            id: 
+string
+            name: 
+string
+            status: 
+string | null
+
+

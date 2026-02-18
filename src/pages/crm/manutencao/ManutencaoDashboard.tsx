@@ -1,6 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Wrench, AlertTriangle, CheckCircle, Clock, Users, TrendingUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Wrench, AlertTriangle, CheckCircle, Clock, Users, TrendingUp, FileText } from "lucide-react";
 
 export default function ManutencaoDashboard() {
     const stats = [
@@ -45,9 +46,15 @@ export default function ManutencaoDashboard() {
                         <p className="text-muted-foreground">Infraestrutura e Facilities</p>
                     </div>
                 </div>
-                <Badge variant="outline" className="w-fit">
-                    Gestor: Laércio
-                </Badge>
+                <div className="flex gap-2 items-center">
+                    <Badge variant="outline" className="w-fit">
+                        Gestor: Laércio
+                    </Badge>
+                    <Button onClick={() => window.location.href = "/crm/intranet/contratos/novo?sector=manutencao"} variant="outline" className="gap-2">
+                        <FileText className="h-4 w-4" />
+                        Solicitar Contrato
+                    </Button>
+                </div>
             </div>
 
             {/* Stats */}

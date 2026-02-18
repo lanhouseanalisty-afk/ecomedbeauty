@@ -1,14 +1,15 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Building2, ShoppingBag } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Building2, ShoppingBag, LogIn } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -34,7 +35,10 @@ export default function Auth() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { signIn, signUp, user, isEmployee, loading } = useAuth();
+  const [searchParams] = useSearchParams();
+  const initialRole = searchParams.get('role') === 'employee' ? 'employee' : 'customer';
+  const [loginRole, setLoginRole] = useState<'customer' | 'employee'>(initialRole);
+  const { signIn, signUp, signOut, user, isEmployee, loading } = useAuth();
   const navigate = useNavigate();
 
   // Redirect based on user role when already logged in
@@ -79,16 +83,25 @@ export default function Auth() {
     if (error) {
       if (error.message.includes("Invalid login credentials")) {
         toast.error("E-mail ou senha incorretos");
+      } else if (error.message.includes("Email logins are disabled")) {
+        toast.error("O login por e-mail está temporariamente desativado no servidor. Por favor, contate o administrador.");
       } else {
         toast.error(error.message);
       }
       return;
     }
 
+    // Role validation
+    if (loginRole === 'employee' && !isEmployeeUser) {
+      toast.error("Este acesso é restrito a colaboradores cadastrados no CRM.");
+      await signOut(); // Force logout if not an employee
+      return;
+    }
+
     toast.success("Login realizado com sucesso!");
 
     // Redirect based on role
-    if (isEmployeeUser) {
+    if (isEmployeeUser && loginRole === 'employee') {
       navigate("/crm");
     } else {
       navigate("/");
@@ -103,6 +116,8 @@ export default function Auth() {
     if (error) {
       if (error.message.includes("already registered")) {
         toast.error("Este e-mail já está cadastrado");
+      } else if (error.message.includes("email rate limit exceeded")) {
+        toast.error("Limite de envio de e-mail excedido. Por favor, aguarde alguns minutos antes de tentar novamente.");
       } else {
         toast.error(error.message);
       }
@@ -171,6 +186,7 @@ export default function Auth() {
           <div className="rounded-xl border border-border bg-card p-6 shadow-card animate-fade-in-up">
             {isSignUp ? (
               <form onSubmit={signUpForm.handleSubmit(handleSignUp)} className="space-y-4">
+                {/* ... existing sign up fields ... */}
                 <div>
                   <Label htmlFor="fullName">Nome completo</Label>
                   <div className="relative mt-1">
@@ -259,73 +275,116 @@ export default function Auth() {
                 </Button>
               </form>
             ) : (
-              <form onSubmit={signInForm.handleSubmit(handleSignIn)} className="space-y-4">
-                <div>
-                  <Label htmlFor="email">E-mail</Label>
-                  <div className="relative mt-1">
-                    <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="seu@email.com"
-                      className="pl-10"
-                      {...signInForm.register("email")}
-                    />
-                  </div>
-                  {signInForm.formState.errors.email && (
-                    <p className="mt-1 text-sm text-destructive">
-                      {signInForm.formState.errors.email.message}
-                    </p>
-                  )}
-                </div>
+              <Tabs value={loginRole} onValueChange={(v) => setLoginRole(v as 'customer' | 'employee')}>
+                <TabsList className="grid w-full grid-cols-2 mb-6">
+                  <TabsTrigger value="customer" className="gap-2">
+                    <ShoppingBag className="h-4 w-4" />
+                    Cliente
+                  </TabsTrigger>
+                  <TabsTrigger value="employee" className="gap-2">
+                    <Building2 className="h-4 w-4" />
+                    Colaborador
+                  </TabsTrigger>
+                </TabsList>
 
-                <div>
-                  <Label htmlFor="password">Senha</Label>
-                  <div className="relative mt-1">
-                    <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input
-                      id="password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="••••••••"
-                      className="pl-10 pr-10"
-                      {...signInForm.register("password")}
-                    />
+                <form onSubmit={signInForm.handleSubmit(handleSignIn)} className="space-y-4">
+                  <div>
+                    <Label htmlFor="email">E-mail {loginRole === 'employee' ? 'Corporativo' : ''}</Label>
+                    <div className="relative mt-1">
+                      <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="seu@email.com"
+                        className="pl-10"
+                        {...signInForm.register("email")}
+                      />
+                    </div>
+                    {signInForm.formState.errors.email && (
+                      <p className="mt-1 text-sm text-destructive">
+                        {signInForm.formState.errors.email.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <Label htmlFor="password">Senha</Label>
+                    <div className="relative mt-1">
+                      <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        className="pl-10 pr-10"
+                        {...signInForm.register("password")}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                    {signInForm.formState.errors.password && (
+                      <p className="mt-1 text-sm text-destructive">
+                        {signInForm.formState.errors.password.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <Button type="submit" className="w-full gap-2" disabled={isLoading}>
+                    {isLoading ? "Entrando..." : "Entrar como " + (loginRole === 'employee' ? 'Colaborador' : 'Cliente')}
+                    <LogIn className="h-4 w-4" />
+                  </Button>
+
+                  <div className="text-center">
                     <button
                       type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      onClick={async () => {
+                        const email = signInForm.getValues("email");
+                        if (!email) {
+                          toast.error("Por favor, informe seu e-mail para recuperar a senha.");
+                          return;
+                        }
+                        setIsLoading(true);
+                        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                          redirectTo: `${window.location.origin}/auth/callback?next=/update-password`,
+                        });
+                        setIsLoading(false);
+                        if (error) {
+                          toast.error("Erro ao enviar e-mail de recuperação: " + error.message);
+                        } else {
+                          toast.success("E-mail de recuperação enviado com sucesso!");
+                        }
+                      }}
+                      className="text-sm text-primary hover:underline"
                     >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      Esqueci minha senha
                     </button>
                   </div>
-                  {signInForm.formState.errors.password && (
-                    <p className="mt-1 text-sm text-destructive">
-                      {signInForm.formState.errors.password.message}
-                    </p>
+
+                  {loginRole === 'employee' && (
+                    <>
+                      <div className="relative my-4">
+                        <div className="absolute inset-0 flex items-center">
+                          <span className="w-full border-t" />
+                        </div>
+                        <div className="relative flex justify-center text-xs uppercase">
+                          <span className="bg-card px-2 text-muted-foreground">
+                            Ou corporativo
+                          </span>
+                        </div>
+                      </div>
+
+                      <Button variant="outline" type="button" className="w-full gap-2" onClick={handleADLogin} disabled={isLoading}>
+                        <Building2 className="h-4 w-4" />
+                        Entrar com AD (Microsoft 365)
+                      </Button>
+                    </>
                   )}
-                </div>
-
-                <Button type="submit" className="w-full gap-2" disabled={isLoading}>
-                  {isLoading ? "Entrando..." : "Entrar"}
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-
-                <div className="relative my-4">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-card px-2 text-muted-foreground">
-                      Ou continuar com
-                    </span>
-                  </div>
-                </div>
-
-                <Button variant="outline" type="button" className="w-full gap-2" onClick={handleADLogin} disabled={isLoading}>
-                  <Building2 className="h-4 w-4" />
-                  Entrar com AD (Corporativo)
-                </Button>
-              </form>
+                </form>
+              </Tabs>
             )}
 
             <div className="mt-6 text-center">

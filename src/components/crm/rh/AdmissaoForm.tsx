@@ -74,7 +74,6 @@ const secaoRHSchema = z.object({
   nome_exibicao: z.string().optional(),
   cpf: z.string().min(11, "CPF inválido").max(14),
   data_admissao: z.string().min(1, "Data de admissão é obrigatória"),
-  data_admissao: z.string().min(1, "Data de admissão é obrigatória"),
   tipo_contratacao: z.enum(["CLT", "PJ", "Estágio", "Temporário"], {
     required_error: "Selecione o tipo de contratação",
   }),
@@ -229,7 +228,6 @@ export default function AdmissaoForm({
       nome_completo: "",
       nome_exibicao: "",
       cpf: "",
-      data_admissao: "",
       data_admissao: "",
       tipo_contratacao: undefined,
       setor_departamento: "",
