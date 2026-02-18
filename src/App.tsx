@@ -100,6 +100,7 @@ const InventoryPage = lazy(() => import("./pages/crm/checklist/InventoryPage"));
 const PlanilhaJeanPage = lazy(() => import("./pages/crm/checklist/PlanilhaJeanPage"));
 const BonusManagementPage = lazy(() => import("./pages/crm/components/BonusManagementPage"));
 const AdminBonusPage = lazy(() => import("./pages/crm/admin/AdminBonusPage"));
+const SectorSupplyRequestPage = lazy(() => import("./pages/crm/components/SectorSupplyRequestPage").then(module => ({ default: module.SectorSupplyRequestPage })));
 
 const SystemSettingsPage = lazy(() => import("./pages/admin/SystemSettingsPage"));
 
@@ -116,6 +117,7 @@ const LegalContractCreatePage = lazy(() => import("./pages/legal/LegalContractCr
 const ContractViewer = lazy(() => import("./pages/legal/components/ContractViewer"));
 const SectorContractReview = lazy(() => import("./pages/legal/SectorContractReview"));
 
+const LegalContractsDashboard = lazy(() => import("./pages/legal/LegalContractsDashboard"));
 const SectorContractDashboard = lazy(() => import("./pages/legal/SectorContractDashboard"));
 const ContractTemplatesSettings = lazy(() => import("./pages/legal/ContractTemplatesSettings"));
 
@@ -170,12 +172,14 @@ const App = () => {
                             <Route index element={<CRMDashboard />} />
 
                             {/* Principal */}
-                            <Route path="intranet" element={<ProtectedRoute requiredPermission="access_intranet" requireEmployee><IntranetPage /></ProtectedRoute>} />
+                            <Route path="intranet" element={<ProtectedRoute requireEmployee><IntranetPage /></ProtectedRoute>} />
+                            <Route path="intranet/loja" element={<ProtectedRoute requireEmployee><CorporateStorePage /></ProtectedRoute>} />
+                            <Route path="intranet/ideias" element={<ProtectedRoute requireEmployee><IdeaBankPage /></ProtectedRoute>} />
                             <Route path="rh/meu-perfil" element={<EmployeeProfilePage />} />
                             <Route path="rh/perfil/:id" element={<EmployeeProfilePage />} />
                             <Route path="rh/contratos" element={<SectorContractDashboard sector="rh" />} />
                             <Route path="rh/contrato/:id" element={<ContractViewer />} />
-                            <Route path="colaboradores" element={<ProtectedRoute requiredPermission="intranet_directory" requireEmployee><EmployeeDirectoryPage /></ProtectedRoute>} />
+                            <Route path="colaboradores" element={<ProtectedRoute requireEmployee><EmployeeDirectoryPage /></ProtectedRoute>} />
 
                             {/* Bonificações */}
                             <Route path="admin/bonificacoes" element={<AdminBonusPage />} />
@@ -203,6 +207,9 @@ const App = () => {
                               <Route path="admin/contratos" element={<SectorContractDashboard sector="admin" />} />
                               <Route path="admin/admissao" element={<DepartmentAdmissaoPage department="admin" />} />
                               <Route path="admin/solicitacoes-setores" element={<SectorRequestsWrapper department="admin" />} />
+                              <Route path="admin/processos" element={<ProcessControlPage />} />
+                              <Route path="admin/precificacao" element={<PricingPage />} />
+                              <Route path="admin/insumos" element={<SectorSupplyRequestPage currentSector="admin" sectorName="Administração" />} />
                             </Route>
 
                             {/* Científica */}
@@ -211,7 +218,12 @@ const App = () => {
                             <Route path="cientifica/admissao" element={<DepartmentAdmissaoPage department="cientifica" />} />
                             <Route path="cientifica/contratos" element={<SectorContractDashboard sector="cientifica" />} />
                             <Route path="cientifica/contrato/:id" element={<ContractViewer />} />
+
                             <Route path="cientifica/solicitacoes-setores" element={<SectorRequestsWrapper department="cientifica" />} />
+                            <Route path="cientifica/processos" element={<ProcessControlPage />} />
+                            <Route path="cientifica/insumos" element={<SectorSupplyRequestPage currentSector="cientifica" sectorName="Científica" />} />
+                            <Route path="cientifica/nfe" element={<NFEPage sector="cientifica" sectorLabel="Científica" />} />
+                            <Route path="cientifica/bonificacoes" element={<BonusManagementPage sectorId="cientifica" sectorName="Científica" />} />
 
                             {/* Comercial */}
                             <Route element={<ProtectedRoute requiredModule="comercial" requireEmployee />}>
@@ -232,6 +244,13 @@ const App = () => {
                               <Route path="comercial/centro/contrato/:id" element={<ContractViewer />} />
                               <Route path="comercial/norte/contratos" element={<SectorContractDashboard sector="com_norte" />} />
                               <Route path="comercial/norte/contrato/:id" element={<ContractViewer />} />
+
+                              <Route path="comercial/processos" element={<ProcessControlPage />} />
+                              <Route path="comercial/precificacao" element={<PricingPage />} />
+                              <Route path="comercial/insumos" element={<SectorSupplyRequestPage currentSector="comercial" sectorName="Comercial" />} />
+                              <Route path="comercial/nfe" element={<NFEPage sector="comercial" sectorLabel="Comercial" />} />
+                              <Route path="comercial/solicitacoes-setores" element={<SectorRequestsWrapper department="comercial" />} />
+
                               <Route path="comercial/:subdepartment" element={<ComercialSubDepartmentPage />} />
                             </Route>
 
@@ -242,6 +261,9 @@ const App = () => {
                             <Route path="compras/contratos" element={<SectorContractDashboard sector="compras" />} />
                             <Route path="compras/contrato/:id" element={<ContractViewer />} />
                             <Route path="compras/solicitacoes-setores" element={<SectorRequestsWrapper department="compras" />} />
+                            <Route path="compras/processos" element={<ProcessControlPage />} />
+                            <Route path="compras/insumos" element={<SectorSupplyRequestPage currentSector="compras" sectorName="Compras" />} />
+                            <Route path="compras/bonificacoes" element={<BonusManagementPage sectorId="compras" sectorName="Compras" />} />
 
                             {/* E-commerce */}
                             <Route path="ecommerce" element={<ProtectedRoute requiredModule="ecommerce" requireEmployee><EcommerceDashboard /></ProtectedRoute>} />
@@ -256,6 +278,9 @@ const App = () => {
                             <Route path="ecommerce/contratos" element={<SectorContractDashboard sector="ecommerce" />} />
                             <Route path="ecommerce/contrato/:id" element={<ContractViewer />} />
                             <Route path="ecommerce/solicitacoes-setores" element={<SectorRequestsWrapper department="ecommerce" />} />
+                            <Route path="ecommerce/processos" element={<ProcessControlPage />} />
+                            <Route path="ecommerce/insumos" element={<SectorSupplyRequestPage currentSector="ecommerce" sectorName="E-commerce" />} />
+                            <Route path="ecommerce/bonificacoes" element={<BonusManagementPage sectorId="ecommerce" sectorName="E-commerce" />} />
 
                             {/* Financeiro */}
                             <Route element={<ProtectedRoute requiredModule="financeiro" requireEmployee />}>
@@ -264,6 +289,10 @@ const App = () => {
                               <Route path="financeiro/contratos" element={<SectorContractDashboard sector="financeiro" />} />
                               <Route path="financeiro/contrato/:id" element={<ContractViewer />} />
                               <Route path="financeiro/solicitacoes-setores" element={<SectorRequestsWrapper department="financeiro" />} />
+                              <Route path="financeiro/processos" element={<ProcessControlPage />} />
+                              <Route path="financeiro/insumos" element={<SectorSupplyRequestPage currentSector="financeiro" sectorName="Financeiro" />} />
+                              <Route path="financeiro/bonificacoes" element={<BonusManagementPage sectorId="financeiro" sectorName="Financeiro" />} />
+                              <Route path="financeiro/precificacao" element={<PricingPage />} />
                             </Route>
 
 
@@ -280,7 +309,7 @@ const App = () => {
                             {/* Jurídico */}
                             <Route element={<ProtectedRoute requiredModule="juridico" requireEmployee />}>
                               <Route path="juridico" element={<ProtectedRoute requiredPermission="legal_contracts" requireEmployee><LegalDashboard /></ProtectedRoute>} />
-                              <Route path="juridico/contratos" element={<ProtectedRoute requiredPermission="legal_contracts" requireEmployee><LegalDashboard /></ProtectedRoute>} />
+                              <Route path="juridico/contratos" element={<ProtectedRoute requiredPermission="legal_contracts" requireEmployee><LegalContractsDashboard /></ProtectedRoute>} />
                               <Route path="juridico/contratos/novo" element={<ProtectedRoute requiredPermission="legal_contracts" requireEmployee><LegalContractCreatePage /></ProtectedRoute>} />
                               <Route path="juridico/modelos" element={<ProtectedRoute requiredPermission="legal_compliance" requireEmployee><ContractTemplatesSettings /></ProtectedRoute>} />
                               <Route path="juridico/compliance" element={<ProtectedRoute requiredPermission="legal_compliance" requireEmployee><CompliancePage /></ProtectedRoute>} />
@@ -289,6 +318,10 @@ const App = () => {
                               <Route path="legal/contrato/:id" element={<ContractViewer />} />
                               <Route path="juridico/admissao" element={<JuridicoAdmissaoPage />} />
                               <Route path="juridico/solicitacoes-setores" element={<SectorRequestsWrapper department="juridico" />} />
+                              <Route path="juridico/processos" element={<ProcessControlPage />} />
+                              <Route path="juridico/insumos" element={<SectorSupplyRequestPage currentSector="juridico" sectorName="Jurídico" />} />
+                              <Route path="juridico/nfe" element={<NFEPage sector="juridico" sectorLabel="Jurídico" />} />
+                              <Route path="juridico/bonificacoes" element={<BonusManagementPage sectorId="juridico" sectorName="Jurídico" />} />
                             </Route>
 
                             {/* Logistics */}
@@ -300,6 +333,10 @@ const App = () => {
                               <Route path="logistica/contratos" element={<SectorContractDashboard sector="logistica" />} />
                               <Route path="logistica/contrato/:id" element={<ContractViewer />} />
                               <Route path="logistica/solicitacoes-setores" element={<SectorRequestsWrapper department="logistica" />} />
+                              <Route path="logistica/processos" element={<ProcessControlPage />} />
+                              <Route path="logistica/insumos" element={<SectorSupplyRequestPage currentSector="logistica" sectorName="Logística" />} />
+                              <Route path="logistica/nfe" element={<NFEPage sector="logistica" sectorLabel="Logística" />} />
+                              <Route path="logistica/bonificacoes" element={<BonusManagementPage sectorId="logistica" sectorName="Logística" />} />
                             </Route>
 
                             {/* Manutenção */}
@@ -310,6 +347,9 @@ const App = () => {
                               <Route path="manutencao/contrato/:id" element={<ContractViewer />} />
                               <Route path="manutencao/solicitacoes-setores" element={<SectorRequestsWrapper department="manutencao" />} />
                               <Route path="manutencao/nfe" element={<NFEPage sector="manutencao" sectorLabel="Manutenção" />} />
+                              <Route path="manutencao/processos" element={<ProcessControlPage />} />
+                              <Route path="manutencao/insumos" element={<SectorSupplyRequestPage currentSector="manutencao" sectorName="Manutenção" />} />
+                              <Route path="manutencao/bonificacoes" element={<BonusManagementPage sectorId="manutencao" sectorName="Manutenção" />} />
                             </Route>
 
                             {/* Marketing */}
@@ -324,6 +364,8 @@ const App = () => {
                               <Route path="marketing/contrato/:id" element={<ContractViewer />} />
                               <Route path="marketing/solicitacoes-setores" element={<SectorRequestsWrapper department="marketing" />} />
                               <Route path="marketing/nfe" element={<NFEPage sector="marketing" sectorLabel="Marketing" />} />
+                              <Route path="marketing/processos" element={<ProcessControlPage />} />
+                              <Route path="marketing/insumos" element={<SectorSupplyRequestPage currentSector="marketing" sectorName="Marketing" />} />
                             </Route>
 
                             {/* RH */}
@@ -332,6 +374,8 @@ const App = () => {
                               <Route path="rh/operacoes" element={<ProtectedRoute requiredPermission="hr_employees" requireEmployee><HROperationsPage /></ProtectedRoute>} />
                               <Route path="rh/solicitacoes-setores" element={<SectorRequestsWrapper department="rh" />} />
                               <Route path="rh/nfe" element={<NFEPage sector="rh" sectorLabel="RH" />} />
+                              <Route path="rh/processos" element={<ProcessControlPage />} />
+                              <Route path="rh/insumos" element={<SectorSupplyRequestPage currentSector="rh" sectorName="Recursos Humanos" />} />
                             </Route>
 
                             {/* E-commerce */}
@@ -346,9 +390,13 @@ const App = () => {
                               <Route path="tech/kb" element={<TechKBPage />} />
                               <Route path="tech/admissao" element={<TechAdmissaoPage />} />
                               <Route path="tech/nfe" element={<NFEPage sector="tech" sectorLabel="Tecnologia da Informação" />} />
-                              <Route path="tech/inventario" element={<Navigate to="/crm/tech" replace />} /> {/* Placeholder to avoid errors if inventory page is missing */}
+                              <Route path="tech/inventario" element={<InventoryPage />} />
                               <Route path="tech/contratos" element={<SectorContractDashboard sector="tech" />} />
                               <Route path="tech/contrato/:id" element={<ContractViewer />} />
+                              <Route path="tech/processos" element={<ProcessControlPage />} />
+                              <Route path="tech/insumos" element={<SectorSupplyRequestPage currentSector="tech" sectorName="Tecnologia da Informação" />} />
+                              <Route path="tech/bonificacoes" element={<BonusManagementPage sectorId="tech" sectorName="Tech" />} />
+                              <Route path="tech/solicitacoes-setores" element={<SectorRequestsWrapper department="tech" />} />
                             </Route>
 
                             {/* Compras */}
