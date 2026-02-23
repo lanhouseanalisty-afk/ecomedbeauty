@@ -83,15 +83,15 @@ interface MenuSection {
 
 const menuSections: MenuSection[] = [
   {
-    title: "sidebar.sections.main",
+    title: "PRINCIPAL",
     items: [
       {
-        title: "sidebar.menu.dashboard",
+        title: "Dashboard",
         icon: LayoutDashboard,
         url: "/crm",
       },
       {
-        title: "sidebar.menu.myProfile",
+        title: "Meu Perfil",
         icon: UserCircle,
         url: "/crm/rh/meu-perfil",
       },
@@ -99,39 +99,39 @@ const menuSections: MenuSection[] = [
     ],
   },
   {
-    title: "sidebar.sections.intranet",
+    title: "INTRANET",
     items: [
       {
-        title: "sidebar.menu.noticeBoard",
+        title: "Mural de Avisos",
         icon: Megaphone,
         url: "/crm/intranet",
       },
       {
-        title: "sidebar.menu.internalLibrary",
+        title: "Biblioteca Interna",
         icon: FileText,
         url: "/crm/biblioteca",
       },
       {
-        title: "sidebar.menu.employeeDirectory",
+        title: "Diretório de Colaboradores",
         icon: Users,
         url: "/crm/colaboradores",
       },
       {
-        title: "sidebar.menu.jeansSpreadsheet",
+        title: "Planilha do Jean",
         icon: TicketCheck,
         url: "/crm/checklist/planilha-jean",
       },
       {
-        title: "sidebar.menu.corporateStore",
+        title: "Loja Corporativa",
         icon: Store,
         url: "/crm/intranet/loja",
       },
       {
-        title: "sidebar.menu.ideaBank",
+        title: "Banco de Ideias",
         icon: Lightbulb,
         url: "/crm/intranet/ideias",
       },
-      //   title: "sidebar.menu.inputRequests",
+      //   title: "Solicitação de Insumos",
       //   icon: Package,
       //   url: "/crm/marketing/solicitacoes",
       //   permission: "marketing_requests"
@@ -139,24 +139,23 @@ const menuSections: MenuSection[] = [
     ],
   },
   {
-    title: "sidebar.sections.departments",
+    title: "SETORES & DEPARTAMENTOS",
     items: [
       {
-        title: "sidebar.menu.administration",
+        title: "Administração",
         icon: Building2,
         url: "/crm/admin",
         module: "admin",
         subitems: [
-          { title: "sidebar.menu.users", url: "/crm/admin/usuarios", roles: ["admin"] },
-          { title: "sidebar.menu.integrationSAP", url: "/crm/integracoes/sap", permission: "manage_sap" },
+          { title: "Usuários", url: "/crm/admin/usuarios", roles: ["admin"] },
+          { title: "Integração SAP", url: "/crm/integracoes/sap", permission: "manage_sap" },
           { title: "Precificação", url: "/crm/admin/precificacao" }, // NEW
-          { title: "sidebar.menu.processControl", url: "/crm/admin/processos", roles: ["admin"] }, // NEW
-          { title: "sidebar.menu.inputRequests", url: "/crm/admin/insumos", roles: ["admin"] }, // NEW
-          { title: "common.nfeControl", url: "/crm/admin/nfe", roles: ["admin"] },
+          { title: "Controle de Processos", url: "/crm/admin/processos", roles: ["admin"] }, // NEW
+          { title: "Solicitação de Insumos", url: "/crm/admin/insumos", roles: ["admin"] }, // NEW
+          { title: "Controle de NFE", url: "/crm/admin/nfe", roles: ["admin"] },
           { title: "Bonificações", url: "/crm/admin/bonificacoes", roles: ["admin"] },
-          { title: "sidebar.menu.contracts", url: "/crm/admin/contratos", roles: ["admin"] },
-          { title: "common.admissions", url: "/crm/admin/admissao", roles: ["admin"] },
-          { title: "common.sectorRequests", url: "/crm/admin/solicitacoes-setores", roles: ["admin"] },
+          { title: "Contratos", url: "/crm/admin/contratos", roles: ["admin"] },
+          { title: "Solicitações entre Setores", url: "/crm/admin/solicitacoes-setores", roles: ["admin"] },
           { title: "Analytics", url: "/crm/admin/analytics", roles: ["admin"] },
           { title: "Permissões", url: "/crm/admin/permissoes", roles: ["admin"] },
         ],
@@ -167,146 +166,142 @@ const menuSections: MenuSection[] = [
         url: "/crm/cientifica",
         module: "cientifica", // Assumed module name
         subitems: [
-          { title: "common.dashboard", url: "/crm/cientifica" },
+          { title: "Dashboard", url: "/crm/cientifica" },
           { title: "Apresentações", url: "/crm/cientifica/apresentacoes" },
-          { title: "sidebar.menu.processControl", url: "/crm/cientifica/processos" }, // NEW
-          { title: "sidebar.menu.inputRequests", url: "/crm/cientifica/insumos" }, // NEW
-          { title: "common.nfeControl", url: "/crm/cientifica/nfe" }, // NEW
-          { title: "common.admissions", url: "/crm/cientifica/admissao" },
-          { title: "sidebar.menu.contracts", url: "/crm/cientifica/contratos" },
+          { title: "Controle de Processos", url: "/crm/cientifica/processos" }, // NEW
+          { title: "Solicitação de Insumos", url: "/crm/cientifica/insumos" }, // NEW
+          { title: "Controle de NFE", url: "/crm/cientifica/nfe" }, // NEW
+          { title: "Contratos", url: "/crm/cientifica/contratos" },
           { title: "Bonificações", url: "/crm/cientifica/bonificacoes" }, // NEW
-          { title: "common.sectorRequests", url: "/crm/cientifica/solicitacoes-setores" },
+          { title: "Solicitações entre Setores", url: "/crm/cientifica/solicitacoes-setores" },
         ],
       },
       {
-        title: "sidebar.menu.commercial",
+        title: "Comercial",
         icon: Handshake,
         url: "/crm/comercial",
         module: "comercial",
         subitems: [
-          { title: "sidebar.menu.leads", url: "/crm/comercial" },
+          { title: "Leads", url: "/crm/comercial" },
           // Inside Sales Group
           {
-            title: "sidebar.menu.insideSales",
+            title: "Inside Sales",
             url: "/crm/comercial/inside-sales",
             subitems: [
               { title: "Dashboard", url: "/crm/comercial/inside-sales" },
               { title: "Bonificações", url: "/crm/comercial/inside-sales/bonificacoes" },
-              { title: "Contratos", url: "/crm/comercial/inside-sales/contratos" }
+              { title: "Contratos", url: "/crm/comercial/inside-sales/contratos" },
+              { title: "Solicitação de Insumos", url: "/crm/comercial/inside-sales/insumos" }
             ]
           },
           // Franchises Group
           {
-            title: "sidebar.menu.franchises",
+            title: "Franquias",
             url: "/crm/comercial/franquias",
             subitems: [
               { title: "Dashboard", url: "/crm/comercial/franquias" },
               { title: "Bonificações", url: "/crm/comercial/franquias/bonificacoes" },
-              { title: "Contratos", url: "/crm/comercial/franquias/contratos" }
+              { title: "Contratos", url: "/crm/comercial/franquias/contratos" },
+              { title: "Solicitação de Insumos", url: "/crm/comercial/franquias/insumos" }
             ]
           },
           // Regions Group (Simplified for now or nested?)
           // Let's nest them to be consistent
           {
-            title: "sidebar.menu.regions.southeast",
+            title: "Sudeste",
             url: "/crm/comercial/sudeste",
             subitems: [
               { title: "Dashboard", url: "/crm/comercial/sudeste" },
               { title: "Bonificações", url: "/crm/comercial/sudeste/bonificacoes" },
-              { title: "Contratos", url: "/crm/comercial/sudeste/contratos" }
+              { title: "Contratos", url: "/crm/comercial/sudeste/contratos" },
+              { title: "Solicitação de Insumos", url: "/crm/comercial/sudeste/insumos" }
             ]
           },
           {
-            title: "sidebar.menu.regions.south",
+            title: "Sul",
             url: "/crm/comercial/sul",
             subitems: [
               { title: "Dashboard", url: "/crm/comercial/sul" },
               { title: "Bonificações", url: "/crm/comercial/sul/bonificacoes" },
-              { title: "Contratos", url: "/crm/comercial/sul/contratos" }
+              { title: "Contratos", url: "/crm/comercial/sul/contratos" },
+              { title: "Solicitação de Insumos", url: "/crm/comercial/sul/insumos" }
             ]
           },
           {
-            title: "sidebar.menu.regions.center",
+            title: "Centro-Oeste",
             url: "/crm/comercial/centro",
             subitems: [
               { title: "Dashboard", url: "/crm/comercial/centro" },
               { title: "Bonificações", url: "/crm/comercial/centro/bonificacoes" },
-              { title: "Contratos", url: "/crm/comercial/centro/contratos" }
+              { title: "Contratos", url: "/crm/comercial/centro/contratos" },
+              { title: "Solicitação de Insumos", url: "/crm/comercial/centro/insumos" }
             ]
           },
           {
-            title: "sidebar.menu.regions.north",
+            title: "Norte/Nordeste",
             url: "/crm/comercial/norte",
             subitems: [
               { title: "Dashboard", url: "/crm/comercial/norte" },
               { title: "Bonificações", url: "/crm/comercial/norte/bonificacoes" },
-              { title: "Contratos", url: "/crm/comercial/norte/contratos" }
+              { title: "Contratos", url: "/crm/comercial/norte/contratos" },
+              { title: "Solicitação de Insumos", url: "/crm/comercial/norte/insumos" }
             ]
           },
-          { title: "common.admissions", url: "/crm/comercial/admissao" },
-          { title: "Precificação", url: "/crm/comercial/precificacao" }, // NEW
-          { title: "sidebar.menu.processControl", url: "/crm/comercial/processos" }, // NEW
-          { title: "sidebar.menu.inputRequests", url: "/crm/comercial/insumos" }, // NEW
-          { title: "common.nfeControl", url: "/crm/comercial/nfe" }, // NEW
-          { title: "sidebar.menu.contracts", url: "/crm/comercial/contratos" },
-          { title: "common.sectorRequests", url: "/crm/comercial/solicitacoes-setores" }, // NEW
+          { title: "Solicitações entre Setores", url: "/crm/comercial/solicitacoes-setores" }, // NEW
         ],
       },
       {
-        title: "sidebar.menu.purchasing", // Compras
+        title: "Compras", // Compras
         icon: ShoppingCart, // Reusing ShoppingCart or finding better? Maybe target?
         url: "/crm/compras",
         module: "compras",
         subitems: [
-          { title: "common.dashboard", url: "/crm/compras" },
+          { title: "Dashboard", url: "/crm/compras" },
           { title: "Veículos", url: "/crm/compras/veiculos" },
-          { title: "sidebar.menu.processControl", url: "/crm/compras/processos" }, // NEW
-          { title: "sidebar.menu.inputRequests", url: "/crm/compras/insumos" }, // NEW
-          { title: "common.nfeControl", url: "/crm/compras/nfe" },
-          { title: "common.admissions", url: "/crm/compras/admissao" },
-          { title: "sidebar.menu.contracts", url: "/crm/compras/contratos" },
+          { title: "Controle de Processos", url: "/crm/compras/processos" }, // NEW
+          { title: "Solicitação de Insumos", url: "/crm/compras/insumos" }, // NEW
+          { title: "Controle de NFE", url: "/crm/compras/nfe" },
+          { title: "Contratos", url: "/crm/compras/contratos" },
           { title: "Bonificações", url: "/crm/compras/bonificacoes" }, // NEW
-          { title: "common.sectorRequests", url: "/crm/compras/solicitacoes-setores" },
+          { title: "Solicitações entre Setores", url: "/crm/compras/solicitacoes-setores" },
         ]
       },
       {
-        title: "sidebar.menu.ecommerce",
+        title: "E-Commerce",
         icon: ShoppingCart,
         url: "/crm/ecommerce",
         module: "ecommerce",
         subitems: [
-          { title: "common.dashboard", url: "/crm/ecommerce" },
-          { title: "sidebar.menu.products", url: "/crm/ecommerce/produtos", permission: "ecommerce_products" },
-          { title: "sidebar.menu.orders", url: "/crm/ecommerce/pedidos", permission: "ecommerce_orders" },
+          { title: "Dashboard", url: "/crm/ecommerce" },
+          { title: "Produtos", url: "/crm/ecommerce/produtos", permission: "ecommerce_products" },
+          { title: "Pedidos", url: "/crm/ecommerce/pedidos", permission: "ecommerce_orders" },
           { title: "Categorias", url: "/crm/ecommerce/categorias", permission: "ecommerce_products" },
           { title: "Cupons", url: "/crm/ecommerce/cupons" },
           { title: "CMS", url: "/crm/ecommerce/cms" },
           { title: "Precificação", url: "/crm/ecommerce/precificacao" },
-          { title: "sidebar.menu.customers", url: "/crm/ecommerce/clientes", permission: "ecommerce_orders" },
-          { title: "sidebar.menu.processControl", url: "/crm/ecommerce/processos" }, // NEW
-          { title: "sidebar.menu.inputRequests", url: "/crm/ecommerce/insumos" }, // NEW
-          { title: "common.nfeControl", url: "/crm/ecommerce/nfe", permission: "finance_nfe" },
-          { title: "common.admissions", url: "/crm/ecommerce/admissao" },
-          { title: "sidebar.menu.contracts", url: "/crm/ecommerce/contratos" },
+          { title: "Clientes", url: "/crm/ecommerce/clientes", permission: "ecommerce_orders" },
+          { title: "Controle de Processos", url: "/crm/ecommerce/processos" }, // NEW
+          { title: "Solicitação de Insumos", url: "/crm/ecommerce/insumos" }, // NEW
+          { title: "Controle de NFE", url: "/crm/ecommerce/nfe", permission: "finance_nfe" },
+          { title: "Contratos", url: "/crm/ecommerce/contratos" },
           { title: "Bonificações", url: "/crm/ecommerce/bonificacoes" }, // NEW
-          { title: "common.sectorRequests", url: "/crm/ecommerce/solicitacoes-setores" },
+          { title: "Solicitações entre Setores", url: "/crm/ecommerce/solicitacoes-setores" },
         ],
       },
       {
-        title: "sidebar.menu.finance",
+        title: "Financeiro",
         icon: DollarSign,
         url: "/crm/financeiro",
         module: "financeiro",
         subitems: [
-          { title: "common.dashboard", url: "/crm/financeiro" },
+          { title: "Dashboard", url: "/crm/financeiro" },
           { title: "Precificação", url: "/crm/financeiro/precificacao" }, // NEW
-          { title: "sidebar.menu.processControl", url: "/crm/financeiro/processos" }, // NEW
-          { title: "sidebar.menu.inputRequests", url: "/crm/financeiro/insumos" }, // NEW
-          { title: "common.nfeControl", url: "/crm/financeiro/nfe", permission: "finance_nfe" },
-          { title: "common.admissions", url: "/crm/financeiro/admissao" },
-          { title: "sidebar.menu.contracts", url: "/crm/financeiro/contratos" },
+          { title: "Controle de Processos", url: "/crm/financeiro/processos" }, // NEW
+          { title: "Solicitação de Insumos", url: "/crm/financeiro/insumos" }, // NEW
+          { title: "Controle de NFE", url: "/crm/financeiro/nfe", permission: "finance_nfe" },
+          { title: "Contratos", url: "/crm/financeiro/contratos" },
           { title: "Bonificações", url: "/crm/financeiro/bonificacoes", permission: "finance_nfe" }, // NEW (Assuming perm)
-          { title: "common.sectorRequests", url: "/crm/financeiro/solicitacoes-setores" },
+          { title: "Solicitações entre Setores", url: "/crm/financeiro/solicitacoes-setores" },
         ],
       },
       {
@@ -317,31 +312,29 @@ const menuSections: MenuSection[] = [
         subitems: [
           { title: "Dashboard", url: "/crm/juridico" },
           { title: "Modelos de Contrato", url: "/crm/juridico/modelos", permission: "legal_compliance" },
-          { title: "sidebar.menu.processControl", url: "/crm/juridico/processos" }, // NEW
-          { title: "sidebar.menu.inputRequests", url: "/crm/juridico/insumos" }, // NEW
-          { title: "common.nfeControl", url: "/crm/juridico/nfe" }, // NEW
+          { title: "Controle de Processos", url: "/crm/juridico/processos" }, // NEW
+          { title: "Solicitação de Insumos", url: "/crm/juridico/insumos" }, // NEW
+          { title: "Controle de NFE", url: "/crm/juridico/nfe" }, // NEW
           { title: "Contratos", url: "/crm/juridico/contratos", permission: "legal_contracts" },
-          { title: "common.admissions", url: "/crm/juridico/admissao" },
           { title: "Bonificações", url: "/crm/juridico/bonificacoes" }, // NEW
-          { title: "common.sectorRequests", url: "/crm/juridico/solicitacoes-setores" },
+          { title: "Solicitações entre Setores", url: "/crm/juridico/solicitacoes-setores" },
         ]
       },
       {
-        title: "sidebar.menu.logistics",
+        title: "Logística",
         icon: Truck,
         url: "/crm/logistica",
         module: "logistica",
         subitems: [
-          { title: "common.dashboard", url: "/crm/logistica" },
-          { title: "sidebar.menu.inputsOrders", url: "/crm/logistica/pedidos", permission: "logistics_inventory" },
-          { title: "sidebar.menu.stock", url: "/crm/logistica/estoque", permission: "logistics_inventory" },
-          { title: "sidebar.menu.processControl", url: "/crm/logistica/processos" }, // NEW
-          { title: "sidebar.menu.inputRequests", url: "/crm/logistica/insumos" }, // NEW
-          { title: "common.nfeControl", url: "/crm/logistica/nfe" }, // NEW
-          { title: "common.admissions", url: "/crm/logistica/admissao" },
-          { title: "sidebar.menu.contracts", url: "/crm/logistica/contratos" },
+          { title: "Dashboard", url: "/crm/logistica" },
+          { title: "Pedidos de Insumos", url: "/crm/logistica/pedidos", permission: "logistics_inventory" },
+          { title: "Estoque", url: "/crm/logistica/estoque", permission: "logistics_inventory" },
+          { title: "Controle de Processos", url: "/crm/logistica/processos" }, // NEW
+          { title: "Solicitação de Insumos", url: "/crm/logistica/insumos" }, // NEW
+          { title: "Controle de NFE", url: "/crm/logistica/nfe" }, // NEW
+          { title: "Contratos", url: "/crm/logistica/contratos" },
           { title: "Bonificações", url: "/crm/logistica/bonificacoes" }, // NEW
-          { title: "common.sectorRequests", url: "/crm/logistica/solicitacoes-setores" },
+          { title: "Solicitações entre Setores", url: "/crm/logistica/solicitacoes-setores" },
         ],
       },
       {
@@ -350,68 +343,62 @@ const menuSections: MenuSection[] = [
         url: "/crm/manutencao",
         module: "manutencao",
         subitems: [
-          { title: "common.dashboard", url: "/crm/manutencao" },
-          { title: "sidebar.menu.processControl", url: "/crm/manutencao/processos" }, // NEW
-          { title: "sidebar.menu.inputRequests", url: "/crm/manutencao/insumos" }, // NEW
-          { title: "common.nfeControl", url: "/crm/manutencao/nfe" },
-          { title: "common.admissions", url: "/crm/manutencao/admissao" },
-          { title: "sidebar.menu.contracts", url: "/crm/manutencao/contratos" },
+          { title: "Dashboard", url: "/crm/manutencao" },
+          { title: "Controle de Processos", url: "/crm/manutencao/processos" }, // NEW
+          { title: "Solicitação de Insumos", url: "/crm/manutencao/insumos" }, // NEW
+          { title: "Controle de NFE", url: "/crm/manutencao/nfe" },
+          { title: "Contratos", url: "/crm/manutencao/contratos" },
           { title: "Bonificações", url: "/crm/manutencao/bonificacoes" }, // NEW
-          { title: "common.sectorRequests", url: "/crm/manutencao/solicitacoes-setores" },
+          { title: "Solicitações entre Setores", url: "/crm/manutencao/solicitacoes-setores" },
         ]
       },
       {
-        title: "sidebar.menu.marketing",
+        title: "Marketing",
         icon: Megaphone,
         url: "/crm/marketing",
         module: "marketing",
         subitems: [
-          { title: "common.dashboard", url: "/crm/marketing" },
-          { title: "sidebar.menu.campaigns", url: "/crm/marketing/campanhas", permission: "marketing_campaigns" },
-          { title: "Solicitações de Eventos", url: "/crm/marketing/solicitacoes", permission: "marketing_requests" }, // Renamed to clarify
+          { title: "Dashboard", url: "/crm/marketing" },
+          { title: "Campanhas", url: "/crm/marketing/campanhas", permission: "marketing_campaigns" },
           { title: "Gerenciar Solicitações", url: "/crm/marketing/gerenciar", permission: "marketing_requests" },
-          { title: "sidebar.menu.processControl", url: "/crm/marketing/processos" }, // NEW
-          { title: "sidebar.menu.inputRequests", url: "/crm/marketing/insumos" }, // NEW
-          { title: "common.nfeControl", url: "/crm/marketing/nfe" },
-          { title: "common.admissions", url: "/crm/marketing/admissao" },
+          { title: "Controle de Processos", url: "/crm/marketing/processos" }, // NEW
+          { title: "Controle de NFE", url: "/crm/marketing/nfe" },
           { title: "Bonificações", url: "/crm/marketing/bonificacoes" }, // Moved
-          { title: "sidebar.menu.contracts", url: "/crm/marketing/contratos" },
-          { title: "common.sectorRequests", url: "/crm/marketing/solicitacoes-setores" },
+          { title: "Contratos", url: "/crm/marketing/contratos" },
+          { title: "Solicitações entre Setores", url: "/crm/marketing/solicitacoes-setores" },
         ],
       },
       {
-        title: "sidebar.menu.humanResources",
+        title: "Recursos Humanos",
         icon: Users,
         url: "/crm/rh",
         module: "rh",
         subitems: [
-          { title: "common.dashboard", url: "/crm/rh" },
-          { title: "common.admissions", url: "/crm/rh/operacoes", permission: "hr_employees" },
-          { title: "sidebar.menu.processControl", url: "/crm/rh/processos" }, // NEW
-          { title: "sidebar.menu.inputRequests", url: "/crm/rh/insumos" }, // NEW
-          { title: "common.nfeControl", url: "/crm/rh/nfe" },
+          { title: "Dashboard", url: "/crm/rh" },
+          { title: "Controle de Processos", url: "/crm/rh/processos" }, // NEW
+          { title: "Solicitação de Insumos", url: "/crm/rh/insumos" }, // NEW
+          { title: "Controle de NFE", url: "/crm/rh/nfe" },
           { title: "Bonificações", url: "/crm/rh/bonificacoes" },
-          { title: "sidebar.menu.contracts", url: "/crm/rh/contratos" },
-          { title: "common.sectorRequests", url: "/crm/rh/solicitacoes-setores" },
+          { title: "Contratos", url: "/crm/rh/contratos" },
+          { title: "Solicitações entre Setores", url: "/crm/rh/solicitacoes-setores" },
         ],
       },
       {
-        title: "sidebar.menu.techTI",
+        title: "Tecnologia & TI",
         icon: Headphones,
         url: "/crm/tech",
         module: "tech",
         subitems: [
-          { title: "common.dashboard", url: "/crm/tech" },
-          { title: "sidebar.menu.tickets", url: "/crm/tech/tickets", permission: "tech_tickets" },
+          { title: "Dashboard", url: "/crm/tech" },
+          { title: "Chamados", url: "/crm/tech/tickets", permission: "tech_tickets" },
           { title: "Base de Conhecimento", url: "/crm/tech/kb", permission: "tech_kb" },
-          { title: "sidebar.menu.processControl", url: "/crm/tech/processos" }, // NEW
-          { title: "sidebar.menu.inputRequests", url: "/crm/tech/insumos" }, // NEW
-          { title: "common.nfeControl", url: "/crm/tech/nfe" },
-          { title: "common.admissions", url: "/crm/tech/admissao" },
-          { title: "sidebar.menu.inventory", url: "/crm/tech/inventario", permission: "tech_assets" },
-          { title: "sidebar.menu.contracts", url: "/crm/tech/contratos" },
+          { title: "Controle de Processos", url: "/crm/tech/processos" }, // NEW
+          { title: "Solicitação de Insumos", url: "/crm/tech/insumos" }, // NEW
+          { title: "Controle de NFE", url: "/crm/tech/nfe" },
+          { title: "Inventário de Ativos", url: "/crm/tech/inventario", permission: "tech_assets" },
+          { title: "Contratos", url: "/crm/tech/contratos" },
           { title: "Bonificações", url: "/crm/tech/bonificacoes" }, // NEW
-          { title: "common.sectorRequests", url: "/crm/tech/solicitacoes-setores" },
+          { title: "Solicitações entre Setores", url: "/crm/tech/solicitacoes-setores" },
         ],
       },
     ],
@@ -498,7 +485,7 @@ export function CRMSidebar() {
               <span className="font-serif text-lg font-semibold text-sidebar-foreground">
                 MedBeauty
               </span>
-              <span className="text-xs text-muted-foreground">{t('sidebar.footer.corporateCRM')}</span>
+              <span className="text-xs text-muted-foreground">MedBeauty CRM Corporativo</span>
             </div>
           )}
         </NavLink>
@@ -610,7 +597,7 @@ export function CRMSidebar() {
               className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               <ShoppingCart className="h-4 w-4" />
-              {t('sidebar.footer.goToStore')}
+              Ir para a Loja
             </NavLink>
           </div>
         )}

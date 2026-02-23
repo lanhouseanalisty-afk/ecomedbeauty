@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
+import { UserCreationModal } from "./UserCreationModal";
 
 interface UserProfile {
   id: string;
@@ -140,8 +141,8 @@ export function AdminUsers() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="flex items-center gap-4 mb-6">
-          <div className="relative flex-1">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-6">
+          <div className="relative flex-1 w-full">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="Buscar por nome ou email..."
@@ -150,6 +151,7 @@ export function AdminUsers() {
               className="pl-9"
             />
           </div>
+          <UserCreationModal onUserCreated={() => fetchUsers()} />
         </div>
 
         {filteredUsers.length === 0 ? (

@@ -16,6 +16,7 @@ interface AdmissionNotificationRequest {
   baseUrl: string;
   managerName?: string;
   position?: string;
+  checklistId?: string;
 }
 
 const stepLabels: Record<string, string> = {
@@ -48,22 +49,23 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { 
-      email, 
-      employeeName, 
-      department, 
-      targetStep, 
-      linkToken, 
+    const {
+      email,
+      employeeName,
+      department,
+      targetStep,
+      linkToken,
       baseUrl,
       managerName,
-      position 
+      position,
+      checklistId
     }: AdmissionNotificationRequest = await req.json();
 
     console.log("Processing admission notification for:", email, "Step:", targetStep);
 
     const stepLabel = stepLabels[targetStep] || targetStep;
     const stepDescription = stepDescriptions[targetStep] || "preencher sua parte do checklist";
-    
+
     // Build the admission link based on the step
     let admissionLink = baseUrl;
     if (targetStep === 'gestor') {
@@ -73,7 +75,11 @@ const handler = async (req: Request): Promise<Response> => {
     } else if (targetStep === 'rh_review') {
       admissionLink = `${baseUrl}/crm/rh/admissao?token=${linkToken}`;
     } else if (targetStep === 'colaborador') {
-      admissionLink = `${baseUrl}/crm/admissao/colaborador?token=${linkToken}`;
+      if (checklistId) {
+        admissionLink = `${baseUrl}/crm/checklist/${checklistId}`;
+      } else {
+        admissionLink = `${baseUrl}/crm/admissao/colaborador?token=${linkToken}`;
+      }
     }
 
     const emailHtml = `

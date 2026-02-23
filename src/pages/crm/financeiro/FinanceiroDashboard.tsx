@@ -15,9 +15,9 @@ import {
   CheckCircle,
   Clock,
   Download,
-  Download,
   FileText,
-  ShieldAlert
+  ShieldAlert,
+  UserPlus
 } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -200,9 +200,11 @@ export default function FinanceiroDashboard() {
         <div className="flex gap-2 items-center">
           <Badge variant="outline" className="h-9 px-4 text-sm hidden md:flex">Gestor: Lucas Voltarelli</Badge>
 
-          <Button onClick={() => window.location.href = "/crm/intranet/contratos/novo?sector=financeiro"} variant="outline" className="gap-2">
-            <FileText className="h-4 w-4" />
-            Solicitar Contrato
+
+
+          <Button onClick={() => window.location.href = "/crm/financeiro/operacoes"} variant="outline" className="gap-2 border-orange-200 hover:border-orange-300 bg-orange-50/30 text-orange-700">
+            <UserPlus className="h-4 w-4" />
+            Admissão & Demissão
           </Button>
 
           <DataExport data={filteredInvoices} filename="faturas" columns={exportColumns} />
@@ -243,7 +245,7 @@ export default function FinanceiroDashboard() {
                     <div className="grid grid-cols-2 gap-4">
                       <div className="grid gap-2">
                         <Label>Tipo</Label>
-                        <VillageSelect
+                        <Select
                           value={newInvoice.type}
                           onValueChange={(value) => setNewInvoice({ ...newInvoice, type: value })}
                         >
@@ -254,7 +256,7 @@ export default function FinanceiroDashboard() {
                             <SelectItem value="receivable">Receita</SelectItem>
                             <SelectItem value="payable">Despesa</SelectItem>
                           </SelectContent>
-                        </VillageSelect>
+                        </Select>
                       </div>
                       <div className="grid gap-2">
                         <Label htmlFor="total">Valor (R$)</Label>
@@ -381,6 +383,7 @@ export default function FinanceiroDashboard() {
               <TabsTrigger value="all">Todas ({invoices?.length || 0})</TabsTrigger>
               <TabsTrigger value="receivable">A Receber ({invoices?.filter(i => i.type === 'receivable').length || 0})</TabsTrigger>
               <TabsTrigger value="payable">A Pagar ({invoices?.filter(i => i.type === 'payable').length || 0})</TabsTrigger>
+              <TabsTrigger value="contracts">Contratos</TabsTrigger>
             </TabsList>
 
             <TabsContent value={activeTab}>
@@ -454,6 +457,33 @@ export default function FinanceiroDashboard() {
                   </TableBody>
                 </Table>
               )}
+            </TabsContent>
+
+            <TabsContent value="contracts">
+              <Card className="border-dashed border-2 bg-muted/10">
+                <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+                  <FileText className="h-12 w-12 text-muted-foreground mb-4 opacity-20" />
+                  <h3 className="text-lg font-semibold">Solicitações de Contrato</h3>
+                  <p className="text-sm text-muted-foreground max-w-sm mb-6">
+                    Solicite novos contratos ou visualize os contratos vigentes do departamento financeiro.
+                  </p>
+                  <div className="flex gap-4">
+                    <Button
+                      onClick={() => window.location.href = "/crm/juridico/contratos/novo?sector=financeiro"}
+                      className="gap-2"
+                    >
+                      <Plus className="h-4 w-4" />
+                      Solicitar Novo Contrato
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => window.location.href = "/crm/financeiro/contratos"}
+                    >
+                      Ver Todos os Contratos
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
             </TabsContent>
           </Tabs>
         </CardContent>

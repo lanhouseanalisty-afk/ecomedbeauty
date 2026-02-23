@@ -16,7 +16,7 @@ let sessionId: string | null = null;
 // Login to SAP B1 Service Layer
 async function loginToSAP(): Promise<string> {
   console.log("Logging in to SAP B1 Service Layer...");
-  
+
   const loginUrl = `${SAP_URL}/b1s/v1/Login`;
   const loginBody = {
     CompanyDB: SAP_COMPANY,
@@ -40,7 +40,7 @@ async function loginToSAP(): Promise<string> {
 
   const data = await response.json();
   console.log("SAP Login successful");
-  
+
   const setCookie = response.headers.get("set-cookie");
   if (setCookie) {
     const match = setCookie.match(/B1SESSION=([^;]+)/);
@@ -49,7 +49,7 @@ async function loginToSAP(): Promise<string> {
       return sessionId;
     }
   }
-  
+
   if (data.SessionId) {
     sessionId = data.SessionId;
     return data.SessionId;
@@ -157,7 +157,7 @@ async function createSalesOrder(params: CreateOrderParams): Promise<any> {
 
   const result = await response.json();
   console.log("Order created successfully. DocNum:", result.DocNum, "DocEntry:", result.DocEntry);
-  
+
   return {
     success: true,
     docNum: result.DocNum,
@@ -194,7 +194,7 @@ async function getOrderStatus(docNum: number): Promise<any> {
   }
 
   const result = await response.json();
-  
+
   if (!result.value || result.value.length === 0) {
     throw new Error(`Order ${docNum} not found`);
   }
@@ -211,54 +211,43 @@ async function getOrderStatus(docNum: number): Promise<any> {
   };
 }
 
-// Validate stock for items before creating order
+// Validate stock for items before creating order (Consolidated OData call)
 async function validateStock(items: { itemCode: string; quantity: number }[]): Promise<{
   valid: boolean;
   items: { itemCode: string; requested: number; available: number; valid: boolean }[];
 }> {
   await ensureSession();
 
-  const results = await Promise.all(
-    items.map(async (item) => {
-      try {
-        const url = `${SAP_URL}/b1s/v1/Items('${encodeURIComponent(item.itemCode)}')?$select=ItemCode,ItemName,QuantityOnStock`;
-        const response = await fetch(url, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Cookie: `B1SESSION=${sessionId}`,
-          },
-        });
+  const itemCodes = items.map(i => `'${encodeURIComponent(i.itemCode)}'`).join(',');
+  const url = `${SAP_URL}/b1s/v1/Items?$filter=ItemCode in (${itemCodes})&$select=ItemCode,QuantityOnStock`;
 
-        if (!response.ok) {
-          return {
-            itemCode: item.itemCode,
-            requested: item.quantity,
-            available: 0,
-            valid: false,
-          };
-        }
+  console.log(`Validating stock for ${items.length} items in a single call...`);
 
-        const sapItem = await response.json();
-        const available = sapItem.QuantityOnStock || 0;
-        
-        return {
-          itemCode: item.itemCode,
-          requested: item.quantity,
-          available,
-          valid: available >= item.quantity,
-        };
-      } catch (error) {
-        console.error(`Error validating stock for ${item.itemCode}:`, error);
-        return {
-          itemCode: item.itemCode,
-          requested: item.quantity,
-          available: 0,
-          valid: false,
-        };
-      }
-    })
-  );
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Cookie: `B1SESSION=${sessionId}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to validate stock: ${response.status}`);
+  }
+
+  const data = await response.json();
+  const sapItems = data.value || [];
+
+  const results = items.map(item => {
+    const sapItem = sapItems.find((si: any) => si.ItemCode === item.itemCode);
+    const available = sapItem?.QuantityOnStock || 0;
+    return {
+      itemCode: item.itemCode,
+      requested: item.quantity,
+      available,
+      valid: available >= item.quantity,
+    };
+  });
 
   return {
     valid: results.every((r) => r.valid),
@@ -272,9 +261,7 @@ async function findOrCreateCustomer(email: string, name?: string): Promise<strin
 
   // Try to find existing customer by email
   const searchUrl = `${SAP_URL}/b1s/v1/BusinessPartners?$filter=contains(EmailAddress,'${email}') and CardType eq 'cCustomer'&$select=CardCode,CardName,EmailAddress`;
-  
-  console.log(`Searching for customer with email: ${email}`);
-  
+
   const searchResponse = await fetch(searchUrl, {
     method: "GET",
     headers: {
@@ -286,23 +273,22 @@ async function findOrCreateCustomer(email: string, name?: string): Promise<strin
   if (searchResponse.ok) {
     const searchResult = await searchResponse.json();
     if (searchResult.value && searchResult.value.length > 0) {
-      console.log(`Found existing customer: ${searchResult.value[0].CardCode}`);
       return searchResult.value[0].CardCode;
     }
   }
 
   // Customer not found, create new one
   console.log(`Customer not found, creating new customer for: ${email}`);
-  
-  const newCardCode = `C${Date.now()}`.substring(0, 15); // Generate unique code
+
+  const newCardCode = `C${Date.now()}`.substring(0, 15);
   const createUrl = `${SAP_URL}/b1s/v1/BusinessPartners`;
-  
+
   const customerPayload = {
     CardCode: newCardCode,
     CardName: name || email.split("@")[0],
     CardType: "cCustomer",
     EmailAddress: email,
-    Series: 1, // Default series for customers
+    Series: 1,
   };
 
   const createResponse = await fetch(createUrl, {
@@ -316,13 +302,10 @@ async function findOrCreateCustomer(email: string, name?: string): Promise<strin
 
   if (!createResponse.ok) {
     const errorText = await createResponse.text();
-    console.error("Failed to create customer:", errorText);
-    // Use a default customer if creation fails
-    return "C0001"; // Fallback to default customer
+    throw new Error(`Failed to create customer in SAP: ${errorText}`);
   }
 
   const newCustomer = await createResponse.json();
-  console.log(`Created new customer: ${newCustomer.CardCode}`);
   return newCustomer.CardCode;
 }
 

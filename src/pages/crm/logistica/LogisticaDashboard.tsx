@@ -13,7 +13,11 @@ import {
   Eye,
   RefreshCw,
   FileText
+  , UserPlus
+  , Send
 } from "lucide-react";
+import { useMarketingRequest } from "@/hooks/useMarketingRequest";
+import { useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -47,6 +51,19 @@ export default function LogisticaDashboard() {
   const { shipments, isLoading, updateShipment } = useShipments();
   const { data: stats } = useLogisticsStats();
   const { data: realDeliveryData } = useDeliveryTrend();
+  const { getAllRequests } = useMarketingRequest();
+  const [supplyRequestsCount, setSupplyRequestsCount] = useState(0);
+
+  useEffect(() => {
+    const fetchSupplyRequests = async () => {
+      const result = await getAllRequests();
+      if (result.success && result.data) {
+        // Count approved requests that need logistics processing
+        setSupplyRequestsCount(result.data.filter(r => r.status === 'approved').length);
+      }
+    };
+    fetchSupplyRequests();
+  }, []);
 
   // Aggregate carrier data from shipments
   const carrierDistribution = shipments?.reduce((acc: any[], ship: any) => {
@@ -108,9 +125,9 @@ export default function LogisticaDashboard() {
         </div>
         <div className="flex gap-2 items-center">
           <Badge variant="outline" className="h-9 px-4 text-sm hidden md:flex">Gestora: Luciana Borri</Badge>
-          <Button onClick={() => window.location.href = "/crm/intranet/contratos/novo?sector=logistica"} variant="outline" className="gap-2">
-            <FileText className="h-4 w-4" />
-            Solicitar Contrato
+          <Button onClick={() => window.location.href = "/crm/logistica/operacoes"} variant="outline" className="gap-2 border-orange-200 hover:border-orange-300 bg-orange-50/30 text-orange-700">
+            <UserPlus className="h-4 w-4" />
+            Admissão & Demissão
           </Button>
           <DataExport
             data={filteredShipments}
@@ -128,22 +145,81 @@ export default function LogisticaDashboard() {
         </div>
       </div>
 
-      <QuickStats stats={quickStats} />
+      <Tabs defaultValue="overview" className="w-full">
+        <TabsList className="mb-4">
+          <TabsTrigger value="overview">Visão Geral</TabsTrigger>
+          <TabsTrigger value="supply-requests">Insumos {supplyRequestsCount > 0 && <Badge variant="destructive" className="ml-2 h-5 min-w-5 flex items-center justify-center rounded-full p-0 text-[10px]">{supplyRequestsCount}</Badge>}</TabsTrigger>
+          <TabsTrigger value="contracts">Contratos</TabsTrigger>
+        </TabsList>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <KPIChart
-          title="Entregas por Dia"
-          description="Volume de entregas na última semana"
-          data={realDeliveryData || []}
-          type="bar"
-        />
-        <KPIChart
-          title="Distribuição por Transportadora"
-          description="Percentual de envios por transportadora"
-          data={carrierDistribution}
-          type="pie"
-        />
-      </div>
+        <TabsContent value="overview" className="space-y-6">
+          <QuickStats stats={quickStats} />
+
+          <div className="grid gap-6 lg:grid-cols-2">
+            <KPIChart
+              title="Entregas por Dia"
+              description="Volume de entregas na última semana"
+              data={realDeliveryData || []}
+              type="bar"
+            />
+            <KPIChart
+              title="Distribuição por Transportadora"
+              description="Percentual de envios por transportadora"
+              data={carrierDistribution}
+              type="pie"
+            />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="supply-requests" className="space-y-6">
+          <Card className="border-blue-200 bg-blue-50/30">
+            <CardHeader className="flex flex-row items-center gap-4">
+              <div className="bg-blue-100 p-2 rounded-lg">
+                <Package className="h-6 w-6 text-blue-600" />
+              </div>
+              <div className="flex-1">
+                <CardTitle className="text-xl">Solicitações de Insumos Aprovadas</CardTitle>
+                <CardDescription>
+                  Existem {supplyRequestsCount} solicitações aprovadas pelo Marketing aguardando envio.
+                </CardDescription>
+              </div>
+              <Button onClick={() => window.location.href = "/crm/logistica/pedidos"} className="bg-blue-600 hover:bg-blue-700">
+                Ver Pedidos de Insumos
+              </Button>
+            </CardHeader>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="contracts">
+          <Card>
+            <CardHeader>
+              <CardTitle>Gestão de Contratos</CardTitle>
+              <CardDescription>Gerencie as solicitações e contratos do departamento de Logística</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                <Button
+                  onClick={() => window.location.href = "/crm/juridico/contratos/novo?sector=logistica"}
+                  className="h-24 flex flex-col gap-2 bg-primary/5 hover:bg-primary/10 border-primary/20 text-primary"
+                  variant="outline"
+                >
+                  <FileText className="h-4 w-4" />
+                  <span>Solicitar Novo Contrato</span>
+                </Button>
+                <Button
+                  onClick={() => window.location.href = "/crm/logistica/contratos"}
+                  className="h-24 flex flex-col gap-2"
+                  variant="outline"
+                >
+                  <Search className="h-4 w-4" />
+                  <span>Ver Todos os Contratos do Setor</span>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
 
       <Card>
         <CardHeader>

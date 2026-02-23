@@ -156,7 +156,7 @@ export default function SectorContractDashboard({ sector }: SectorContractDashbo
 
             let query = supabase
                 .from('legal_contracts')
-                .select('*');
+                .select('*, departments(name)');
 
             // Only filter by department_id if it's likely to exist or we have sector specificity
             if (departmentsToFetch && departmentsToFetch.length > 0) {
@@ -173,7 +173,7 @@ export default function SectorContractDashboard({ sector }: SectorContractDashbo
                     console.warn("department_id column missing. Sector filtering disabled.");
                     const { data: fallbackData, error: fallbackError } = await supabase
                         .from('legal_contracts')
-                        .select('*')
+                        .select('*, departments(name)')
                         .order('created_at', { ascending: false });
                     if (fallbackError) throw fallbackError;
                     return fallbackData;
@@ -209,7 +209,7 @@ export default function SectorContractDashboard({ sector }: SectorContractDashbo
                     <h1 className="text-3xl font-bold font-serif text-gray-900">Meus Contratos</h1>
                     <p className="text-muted-foreground">Acompanhe as solicitações de contrato do seu setor.</p>
                 </div>
-                <Button onClick={() => navigate(`/crm/intranet/contratos/novo${sector ? `?sector=${sector}` : ''}`)} className="gap-2 rounded-xl">
+                <Button onClick={() => navigate(`/crm/juridico/contratos/novo${sector ? `?sector=${sector}` : ''}`)} className="gap-2 rounded-xl">
                     <Plus className="h-4 w-4" />
                     Solicitar Contrato
                 </Button>

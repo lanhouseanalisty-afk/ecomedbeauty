@@ -9,7 +9,9 @@ import {
   MoreHorizontal,
   Loader2,
   Layout,
-  FileText
+  FileText,
+  UserPlus,
+  Search
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -144,11 +146,9 @@ export default function EcommerceDashboard() {
           <p className="text-muted-foreground">Gestão de produtos, pedidos e loja virtual</p>
         </div>
         <div className="flex gap-2 items-center">
-          <Button asChild variant="outline" className="gap-2">
-            <Link to="/crm/intranet/contratos/novo?sector=ecommerce">
-              <FileText className="h-4 w-4" />
-              Solicitar Contrato
-            </Link>
+          <Button onClick={() => window.location.href = "/crm/ecommerce/operacoes"} variant="outline" className="gap-2 border-orange-200 hover:border-orange-300 bg-orange-50/30 text-orange-700">
+            <UserPlus className="h-4 w-4" />
+            Admissão & Demissão
           </Button>
         </div>
       </div>
@@ -157,7 +157,38 @@ export default function EcommerceDashboard() {
         <TabsList>
           <TabsTrigger value="overview">Visão Geral</TabsTrigger>
           <TabsTrigger value="editor">Editor da Loja</TabsTrigger>
+          <TabsTrigger value="contracts">Contratos</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="contracts" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Gestão de Contratos</CardTitle>
+              <CardDescription>Gerencie as solicitações e contratos do departamento de E-commerce</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                <Button
+                  onClick={() => window.location.href = "/crm/juridico/contratos/novo?sector=ecommerce"}
+                  className="h-24 flex flex-col gap-2 bg-primary/5 hover:bg-primary/10 border-primary/20 text-primary"
+                  variant="outline"
+                >
+                  <FileText className="h-4 w-4" />
+                  <span>Solicitar Novo Contrato</span>
+                </Button>
+                <Button
+                  onClick={() => window.location.href = "/crm/ecommerce/contratos"}
+                  className="h-24 flex flex-col gap-2"
+                  variant="outline"
+                >
+                  <Search className="h-4 w-4" />
+                  <span>Ver Todos os Contratos do Setor</span>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
 
         <TabsContent value="overview" className="space-y-6">
           <div className="grid gap-4 md:grid-cols-4">

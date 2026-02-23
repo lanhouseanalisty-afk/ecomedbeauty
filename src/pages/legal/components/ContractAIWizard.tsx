@@ -58,12 +58,16 @@ export function ContractAIWizard({ open, onOpenChange, onGenerate, initialData }
         }
     }, [templates]);
 
-    // Initialize content when template changes
+    // Initialize content and reset states when template changes
     useEffect(() => {
         if (!selectedTemplateId || !templates) return;
         const template = templates.find(t => t.id === selectedTemplateId);
         if (template) {
             setContent(template.content);
+            // Reset form states to allow re-parsing of new variables
+            setFormFields([]);
+            setFormValues({});
+            setIsFreeEditMode(false);
         }
     }, [selectedTemplateId, templates]);
 
@@ -89,7 +93,7 @@ export function ContractAIWizard({ open, onOpenChange, onGenerate, initialData }
                     // CONTRATANTE (Skinstore)
                     if (lowerV.includes('contratante')) {
                         if (lowerV.includes('nome') || v === 'CONTRATANTE') newValues[v] = "SKINSTORE S.A.";
-                        else if (lowerV.includes('cnpj') || lowerV.includes('doc') || lowerV.includes('cpf')) newValues[v] = "49.333.327/0001-90";
+                        else if (lowerV.includes('cnpj') || lowerV.includes('doc') || lowerV.includes('cpf')) newValues[v] = "12.979.552/0001-72";
                         else if (lowerV.includes('endereco') || lowerV.includes('end')) newValues[v] = "Rua Gomes de Carvalho, 1356, Vila Olímpia, São Paulo/SP";
                         else if (lowerV.includes('represent')) newValues[v] = "Representante Legal";
                     }

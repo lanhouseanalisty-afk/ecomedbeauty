@@ -24,6 +24,20 @@ export function useEmployeeProfile(employeeId: string) {
 
             const { data, error } = await query.single();
             if (error) throw error;
+
+            // Buscar avatar do perfil se houver user_id vinculado
+            if (data.user_id) {
+                const { data: profileData } = await supabase
+                    .from('profiles')
+                    .select('avatar_url')
+                    .eq('id', data.user_id)
+                    .maybeSingle();
+
+                if (profileData) {
+                    (data as any).avatar_url = profileData.avatar_url;
+                }
+            }
+
             return data;
         },
         enabled: true
@@ -52,21 +66,54 @@ export function useEmployeeProfile(employeeId: string) {
         queryFn: async () => {
             if (!actualEmployeeId) return [];
             console.log("🔍 Buscando posts para o ID:", actualEmployeeId);
+            const sevenDaysAgo = new Date();
+            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
             const { data, error } = await supabase
                 .from('employee_posts')
-                .select('*, author:profiles(full_name, avatar_url)')
+                .select(`
+                    *,
+                    author:profiles(full_name, avatar_url),
+                    likes:employee_post_likes(user_id),
+                    comments:employee_post_comments(*, author:profiles(full_name, avatar_url))
+                `)
                 .eq('employee_id', actualEmployeeId)
+                .gte('created_at', sevenDaysAgo.toISOString())
                 .order('created_at', { ascending: false });
 
             if (error) {
                 console.error("❌ Erro ao buscar posts:", error);
                 return [];
             }
+
+            // Enrich likes with employee names via second pass
+            if (data && data.length > 0) {
+                const allUserIds = [...new Set(data.flatMap((p: any) => (p.likes || []).map((l: any) => l.user_id)))].filter(Boolean);
+                if (allUserIds.length > 0) {
+                    const { data: employees } = await supabase
+                        .from('employees')
+                        .select('user_id, full_name')
+                        .in('user_id', allUserIds);
+
+                    const nameMap: Record<string, string> = {};
+                    (employees || []).forEach((e: any) => { if (e.user_id) nameMap[e.user_id] = e.full_name; });
+
+                    return data.map((post: any) => ({
+                        ...post,
+                        likes: (post.likes || []).map((l: any) => ({
+                            ...l,
+                            full_name: nameMap[l.user_id] || null
+                        }))
+                    }));
+                }
+            }
+
             console.log("✅ Posts retornados:", data?.length);
             return data || [];
         },
         enabled: !!actualEmployeeId
     });
+
 
     const { data: leaves, isLoading: isLoadingLeaves } = useQuery({
         queryKey: ['employee-leaves', actualEmployeeId],
@@ -109,7 +156,7 @@ export function useEmployeeProfile(employeeId: string) {
     });
 
     const createPost = useMutation({
-        mutationFn: async (content: string) => {
+        mutationFn: async ({ content, imageUrl }: { content: string, imageUrl?: string }) => {
             const { data: user } = await supabase.auth.getUser();
             if (!user.user) throw new Error("Not authenticated");
             if (!actualEmployeeId) throw new Error("Employee not found");
@@ -121,7 +168,8 @@ export function useEmployeeProfile(employeeId: string) {
                 .insert({
                     employee_id: actualEmployeeId,
                     author_id: user.user.id,
-                    content
+                    content,
+                    image_url: imageUrl
                 });
 
             if (error) {
@@ -131,8 +179,162 @@ export function useEmployeeProfile(employeeId: string) {
         },
         onSuccess: () => {
             console.log("Post published! Refreshing...");
+            // Invalidate and refetch immediately
             queryClient.invalidateQueries({ queryKey: ['employee-posts', actualEmployeeId] });
-            queryClient.refetchQueries({ queryKey: ['employee-posts', actualEmployeeId] });
+        }
+    });
+
+    const deletePost = useMutation({
+        mutationFn: async (postId: string) => {
+            console.log("🔥 Tentando excluir post:", postId);
+            const { error, count } = await supabase
+                .from('employee_posts')
+                .delete()
+                .eq('id', postId);
+
+            if (error) {
+                console.error("❌ Erro técnico no Supabase ao excluir:", error);
+                throw error;
+            }
+
+            console.log("✅ Resposta do Supabase para exclusão. Linhas afetadas:", count);
+            // Se count for 0 e não houver erro, é 100% certeza que o RLS bloqueou.
+        },
+        onMutate: async (postId) => {
+            await queryClient.cancelQueries({ queryKey: ['employee-posts', actualEmployeeId] });
+            const previousPosts = queryClient.getQueryData(['employee-posts', actualEmployeeId]);
+
+            queryClient.setQueryData(['employee-posts', actualEmployeeId], (old: any) =>
+                old?.filter((post: any) => post.id !== postId)
+            );
+
+            return { previousPosts };
+        },
+        onError: (err, postId, context) => {
+            if (context?.previousPosts) {
+                queryClient.setQueryData(['employee-posts', actualEmployeeId], context.previousPosts);
+            }
+            toast.error("Erro ao excluir postagem");
+        },
+        onSuccess: () => {
+            toast.success("Postagem excluída!");
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: ['employee-posts', actualEmployeeId] });
+        }
+    });
+
+    const toggleLike = useMutation({
+        mutationFn: async (postId: string) => {
+            const { data: user } = await supabase.auth.getUser();
+            if (!user.user) throw new Error("Not authenticated");
+
+            const { data: existingLike } = await supabase
+                .from('employee_post_likes')
+                .select('*')
+                .eq('post_id', postId)
+                .eq('user_id', user.user.id)
+                .maybeSingle();
+
+            if (existingLike) {
+                const { error } = await supabase
+                    .from('employee_post_likes')
+                    .delete()
+                    .eq('post_id', postId)
+                    .eq('user_id', user.user.id);
+                if (error) throw error;
+            } else {
+                const { error } = await supabase
+                    .from('employee_post_likes')
+                    .insert({
+                        post_id: postId,
+                        user_id: user.user.id
+                    });
+                if (error) throw error;
+            }
+        },
+        onMutate: async (postId) => {
+            await queryClient.cancelQueries({ queryKey: ['employee-posts', actualEmployeeId] });
+            const previousPosts = queryClient.getQueryData(['employee-posts', actualEmployeeId]);
+            const { data: userData } = await supabase.auth.getUser();
+
+            queryClient.setQueryData(['employee-posts', actualEmployeeId], (old: any) =>
+                old?.map((post: any) => {
+                    if (post.id === postId) {
+                        const alreadyLiked = post.likes?.some((l: any) => l.user_id === userData.user?.id);
+                        const newLikes = alreadyLiked
+                            ? post.likes.filter((l: any) => l.user_id !== userData.user?.id)
+                            : [...(post.likes || []), { user_id: userData.user?.id }];
+                        return { ...post, likes: newLikes };
+                    }
+                    return post;
+                })
+            );
+
+            return { previousPosts };
+        },
+        onError: (err, postId, context) => {
+            if (context?.previousPosts) {
+                queryClient.setQueryData(['employee-posts', actualEmployeeId], context.previousPosts);
+            }
+            toast.error("Erro ao processar curtida");
+        },
+        onSettled: async () => {
+            await new Promise(resolve => setTimeout(resolve, 500));
+            queryClient.invalidateQueries({ queryKey: ['employee-posts', actualEmployeeId] });
+        }
+    });
+
+    const addComment = useMutation({
+        mutationFn: async ({ postId, content }: { postId: string, content: string }) => {
+            const { data: user } = await supabase.auth.getUser();
+            if (!user.user) throw new Error("Not authenticated");
+
+            const { error } = await supabase
+                .from('employee_post_comments')
+                .insert({
+                    post_id: postId,
+                    author_id: user.user.id,
+                    content
+                });
+
+            if (error) throw error;
+        },
+        onMutate: async ({ postId, content }) => {
+            await queryClient.cancelQueries({ queryKey: ['employee-posts', actualEmployeeId] });
+            const previousPosts = queryClient.getQueryData(['employee-posts', actualEmployeeId]);
+
+            const tempComment = {
+                id: Math.random().toString(),
+                post_id: postId,
+                content,
+                created_at: new Date().toISOString(),
+                author: {
+                    full_name: employee?.full_name || "Você",
+                    avatar_url: employee?.avatar_url
+                }
+            };
+
+            queryClient.setQueryData(['employee-posts', actualEmployeeId], (old: any) =>
+                old?.map((post: any) => {
+                    if (post.id === postId) {
+                        return { ...post, comments: [...(post.comments || []), tempComment] };
+                    }
+                    return post;
+                })
+            );
+
+            return { previousPosts };
+        },
+        onError: (err, variables, context) => {
+            if (context?.previousPosts) {
+                queryClient.setQueryData(['employee-posts', actualEmployeeId], context.previousPosts);
+            }
+            toast.error("Erro ao adicionar comentário");
+        },
+        onSettled: async () => {
+            await new Promise(resolve => setTimeout(resolve, 500));
+            queryClient.invalidateQueries({ queryKey: ['employee-posts', actualEmployeeId] });
         }
     });
 
@@ -144,6 +346,9 @@ export function useEmployeeProfile(employeeId: string) {
         visits,
         isLoading: isLoadingEmployee || isLoadingAssets || isLoadingPosts || isLoadingLeaves || isLoadingVisits,
         createPost,
+        deletePost,
+        toggleLike,
+        addComment,
         recordVisit
     };
 }

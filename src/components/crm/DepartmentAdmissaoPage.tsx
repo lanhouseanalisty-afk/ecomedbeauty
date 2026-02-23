@@ -27,7 +27,9 @@ import {
   Eye,
   Car,
   FileUp,
-  FileDown
+  FileDown,
+  Trash2,
+  FastForward
 } from "lucide-react";
 import { useDepartmentAdmissions } from "@/hooks/useAdmission";
 import { useTechAssets } from "@/hooks/useTech";
@@ -85,43 +87,80 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
     updateManagerStep,
     updateComprasStep,
     updateITStep,
-    completeAdmission
+    completeAdmission,
+    cancelAdmission,
+    deleteAdmission,
+    advanceStep
   } = useDepartmentAdmissions(departmentSlug);
 
-  const { isAdmin, canEditModule } = useUserRole();
-  const canEdit = canEditModule('rh') || canEditModule(departmentSlug);
-  const isTech = departmentSlug === 'tech';
-  const isCompras = departmentSlug === 'compras';
+  const { isAdmin, canEditModule, canAccessModule } = useUserRole();
+  // isRH is only for role-based UI logic, NOT for bypassing dept filter
+  const isRH = canEditModule('rh') || canAccessModule('rh');
+  // Users can act if they are admin, RH, or have access to this specific department
+  const canEdit = isAdmin || isRH || canAccessModule(departmentSlug);
+  const isTech = String(departmentSlug || '').toLowerCase().includes('tech');
+  const isCompras = String(departmentSlug || '').toLowerCase().includes('compras');
 
   // ROLE SIMULATION
   const [simulationRole, setSimulationRole] = useState<'admin' | 'gestor' | 'ti' | 'rh' | 'compras'>(
-    isAdmin ? 'admin' : (isTech ? 'ti' : (isCompras ? 'compras' : 'gestor'))
+    (isAdmin || isTech || isRH || isCompras)
+      ? (isTech ? 'ti' : (isCompras ? 'compras' : (isRH ? 'rh' : 'admin')))
+      : 'gestor'
   );
 
   const pendingProcesses = processes?.filter(p =>
     p.status !== 'completed' &&
     p.status !== 'cancelled' &&
-    (isAdmin || isTech ? true : p.target_department === departmentSlug)
+    // Only TI and Compras see cross-dept processes (they have cross-dept roles).
+    // All other sectors only see their own target_department.
+    (isTech || isCompras || (isAdmin && simulationRole === 'admin') ? true : p.target_department === departmentSlug)
   ) || [];
 
   // Para TI: aguardando ação são os processos no step 'ti'
   // Para outros (gestores): aguardando ação são os processos no step 'gestor' do seu departamento
   // Admin vê todos os processos pendentes de ação
-  const awaitingMyAction = (simulationRole === 'admin' || isAdmin)
-    ? pendingProcesses.filter(p => p.current_step === 'gestor' || p.current_step === 'ti' || p.current_step === 'rh_review')
+  const awaitingMyAction = (simulationRole === 'admin')
+    ? pendingProcesses.filter(p => {
+      const step = p.current_step?.toLowerCase().trim();
+      return step === 'gestor' || step === 'compras' || step === 'ti' || step === 'rh_review';
+    })
     : simulationRole === 'ti'
-      ? pendingProcesses.filter(p => p.current_step === 'ti')
-      : simulationRole === 'rh'
-        ? pendingProcesses.filter(p => p.current_step === 'rh' || p.current_step === 'rh_review')
-        : pendingProcesses.filter(p => p.current_step === 'gestor');
+      ? pendingProcesses.filter(p => p.current_step?.toLowerCase().trim() === 'ti')
+      : simulationRole === 'compras'
+        ? pendingProcesses.filter(p => {
+          const step = p.current_step?.toLowerCase().trim();
+          // Compras sees: processes needing vehicle assignment ('compras' step from any dept)
+          // AND processes at 'gestor' step destined for the Compras department
+          return step === 'compras' ||
+            (step === 'gestor' && p.target_department === departmentSlug);
+        })
+        : simulationRole === 'rh'
+          ? pendingProcesses.filter(p => {
+            const step = p.current_step?.toLowerCase().trim();
+            return step === 'rh' || step === 'compras' || step === 'rh_review';
+          })
+          : pendingProcesses.filter(p => p.current_step?.toLowerCase().trim() === 'gestor');
   const awaitingIT = pendingProcesses.filter(p => p.current_step === 'ti');
-  const completedProcesses = processes?.filter(p => p.status === 'completed' && (isAdmin || isTech ? true : p.target_department === departmentSlug)) || [];
+  const completedProcesses = processes?.filter(p =>
+    p.status === 'completed' &&
+    (isTech || isCompras || (isAdmin && simulationRole === 'admin') ? true : p.target_department === departmentSlug)
+  ) || [];
 
   const canShowActions = canEdit || isAdmin;
 
-  const getProgressValue = (step: string) => {
-    const steps = ['rh', 'gestor', 'ti', 'rh_review', 'colaborador', 'concluido'];
-    const index = steps.indexOf(step);
+  const getProgressValue = (stepStr: string) => {
+    const step = String(stepStr || '').toLowerCase().trim();
+    const steps = ['rh', 'gestor', 'compras', 'ti', 'rh_review', 'colaborador', 'concluido'];
+
+    // Procura por match parcial se o match exato falhar
+    let index = steps.indexOf(step);
+    if (index === -1) {
+      if (step.includes('compras')) index = 2;
+      else if (step.includes('ti')) index = 3;
+      else if (step.includes('gestor')) index = 1;
+      else if (step.includes('rh')) index = 0;
+    }
+
     if (index === -1) return 0;
     return ((index + 1) / steps.length) * 100;
   };
@@ -265,7 +304,10 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
     try {
       await updateManagerStep.mutateAsync({
         id: processId,
-        data: managerForm,
+        data: {
+          ...managerForm,
+          necessita_veiculo: managerForm.needs_vehicle ?? false,
+        },
       });
       setSelectedProcess(null);
     } catch (error) {
@@ -340,6 +382,23 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
       setSelectedProcess(null);
     } catch (error) {
       // Error handled in hook
+    }
+  };
+
+  const handleAdvanceProcess = (id: string, name: string) => {
+    const reason = window.prompt(`Informe o motivo para pular a etapa atual de ${name}:`);
+    if (reason !== null) {
+      advanceStep.mutate({ id, reason });
+    }
+  };
+
+  const handleDeleteProcess = (id: string, name: string) => {
+    if (isRH || isAdmin || simulationRole === 'rh' || simulationRole === 'admin') {
+      if (window.confirm(`ATENÇÃO: Deseja excluir PERMANENTEMENTE a admissão de ${name}? Esta ação não pode ser desfeita.`)) {
+        deleteAdmission.mutate(id);
+      }
+    } else {
+      toast.error("Apenas o RH tem permissão para excluir permanentemente.");
     }
   };
 
@@ -490,10 +549,30 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                           Aguardando suas definições
                         </Badge>
                         {canShowActions ? (
-                          <Button onClick={() => setSelectedProcess(process.id)}>
-                            <Send className="h-4 w-4 mr-2" />
-                            Preencher
-                          </Button>
+                          <div className="flex items-center gap-2">
+                            {(simulationRole === 'rh' || simulationRole === 'admin' || isAdmin || isRH) && (
+                              <Button
+                                variant="outline" size="icon"
+                                className="h-9 w-9 text-red-500 hover:text-red-600 hover:bg-red-50"
+                                onClick={() => handleDeleteProcess(process.id, process.employee_name)}
+                                title="Excluir Permanentemente (Apenas RH)"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            )}
+                            <Button
+                              variant="outline" size="icon"
+                              className="h-9 w-9 text-amber-500 hover:text-amber-600 hover:bg-amber-50"
+                              onClick={() => handleAdvanceProcess(process.id, process.employee_name)}
+                              title="Pular Etapa"
+                            >
+                              <FastForward className="h-4 w-4" />
+                            </Button>
+                            <Button onClick={() => setSelectedProcess(process.id)}>
+                              <Send className="h-4 w-4 mr-2" />
+                              Preencher
+                            </Button>
+                          </div>
                         ) : (
                           <Button variant="outline" onClick={() => setSelectedProcess(process.id)}>
                             <Eye className="h-4 w-4 mr-2" />
@@ -544,15 +623,42 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                       </div>
                       <div className="flex items-center gap-4">
                         <div className="text-right">
-                          <Badge className={`${stepColors[process.current_step] || 'bg-muted'} text-white`}>
-                            {stepLabels[process.current_step] || process.current_step}
+                          <Badge className={`${(process.current_step?.toLowerCase().includes('compras') ? stepColors['compras'] :
+                            process.current_step?.toLowerCase().includes('ti') ? stepColors['ti'] :
+                              stepColors[process.current_step?.toLowerCase().trim()]) || 'bg-muted'
+                            } text-white`}>
+                            {
+                              (process.current_step?.toLowerCase().includes('compras') ? stepLabels['compras'] :
+                                process.current_step?.toLowerCase().includes('ti') ? stepLabels['ti'] :
+                                  stepLabels[process.current_step?.toLowerCase().trim()]) || process.current_step
+                            }
                           </Badge>
                           <Progress value={getProgressValue(process.current_step)} className="w-32 h-2 mt-2" />
                         </div>
-                        <Button variant="outline" size="sm" onClick={() => setSelectedProcess(process.id)}>
-                          <Eye className="h-4 w-4 mr-2" />
-                          Ver
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          {(simulationRole === 'rh' || simulationRole === 'admin' || isAdmin || isRH) && (
+                            <Button
+                              variant="outline" size="icon"
+                              className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 border-red-100"
+                              onClick={() => handleDeleteProcess(process.id, process.employee_name)}
+                              title="Excluir Permanentemente (Apenas RH)"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          )}
+                          <Button
+                            variant="outline" size="icon"
+                            className="h-8 w-8 text-amber-500 hover:text-amber-600 hover:bg-amber-50 border-amber-100"
+                            onClick={() => handleAdvanceProcess(process.id, process.employee_name)}
+                            title="Pular Etapa"
+                          >
+                            <FastForward className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={() => setSelectedProcess(process.id)}>
+                            <Eye className="h-4 w-4 mr-2" />
+                            Ver
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </CardContent>
@@ -624,14 +730,21 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                 const process = processes.find(p => p.id === selectedProcess);
                 if (!process) return 'Detalhes';
                 // Admin vê baseado no step atual do processo
-                if (isAdmin) {
-                  if (process.current_step === 'ti') return 'Configuração TI';
-                  if (process.current_step === 'compras') return 'Atribuição de Veículo';
-                  if (process.current_step === 'gestor') return 'Definições do Gestor';
-                  return 'Detalhes do Processo';
+                if (simulationRole === 'admin') {
+                  const step = String(process.current_step || '').toLowerCase();
+                  const rawStep = process.current_step;
+                  if (step.includes('ti')) return `Configuração TI (${rawStep})`;
+                  if (step.includes('compras')) return `Atribuição de Veículo (${rawStep})`;
+                  if (step.includes('gestor')) return `Definições do Gestor (${rawStep})`;
+                  return `Detalhes do Processo (${rawStep})`;
                 }
-                if (isTech) return 'Configuração TI';
-                if (isCompras) return 'Atribuição de Veículo';
+                if (simulationRole === 'ti' || isTech || departmentSlug?.includes('tech')) return 'Configuração TI';
+                // Compras: title depends on the process's current step
+                if (simulationRole === 'compras' || isCompras || departmentSlug?.includes('compras')) {
+                  const step = String(process?.current_step || '').toLowerCase();
+                  if (step === 'gestor') return 'Definições do Gestor';
+                  return 'Atribuição de Veículo';
+                }
                 return 'Definições do Gestor';
               })()}
             </DialogTitle>
@@ -643,10 +756,18 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                 const process = processes.find(p => p.id === selectedProcess);
                 if (!process) return null;
 
-                // Para admin, determinar qual formulário mostrar baseado no step atual
-                const showITForm = (simulationRole === 'admin' || isAdmin) ? process.current_step === 'ti' : simulationRole === 'ti';
-                const showManagerForm = (simulationRole === 'admin' || isAdmin) ? process.current_step === 'gestor' : simulationRole === 'gestor';
-                const showComprasForm = (simulationRole === 'admin' || isAdmin) ? process.current_step === 'compras' : simulationRole === 'compras';
+                // Para admin/rh, determinar qual formulário mostrar baseado no step atual
+                const currentStep = String(process.current_step || '').toLowerCase();
+                const isPowerUser = (simulationRole === 'admin' || simulationRole === 'rh');
+
+                const showITForm = isPowerUser ? currentStep.includes('ti') : simulationRole === 'ti' || isTech;
+                // Compras: show Gestor form when step=gestor, Compras form when step=compras
+                const showManagerForm = isPowerUser
+                  ? currentStep.includes('gestor')
+                  : simulationRole === 'gestor' || (isCompras && currentStep.includes('gestor'));
+                const showComprasForm = isPowerUser
+                  ? currentStep.includes('compras')
+                  : (simulationRole === 'compras' || isCompras) && currentStep.includes('compras');
 
                 return (
                   <>
@@ -1316,12 +1437,12 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                       {showITForm ? (
                         <Button onClick={() => handleITSubmit(process.id)}>
                           <Send className="h-4 w-4 mr-2" />
-                          Enviar para RH
+                          Enviar para Colaborador
                         </Button>
                       ) : showManagerForm ? (
                         <Button onClick={() => handleManagerSubmit(process.id)}>
                           <Send className="h-4 w-4 mr-2" />
-                          Enviar para TI
+                          {managerForm.needs_vehicle ? 'Enviar para Compras' : 'Enviar para TI'}
                         </Button>
                       ) : null}
                     </div>

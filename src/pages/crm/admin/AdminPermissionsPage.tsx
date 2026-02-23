@@ -19,7 +19,11 @@ export default function AdminPermissionsPage() {
                 .from("permissions")
                 .select("*")
                 .order("role");
-            if (error) throw error;
+            console.log("Admin Permissions Fetch:", { data, error });
+            if (error) {
+                console.error("Error fetching permissions:", error);
+                throw error;
+            }
             return data;
         }
     });

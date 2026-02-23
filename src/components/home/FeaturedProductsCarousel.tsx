@@ -12,8 +12,9 @@ import { Button } from "@/components/ui/button"
 import { Link } from "react-router-dom"
 
 export function FeaturedProductsCarousel() {
-    const plugin = React.useRef(
-        Autoplay({ delay: 2000, stopOnInteraction: false })
+    const plugins = React.useMemo(
+        () => [Autoplay({ delay: 2000, stopOnInteraction: false })],
+        []
     )
 
     const products = [
@@ -65,7 +66,7 @@ export function FeaturedProductsCarousel() {
                 </p>
 
                 <Carousel
-                    plugins={[plugin.current]}
+                    plugins={plugins}
                     className="w-full max-w-6xl mx-auto"
                     opts={{
                         align: "start",

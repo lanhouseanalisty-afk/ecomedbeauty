@@ -15,26 +15,63 @@ import {
     Monitor,
     Award,
     Clock,
+    Trash,
+    ClipboardCheck,
     Users as UsersIcon
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { useEmployeeProfile } from "@/hooks/useEmployeeProfile";
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
+import { useAuth } from "@/contexts/AuthContext";
 import { getInitials } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { AdmissionProcess } from "@/hooks/useAdmission";
 
 export default function EmployeeProfilePage() {
     const { id } = useParams<{ id: string }>();
     // Note: in valid app usage, id should be present.
-    const { employee, assets, posts, leaves, visits, isLoading, createPost, recordVisit } = useEmployeeProfile(id || "");
+    const { employee, assets, posts, leaves, visits, isLoading, createPost, deletePost, toggleLike, addComment, recordVisit } = useEmployeeProfile(id || "");
+    const { user, roles } = useAuth();
     const [newPostContent, setNewPostContent] = useState("");
+    const [pendingAdmission, setPendingAdmission] = useState<any>(null);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [isUploading, setIsUploading] = useState(false);
+    const [activeCommentPost, setActiveCommentPost] = useState<string | null>(null);
+    const [newComment, setNewComment] = useState("");
+
+    useEffect(() => {
+        const fetchPendingAdmission = async () => {
+            if (!employee?.cpf && !employee?.email) return;
+
+            // Busca por checklist de admissão pendente no título com o nome do colaborador
+            const { data: checklists } = await supabase
+                .from('checklists')
+                .select('*')
+                .eq('type', 'admissao')
+                .eq('status', 'pending')
+                .ilike('title', `%${employee.full_name}%`)
+                .maybeSingle();
+
+            if (checklists) {
+                setPendingAdmission(checklists);
+            }
+        };
+
+        if (employee) {
+            fetchPendingAdmission();
+        }
+    }, [employee]);
 
     useEffect(() => {
         if (employee?.id) {
@@ -45,18 +82,61 @@ export default function EmployeeProfilePage() {
     const vacationDays = leaves?.filter(l => l.type === 'vacation' && l.status === 'approved')
         .reduce((acc, curr) => acc + (curr.days_count || 0), 0) || 0;
 
-    const handlePostSubmit = () => {
-        if (!newPostContent.trim()) return;
-        createPost.mutate(newPostContent, {
-            onSuccess: () => {
-                setNewPostContent("");
-                toast.success("Postagem publicada com sucesso!");
-            },
-            onError: (error: any) => {
-                console.error("Erro ao publicar:", error);
-                toast.error("Erro ao publicar postagem. Verifique os logs.");
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setSelectedFile(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handlePostSubmit = async () => {
+        if (!newPostContent.trim() && !selectedFile) return;
+
+        let imageUrl = undefined;
+
+        try {
+            setIsUploading(true);
+
+            if (selectedFile) {
+                const fileExt = selectedFile.name.split('.').pop();
+                const fileName = `${Math.random()}.${fileExt}`;
+                const filePath = `${user?.id}/${fileName}`;
+
+                const { error: uploadError, data } = await supabase.storage
+                    .from('employee-posts')
+                    .upload(filePath, selectedFile);
+
+                if (uploadError) throw uploadError;
+
+                const { data: { publicUrl } } = supabase.storage
+                    .from('employee-posts')
+                    .getPublicUrl(filePath);
+
+                imageUrl = publicUrl;
             }
-        });
+
+            createPost.mutate({ content: newPostContent, imageUrl }, {
+                onSuccess: () => {
+                    setNewPostContent("");
+                    setSelectedFile(null);
+                    setImagePreview(null);
+                    toast.success("Postagem publicada com sucesso!");
+                },
+                onError: () => {
+                    toast.error("Erro ao publicar postagem. Verifique os logs.");
+                }
+            });
+        } catch (error: any) {
+            console.error("Upload error:", error);
+            toast.error("Erro ao carregar mídia: " + error.message);
+        } finally {
+            setIsUploading(false);
+        }
     };
 
     if (isLoading) {
@@ -84,36 +164,69 @@ export default function EmployeeProfilePage() {
     ];
     const coverClass = coverGradients[employee.full_name.length % coverGradients.length];
 
+    const isOwner = user?.id === employee.user_id;
+    const isAdmin = roles.includes('admin') || user?.email === "reginaldo.mazaro@ext.medbeauty.com.br";
+
     return (
         <div className="min-h-screen bg-muted/20 pb-10">
-            {/* Cover Header */}
-            <div className={`w-full h-64 ${coverClass} relative`}>
-                <div className="absolute -bottom-16 left-8 flex items-end">
-                    <div className="relative">
-                        <Avatar className="h-32 w-32 border-4 border-background shadow-xl">
-                            <AvatarFallback className="text-4xl bg-primary/10 text-primary">
+            {/* Cover Header Container - No overflow-hidden here to allow avatar to spill out */}
+            <div className={`w-full h-72 ${coverClass} relative`}>
+                {/* Background Mirror Effect - Isolated with overflow-hidden */}
+                <div className="absolute inset-0 overflow-hidden">
+                    {employee.avatar_url && (
+                        <div
+                            className="absolute inset-0 bg-cover bg-center opacity-30 blur-[8px] scale-110 transition-all duration-1000"
+                            style={{ backgroundImage: `url(${employee.avatar_url})` }}
+                        />
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/10" />
+                </div>
+
+                {/* Content Overlay */}
+                <div className="absolute -bottom-20 left-4 md:left-12 flex flex-col md:flex-row items-center md:items-end gap-6 z-20">
+                    <div className="relative group">
+                        <Avatar className="h-40 w-40 border-[6px] border-background shadow-2xl bg-background transition-transform duration-500 group-hover:scale-105">
+                            <AvatarImage src={employee.avatar_url} className="object-cover" />
+                            <AvatarFallback className="text-5xl bg-primary/10 text-primary font-serif">
                                 {getInitials(employee.full_name)}
                             </AvatarFallback>
                         </Avatar>
-                        <div className="absolute bottom-2 right-2 p-1.5 bg-green-500 rounded-full border-2 border-background" title="Online" />
+                        <div className="absolute bottom-4 right-4 h-6 w-6 bg-green-500 rounded-full border-4 border-background shadow-lg" title="Online" />
                     </div>
-                    <div className="mb-4 ml-6 space-y-1">
-                        <h1 className="text-3xl font-bold text-white drop-shadow-md">{employee.full_name}</h1>
-                        <div className="flex items-center gap-2 text-white/90 font-medium drop-shadow-sm">
-                            <Briefcase className="h-4 w-4" />
-                            <span>{(employee as any).position?.title || 'Colaborador'}</span>
-                            <span>•</span>
-                            <span>{(employee as any).department?.name || 'Departamento'}</span>
+
+                    <div className="flex flex-col mb-4 text-center md:text-left">
+                        <h1 className="text-4xl md:text-5xl font-serif font-bold text-white drop-shadow-lg mb-2">
+                            {employee.full_name}
+                        </h1>
+                        <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
+                            <Badge variant="secondary" className="bg-white/20 backdrop-blur-md text-white border-white/30 hover:bg-white/30 text-sm py-1 px-3">
+                                <Briefcase className="h-3.5 w-3.5 mr-2" />
+                                {employee.positions?.title || "Colaborador"}
+                            </Badge>
+                            <Badge variant="secondary" className="bg-white/20 backdrop-blur-md text-white border-white/30 hover:bg-white/30 text-sm py-1 px-3">
+                                <MapPin className="h-3.5 w-3.5 mr-2" />
+                                {employee.departments?.name || "Geral"}
+                            </Badge>
+                            {pendingAdmission && (
+                                <Button
+                                    size="sm"
+                                    className="h-8 bg-white text-rose-gold hover:bg-white/90 border-none shadow-lg animate-pulse"
+                                    onClick={() => navigate(`/crm/checklist/${pendingAdmission.id}`)}
+                                >
+                                    <ClipboardCheck className="mr-2 h-4 w-4" />
+                                    Admissão
+                                </Button>
+                            )}
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div className="container mx-auto mt-20 px-4 grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="container mx-auto px-4 mt-32 md:mt-28 grid grid-cols-1 lg:grid-cols-12 gap-8">
 
                 {/* Left Sidebar: About / Info */}
-                <div className="space-y-6">
-                    <Card>
+                <div className="lg:col-span-4 space-y-6">
+                    <Card className="border-none shadow-xl bg-white/80 backdrop-blur-md overflow-hidden hover:shadow-2xl transition-all duration-500">
                         <CardHeader>
                             <CardTitle className="text-lg">Sobre</CardTitle>
                         </CardHeader>
@@ -158,60 +271,106 @@ export default function EmployeeProfilePage() {
                         </CardContent>
                     </Card>
 
-                    <Card>
-                        <CardHeader>
+                    <Card className="border-none shadow-xl bg-white/80 backdrop-blur-md overflow-hidden hover:shadow-2xl transition-all duration-500">
+                        <CardHeader className="bg-gradient-to-br from-primary/5 to-transparent border-b border-primary/10">
                             <CardTitle className="text-lg flex items-center justify-between">
                                 <span>Equipamentos</span>
-                                <Monitor className="h-4 w-4 text-muted-foreground" />
+                                <Monitor className="h-4 w-4 text-primary/70" />
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-4">
+                        <CardContent className="p-6 space-y-4">
                             {assets && assets.length > 0 ? (
                                 assets.map((asset: any) => (
-                                    <div key={asset.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/30">
-                                        <div className="flex items-center gap-2">
-                                            <div className={`w-2 h-2 rounded-full ${asset.status === 'in_use' ? 'bg-green-500' : 'bg-gray-400'}`} />
-                                            <div className="text-sm font-medium">{asset.model}</div>
+                                    <div key={asset.id} className="flex items-center justify-between p-3 rounded-xl bg-primary/5 border border-primary/10 hover:bg-primary/10 transition-colors">
+                                        <div className="flex items-center gap-3">
+                                            <div className={`w-2.5 h-2.5 rounded-full shadow-sm ${asset.status === 'in_use' ? 'bg-green-500 animate-pulse' : 'bg-slate-300'}`} />
+                                            <div className="text-sm font-semibold text-slate-700">{asset.model}</div>
                                         </div>
-                                        <Badge variant="outline" className="text-[10px]">{asset.asset_tag}</Badge>
+                                        <Badge variant="outline" className="text-[10px] bg-white/50">{asset.asset_tag}</Badge>
                                     </div>
                                 ))
                             ) : (
-                                <p className="text-sm text-muted-foreground italic">Nenhum equipamento vinculado.</p>
+                                <div className="text-center py-4">
+                                    <p className="text-sm text-muted-foreground italic">Nenhum equipamento vinculado.</p>
+                                </div>
                             )}
                         </CardContent>
                     </Card>
                 </div>
 
                 {/* Main Feed */}
-                <div className="lg:col-span-2 space-y-6">
+                <div className="lg:col-span-8 space-y-6">
 
-                    {/* Create Post */}
-                    <Card>
-                        <CardContent className="p-4 space-y-4">
-                            <div className="flex gap-4">
-                                <Avatar>
-                                    <AvatarFallback>{getInitials("Eu")}</AvatarFallback>
-                                </Avatar>
-                                <Textarea
-                                    placeholder={`Escreva algo no perfil de ${employee.full_name.split(' ')[0]}...`}
-                                    className="resize-none min-h-[80px]"
-                                    value={newPostContent}
-                                    onChange={e => setNewPostContent(e.target.value)}
-                                />
-                            </div>
-                            <div className="flex justify-between items-center">
-                                <Button variant="ghost" size="sm" className="text-muted-foreground">
-                                    <Camera className="h-4 w-4 mr-2" />
-                                    Foto/Vídeo
-                                </Button>
-                                <Button size="sm" onClick={handlePostSubmit} disabled={createPost.isPending || !newPostContent.trim()}>
-                                    <Send className="h-4 w-4 mr-2" />
-                                    Publicar
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
+                    {/* Create Post - Only for owner */}
+                    {isOwner && (
+                        <Card>
+                            <CardContent className="p-4 space-y-4">
+                                <div className="flex gap-4">
+                                    <Avatar>
+                                        <AvatarFallback>{getInitials("Eu")}</AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex-1 space-y-3">
+                                        <Textarea
+                                            placeholder={`Escreva algo no seu perfil...`}
+                                            className="resize-none min-h-[80px]"
+                                            value={newPostContent}
+                                            onChange={e => setNewPostContent(e.target.value)}
+                                        />
+
+                                        {imagePreview && (
+                                            <div className="relative w-full max-h-[300px] overflow-hidden rounded-lg border">
+                                                <img src={imagePreview} className="w-full h-full object-cover" alt="Preview" />
+                                                <Button
+                                                    variant="destructive"
+                                                    size="icon"
+                                                    className="absolute top-2 right-2 h-7 w-7 rounded-full shadow-lg"
+                                                    onClick={() => {
+                                                        setSelectedFile(null);
+                                                        setImagePreview(null);
+                                                    }}
+                                                >
+                                                    <Trash className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="file"
+                                            id="post-media"
+                                            className="hidden"
+                                            accept="image/*,video/*"
+                                            onChange={handleFileSelect}
+                                        />
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="text-muted-foreground hover:text-primary hover:bg-primary/5"
+                                            onClick={() => document.getElementById('post-media')?.click()}
+                                        >
+                                            <Camera className="h-4 w-4 mr-2" />
+                                            Foto/Vídeo
+                                        </Button>
+                                    </div>
+                                    <Button size="sm" onClick={handlePostSubmit} disabled={createPost.isPending || isUploading || (!newPostContent.trim() && !selectedFile)}>
+                                        {isUploading ? (
+                                            <div className="flex items-center gap-2">
+                                                <Clock className="h-4 w-4 animate-spin" />
+                                                Carregando...
+                                            </div>
+                                        ) : (
+                                            <>
+                                                <Send className="h-4 w-4 mr-2" />
+                                                Publicar
+                                            </>
+                                        )}
+                                    </Button>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
 
                     <Tabs defaultValue="feed">
                         <TabsList className="w-full justify-start">
@@ -239,22 +398,125 @@ export default function EmployeeProfilePage() {
                                                         </p>
                                                     </div>
                                                 </div>
+                                                {(isAdmin || user?.id === post.author_id) && (
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                                        onClick={() => {
+                                                            if (window.confirm("Deseja realmente excluir esta postagem?")) {
+                                                                deletePost.mutate(post.id);
+                                                            }
+                                                        }}
+                                                    >
+                                                        <Trash className="h-4 w-4" />
+                                                    </Button>
+                                                )}
                                             </div>
                                             <p className="text-sm leading-relaxed whitespace-pre-wrap">
                                                 {post.content}
                                             </p>
+                                            {post.image_url && (
+                                                <div className="rounded-lg overflow-hidden border bg-muted/20">
+                                                    <img src={post.image_url} className="w-full h-auto max-h-[500px] object-contain mx-auto" alt="Conteúdo da postagem" />
+                                                </div>
+                                            )}
                                             <Separator />
                                             <div className="flex gap-4 pt-2">
-                                                <Button variant="ghost" size="sm" className="h-8 gap-1">
-                                                    <ThumbsUp className="h-4 w-4" />
-                                                    Curtir ({post.likes?.length || 0})
-                                                </Button>
-                                                <Button variant="ghost" size="sm" className="h-8 gap-1">
+                                                <TooltipProvider>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className={`h-8 gap-1 ${post.likes?.some((l: any) => l.user_id === user?.id) ? 'text-blue-600 font-bold' : ''}`}
+                                                                onClick={() => toggleLike.mutate(post.id)}
+                                                            >
+                                                                <ThumbsUp className={`h-4 w-4 ${post.likes?.some((l: any) => l.user_id === user?.id) ? 'fill-current' : ''}`} />
+                                                                {post.likes?.some((l: any) => l.user_id === user?.id) ? 'Curtiu' : 'Curtir'} ({post.likes?.length || 0})
+                                                            </Button>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent side="top" className="max-w-xs">
+                                                            {post.likes && post.likes.length > 0 ? (
+                                                                <span>
+                                                                    Curtido por: {post.likes.map((l: any) => {
+                                                                        if (l.user_id === user?.id) return employee?.full_name || 'Você';
+                                                                        return l.full_name || l.user_id;
+                                                                    }).join(', ')}
+                                                                </span>
+                                                            ) : (
+                                                                <span>Ninguém curtiu ainda</span>
+                                                            )}
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                </TooltipProvider>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-8 gap-1"
+                                                    onClick={() => {
+                                                        setActiveCommentPost(activeCommentPost === post.id ? null : post.id);
+                                                        setNewComment("");
+                                                    }}
+                                                >
                                                     <MessageSquare className="h-4 w-4" />
                                                     Comentar ({post.comments?.length || 0})
                                                 </Button>
                                             </div>
-                                            {/* Comments section could go here */}
+
+                                            {/* Seção de Comentários */}
+                                            {activeCommentPost === post.id && (
+                                                <div className="space-y-4 pt-4 animate-in fade-in slide-in-from-top-2">
+                                                    <Separator />
+                                                    <div className="space-y-3 pb-2">
+                                                        {post.comments?.map((comment: any) => (
+                                                            <div key={comment.id} className="flex gap-3 text-sm group">
+                                                                <Avatar className="h-7 w-7 mt-1">
+                                                                    <AvatarImage src={comment.author?.avatar_url} />
+                                                                    <AvatarFallback className="text-[10px]">{getInitials(comment.author?.full_name || "U")}</AvatarFallback>
+                                                                </Avatar>
+                                                                <div className="bg-muted/50 p-2 rounded-lg flex-1">
+                                                                    <p className="font-semibold text-xs mb-0.5">{comment.author?.full_name || "Usuário"}</p>
+                                                                    <p className="text-muted-foreground">{comment.content}</p>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+
+                                                    <div className="flex gap-2">
+                                                        <Avatar className="h-8 w-8">
+                                                            <AvatarFallback className="text-xs">{getInitials("Eu")}</AvatarFallback>
+                                                        </Avatar>
+                                                        <div className="flex-1 flex gap-2">
+                                                            <Input
+                                                                placeholder="Escreva um comentário..."
+                                                                className="h-8 text-sm"
+                                                                value={newComment}
+                                                                onChange={(e) => setNewComment(e.target.value)}
+                                                                onKeyDown={(e) => {
+                                                                    if (e.key === 'Enter' && newComment.trim()) {
+                                                                        addComment.mutate({ postId: post.id, content: newComment });
+                                                                        setNewComment("");
+                                                                    }
+                                                                }}
+                                                            />
+                                                            <Button
+                                                                size="sm"
+                                                                className="h-8 px-3"
+                                                                onClick={() => {
+                                                                    if (newComment.trim()) {
+                                                                        addComment.mutate({ postId: post.id, content: newComment });
+                                                                        setNewComment("");
+                                                                    }
+                                                                }}
+                                                                disabled={!newComment.trim() || addComment.isPending}
+                                                            >
+                                                                <Send className="h-3 w-3" />
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </CardContent>
                                     </Card>
                                 ))

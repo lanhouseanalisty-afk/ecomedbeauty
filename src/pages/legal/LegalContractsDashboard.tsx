@@ -34,7 +34,7 @@ export default function LegalContractsDashboard() {
         queryFn: async () => {
             const { data, error } = await supabase
                 .from('legal_contracts')
-                .select('*')
+                .select('*, departments(name)')
                 .order('created_at', { ascending: false });
 
             if (error) throw error;

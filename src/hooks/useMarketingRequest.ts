@@ -25,6 +25,7 @@ export interface MarketingRequest {
     notes?: string;
     tracking_number?: string;
     created_at?: string;
+    sector?: string;
 }
 
 export function useMarketingRequest() {
@@ -70,6 +71,7 @@ export function useMarketingRequest() {
                 approver_name: data.approver_name || null,
                 status: 'pending',
                 created_by: user.id,
+                sector: data.sector || 'marketing',
             };
 
             const { data: result, error } = await supabase

@@ -43,9 +43,16 @@ ALTER TABLE ecommerce_search_history ENABLE ROW LEVEL SECURITY;
 ALTER TABLE ecommerce_orders ENABLE ROW LEVEL SECURITY;
 
 -- Políticas de acesso (Permitir tudo para usuários autenticados do CRM por enquanto)
+DROP POLICY IF EXISTS "Allow CRM users to view customers" ON ecommerce_customers;
 CREATE POLICY "Allow CRM users to view customers" ON ecommerce_customers FOR SELECT TO authenticated USING (true);
+
+DROP POLICY IF EXISTS "Allow CRM users to view carts" ON ecommerce_carts;
 CREATE POLICY "Allow CRM users to view carts" ON ecommerce_carts FOR SELECT TO authenticated USING (true);
+
+DROP POLICY IF EXISTS "Allow CRM users to view history" ON ecommerce_search_history;
 CREATE POLICY "Allow CRM users to view history" ON ecommerce_search_history FOR SELECT TO authenticated USING (true);
+
+DROP POLICY IF EXISTS "Allow CRM users to view orders" ON ecommerce_orders;
 CREATE POLICY "Allow CRM users to view orders" ON ecommerce_orders FOR SELECT TO authenticated USING (true);
 
 -- DADOS DE EXEMPLO (MOCK DATA) PARA TESTE IMEDIATO

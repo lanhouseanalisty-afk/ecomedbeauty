@@ -9,63 +9,74 @@ import {
     Plus,
     ListChecks,
     Clock,
-    CheckCircle,
     TrendingUp,
     Loader2,
-    RefreshCw,
-    ShieldAlert
+    RefreshCw
 } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
+import { UnifiedSupplyRequestForm } from "@/components/crm/shared/UnifiedSupplyRequestForm";
 
 export default function MarketingRequestsManagementPage() {
     const navigate = useNavigate();
-    const { getAllRequests, updateRequestStatus, loading } = useMarketingRequest();
-    const { canEditModule } = useUserRole();
+    const { getMyRequests, getAllRequests, updateRequestStatus, loading } = useMarketingRequest();
+    const { canEditModule, roles } = useUserRole();
+
+    // Check if user is admin or marketing manager
+    const isManager = roles.some(role => ['admin', 'marketing_manager'].includes(role));
     const canEdit = canEditModule('marketing');
-    const [requests, setRequests] = useState<MarketingRequest[]>([]);
+
+    const [myRequests, setMyRequests] = useState<MarketingRequest[]>([]);
+    const [allRequests, setAllRequests] = useState<MarketingRequest[]>([]);
     const [refreshing, setRefreshing] = useState(false);
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-    const loadRequests = async () => {
-        const result = await getAllRequests();
-        if (result.success && result.data) {
-            setRequests(result.data);
-        }
-    };
-
-    const handleRefresh = async () => {
+    const loadData = async () => {
         setRefreshing(true);
-        await loadRequests();
+
+        // Always load my requests
+        const myResult = await getMyRequests();
+        if (myResult.success && myResult.data) {
+            setMyRequests(myResult.data as MarketingRequest[]);
+        }
+
+        // Load all requests if manager
+        if (isManager) {
+            const allResult = await getAllRequests();
+            if (allResult.success && allResult.data) {
+                setAllRequests(allResult.data as MarketingRequest[]);
+            }
+        }
+
         setRefreshing(false);
     };
 
     useEffect(() => {
-        loadRequests();
-    }, []);
+        loadData();
+    }, [isManager]);
 
     const handleStatusChange = async (id: string, status: string) => {
         await updateRequestStatus(id, status);
-        await loadRequests();
+        await loadData();
     };
 
     const stats = {
-        total: requests.length,
-        pending: requests.filter((r) => r.status === "pending").length,
-        approved: requests.filter((r) => r.status === "approved").length,
-        thisMonth: requests.filter((r) => {
-            const createdDate = new Date(r.created_at || "");
-            const now = new Date();
-            return (
-                createdDate.getMonth() === now.getMonth() &&
-                createdDate.getFullYear() === now.getFullYear()
-            );
-        }).length,
+        total: isManager ? allRequests.length : myRequests.length,
+        pending: (isManager ? allRequests : myRequests).filter((r) => r.status === "pending").length,
+        approved: (isManager ? allRequests : myRequests).filter((r) => r.status === "approved").length,
     };
 
     const approvalRate = stats.total > 0
         ? Math.round((stats.approved / stats.total) * 100)
         : 0;
 
-    if (loading && requests.length === 0) {
+    if (loading && myRequests.length === 0 && allRequests.length === 0) {
         return (
             <div className="flex h-full min-h-[400px] items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -82,98 +93,90 @@ export default function MarketingRequestsManagementPage() {
             <div className="space-y-6">
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div>
-                        <h1 className="font-serif text-3xl font-bold">Gerenciamento de Solicitações</h1>
+                        <h1 className="font-serif text-3xl font-bold">Gerenciar Solicitações</h1>
                         <p className="text-muted-foreground">
-                            Aprove, rejeite e gerencie todas as solicitações de insumos
+                            Acompanhe o fluxo de aprovação das solicitações de insumos
                         </p>
                     </div>
                     <div className="flex gap-2">
                         <Button
                             variant="outline"
-                            onClick={handleRefresh}
+                            onClick={loadData}
                             disabled={refreshing}
+                            size="sm"
                         >
                             <RefreshCw className={`mr-2 h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
                             Atualizar
                         </Button>
-                        {canEdit && (
-                            <Button onClick={() => navigate("/crm/marketing/solicitacao-insumos")}>
-                                <Plus className="mr-2 h-4 w-4" />
-                                Nova Solicitação
-                            </Button>
-                        )}
-                        {!canEdit && (
-                            <div className="flex items-center gap-2 px-3 py-1 bg-amber-50 rounded border border-amber-200">
-                                <ShieldAlert className="h-4 w-4 text-amber-600" />
-                                <span className="text-xs text-amber-600 font-medium">Somente Leitura</span>
-                            </div>
-                        )}
+
+                        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                            <DialogTrigger asChild>
+                                <Button size="sm">
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Nova Solicitação
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0 border-none bg-transparent shadow-none">
+                                <div className="p-1">
+                                    <UnifiedSupplyRequestForm
+                                        sector="marketing"
+                                        sectorLabel="Marketing"
+                                        onSuccess={() => {
+                                            setIsDialogOpen(false);
+                                            loadData();
+                                        }}
+                                    />
+                                </div>
+                            </DialogContent>
+                        </Dialog>
                     </div>
                 </div>
 
-                {/* Stats Cards */}
-                <div className="grid gap-4 md:grid-cols-4">
+                <div className="grid gap-4 md:grid-cols-3">
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Total de Solicitações</CardTitle>
+                            <CardTitle className="text-sm font-medium text-muted-foreground">Total</CardTitle>
                             <ListChecks className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">{stats.total}</div>
-                            <p className="text-xs text-muted-foreground">Todas as solicitações</p>
                         </CardContent>
                     </Card>
-
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Pendentes de Aprovação</CardTitle>
-                            <Clock className="h-4 w-4 text-yellow-600" />
+                            <CardTitle className="text-sm font-medium text-muted-foreground">Pendentes</CardTitle>
+                            <Clock className="h-4 w-4 text-yellow-500" />
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">{stats.pending}</div>
-                            <p className="text-xs text-muted-foreground">Aguardando sua aprovação</p>
                         </CardContent>
                     </Card>
-
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Aprovadas Este Mês</CardTitle>
-                            <CheckCircle className="h-4 w-4 text-green-600" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{stats.thisMonth}</div>
-                            <p className="text-xs text-muted-foreground">Solicitações deste mês</p>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Taxa de Aprovação</CardTitle>
-                            <TrendingUp className="h-4 w-4 text-blue-600" />
+                            <CardTitle className="text-sm font-medium text-muted-foreground">Taxa Aprovação</CardTitle>
+                            <TrendingUp className="h-4 w-4 text-emerald-500" />
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">{approvalRate}%</div>
-                            <p className="text-xs text-muted-foreground">
-                                {stats.approved} de {stats.total} aprovadas
-                            </p>
                         </CardContent>
                     </Card>
                 </div>
 
-                {/* Requests Table */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>Todas as Solicitações</CardTitle>
+                        <CardTitle>{isManager ? 'Todas as Solicitações' : 'Minhas Solicitações'}</CardTitle>
                         <CardDescription>
-                            Gerencie e aprove solicitações de insumos de toda a equipe
+                            {isManager
+                                ? 'Gerencie as solicitações de toda a equipe'
+                                : 'Acompanhe o status das suas solicitações individuais'}
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
                         <RequestsTable
-                            requests={requests}
-                            onStatusChange={handleStatusChange}
-                            onRefresh={loadRequests}
-                            isManager={canEdit}
+                            requests={isManager ? allRequests : myRequests}
+                            onStatusChange={isManager ? handleStatusChange : undefined}
+                            onRefresh={loadData}
+                            isManager={isManager}
                         />
                     </CardContent>
                 </Card>

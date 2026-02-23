@@ -6,7 +6,6 @@ import { useNavigate } from "react-router-dom";
 import {
   Users,
   Plus,
-  Search,
   Filter,
   MoreHorizontal,
   Calendar,
@@ -17,13 +16,14 @@ import {
   MapPin,
   Briefcase,
   Eye,
-  FileText,
+  UserPlus,
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
 import {
   Table,
   TableBody,
@@ -285,22 +285,15 @@ export default function RHDashboard() {
         <div className="flex gap-2 items-center">
           <Badge variant="outline" className="h-9 px-4 text-sm hidden md:flex">Gestora: Gleice Silva</Badge>
 
-          <Button onClick={() => navigate("/crm/intranet/contratos/novo?sector=rh")} variant="outline" className="gap-2">
-            <FileText className="h-4 w-4" />
-            Solicitar Contrato
+          <Button onClick={() => navigate("/crm/rh/operacoes")} variant="outline" className="gap-2 border-orange-200 hover:border-orange-300 bg-orange-50/30 text-orange-700">
+            <UserPlus className="h-4 w-4" />
+            Admissão & Demissão
           </Button>
 
-          <DataExport data={filteredEmployees} filename="funcionarios" columns={exportColumns} />
           <Dialog open={isDialogOpen} onOpenChange={(open) => {
             setIsDialogOpen(open);
             if (!open) resetForm();
           }}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Novo Funcionário
-              </Button>
-            </DialogTrigger>
             <DialogContent className="sm:max-w-[500px]">
               <DialogHeader>
                 <DialogTitle>{editingEmployee ? 'Editar Funcionário' : 'Novo Funcionário'}</DialogTitle>
@@ -416,158 +409,162 @@ export default function RHDashboard() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+
+          <DataExport data={filteredEmployees} filename="funcionarios" columns={exportColumns} />
         </div>
       </div>
 
       <QuickStats stats={stats} />
 
-      {selectedIds.length > 0 && (
-        <BulkActions
-          selectedCount={selectedIds.length}
-          totalCount={filteredEmployees.length}
-          onSelectAll={handleSelectAll}
-          onDeselectAll={handleDeselectAll}
-          selectionState={selectionState}
-          actions={bulkActions}
-          onAction={handleBulkAction}
-        />
-      )}
+      <div className="pt-4 space-y-4">
+        {selectedIds.length > 0 && (
+          <BulkActions
+            selectedCount={selectedIds.length}
+            totalCount={filteredEmployees.length}
+            onSelectAll={handleSelectAll}
+            onDeselectAll={handleDeselectAll}
+            selectionState={selectionState}
+            actions={bulkActions}
+            onAction={handleBulkAction}
+          />
+        )}
 
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <CardTitle>Funcionários</CardTitle>
-              <CardDescription>Lista completa de colaboradores</CardDescription>
+        <Card>
+          <CardHeader>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <CardTitle>Funcionários</CardTitle>
+                <CardDescription>Lista completa de colaboradores</CardDescription>
+              </div>
+              <SearchFilter
+                searchPlaceholder="Buscar funcionário..."
+                onSearchChange={setSearchTerm}
+                filters={filters}
+                activeFilters={activeFilters}
+                onFilterChange={(key, value) => setActiveFilters(prev => ({ ...prev, [key]: value || '' }))}
+                onClearFilters={() => setActiveFilters({})}
+              />
             </div>
-            <SearchFilter
-              searchPlaceholder="Buscar funcionário..."
-              onSearchChange={setSearchTerm}
-              filters={filters}
-              activeFilters={activeFilters}
-              onFilterChange={(key, value) => setActiveFilters(prev => ({ ...prev, [key]: value || '' }))}
-              onClearFilters={() => setActiveFilters({})}
-            />
-          </div>
-        </CardHeader>
-        <CardContent>
-          {filteredEmployees.length === 0 ? (
-            <EmptyState
-              variant={searchTerm || Object.keys(activeFilters).length > 0 ? 'search' : 'empty'}
-              title={searchTerm || Object.keys(activeFilters).length > 0 ? 'Nenhum resultado' : 'Nenhum funcionário'}
-              description={searchTerm || Object.keys(activeFilters).length > 0
-                ? 'Tente ajustar os filtros ou termo de busca'
-                : 'Comece cadastrando seu primeiro funcionário'
-              }
-              actionLabel={!searchTerm && Object.keys(activeFilters).length === 0 ? 'Novo Funcionário' : undefined}
-              onAction={() => setIsDialogOpen(true)}
-            />
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-12">
-                    <Checkbox
-                      checked={selectionState === 'all'}
-                      onCheckedChange={(checked) => checked ? handleSelectAll() : handleDeselectAll()}
-                    />
-                  </TableHead>
-                  <TableHead>Funcionário</TableHead>
-                  <TableHead>Cargo</TableHead>
-                  <TableHead>Departamento</TableHead>
-                  <TableHead>Contato</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="w-10"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredEmployees.map((employee) => (
-                  <TableRow
-                    key={employee.id}
-                    className={selectedIds.includes(employee.id) ? 'bg-primary/5' : ''}
-                  >
-                    <TableCell>
+          </CardHeader>
+          <CardContent>
+            {filteredEmployees.length === 0 ? (
+              <EmptyState
+                variant={searchTerm || Object.keys(activeFilters).length > 0 ? 'search' : 'empty'}
+                title={searchTerm || Object.keys(activeFilters).length > 0 ? 'Nenhum resultado' : 'Nenhum funcionário'}
+                description={searchTerm || Object.keys(activeFilters).length > 0
+                  ? 'Tente ajustar os filtros ou termo de busca'
+                  : 'Comece cadastrando seu primeiro funcionário'
+                }
+                actionLabel={!searchTerm && Object.keys(activeFilters).length === 0 ? 'Novo Funcionário' : undefined}
+                onAction={() => setIsDialogOpen(true)}
+              />
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-12">
                       <Checkbox
-                        checked={selectedIds.includes(employee.id)}
-                        onCheckedChange={() => handleToggleSelect(employee.id)}
+                        checked={selectionState === 'all'}
+                        onCheckedChange={(checked) => checked ? handleSelectAll() : handleDeselectAll()}
                       />
-                    </TableCell>
-                    <TableCell>
-                      <div
-                        className="flex items-center gap-3 cursor-pointer group"
-                        onClick={() => navigate(`/crm/rh/funcionario/${employee.id}`)}
-                      >
-                        <Avatar className="h-9 w-9 transition-transform group-hover:scale-105">
-                          <AvatarFallback className="bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                            {getInitials(employee.full_name)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium flex items-center gap-2 group-hover:text-primary transition-colors">
-                            {employee.full_name}
-                            <Badge variant="secondary" className="text-[10px] h-5 px-1.5 font-normal">
-                              ID: {employee.cpf.replace(/\D/g, '').slice(0, 3)}...
-                            </Badge>
-                          </p>
-                          <p className="text-xs text-muted-foreground group-hover:text-primary/70 transition-colors">{employee.employee_code}</p>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1">
-                        <Briefcase className="h-3 w-3 text-muted-foreground" />
-                        {(employee as any).position?.title || '-'}
-                      </div>
-                    </TableCell>
-                    <TableCell>{(employee as any).department?.name || '-'}</TableCell>
-                    <TableCell>
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-1 text-sm">
-                          <Mail className="h-3 w-3 text-muted-foreground" />
-                          {employee.email}
-                        </div>
-                        {employee.phone && (
-                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <Phone className="h-3 w-3" />
-                            {employee.phone}
-                          </div>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>{getStatusBadge(employee.status)}</TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => navigate(`/crm/rh/funcionario/${employee.id}`)}>
-                            <Eye className="h-4 w-4 mr-2" />
-                            Ver Perfil
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleOpenEdit(employee)}>
-                            Editar
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>Solicitar Férias</DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            className="text-destructive"
-                            onClick={() => navigate("/crm/rh/demissao")}
-                          >
-                            Desligar
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
+                    </TableHead>
+                    <TableHead>Funcionário</TableHead>
+                    <TableHead>Cargo</TableHead>
+                    <TableHead>Departamento</TableHead>
+                    <TableHead>Contato</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="w-10"></TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+                </TableHeader>
+                <TableBody>
+                  {filteredEmployees.map((employee) => (
+                    <TableRow
+                      key={employee.id}
+                      className={selectedIds.includes(employee.id) ? 'bg-primary/5' : ''}
+                    >
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedIds.includes(employee.id)}
+                          onCheckedChange={() => handleToggleSelect(employee.id)}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <div
+                          className="flex items-center gap-3 cursor-pointer group"
+                          onClick={() => navigate(`/crm/rh/funcionario/${employee.id}`)}
+                        >
+                          <Avatar className="h-9 w-9 transition-transform group-hover:scale-105">
+                            <AvatarFallback className="bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                              {getInitials(employee.full_name)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-medium flex items-center gap-2 group-hover:text-primary transition-colors">
+                              {employee.full_name}
+                              <Badge variant="secondary" className="text-[10px] h-5 px-1.5 font-normal">
+                                ID: {employee.cpf.replace(/\D/g, '').slice(0, 3)}...
+                              </Badge>
+                            </p>
+                            <p className="text-xs text-muted-foreground group-hover:text-primary/70 transition-colors">{employee.employee_code}</p>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          <Briefcase className="h-3 w-3 text-muted-foreground" />
+                          {(employee as any).position?.title || '-'}
+                        </div>
+                      </TableCell>
+                      <TableCell>{(employee as any).department?.name || '-'}</TableCell>
+                      <TableCell>
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-1 text-sm">
+                            <Mail className="h-3 w-3 text-muted-foreground" />
+                            {employee.email}
+                          </div>
+                          {employee.phone && (
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                              <Phone className="h-3 w-3" />
+                              {employee.phone}
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>{getStatusBadge(employee.status)}</TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => navigate(`/crm/rh/funcionario/${employee.id}`)}>
+                              <Eye className="h-4 w-4 mr-2" />
+                              Ver Perfil
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleOpenEdit(employee)}>
+                              Editar
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>Solicitar Férias</DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              className="text-destructive"
+                              onClick={() => navigate("/crm/rh/demissao")}
+                            >
+                              Desligar
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
       <DetailDrawer
         open={!!selectedEmployee}
@@ -592,6 +589,6 @@ export default function RHDashboard() {
         onEdit={() => toast.info('Edição em desenvolvimento')}
         onDelete={() => toast.info('Exclusão em desenvolvimento')}
       />
-    </div>
+    </div >
   );
 }

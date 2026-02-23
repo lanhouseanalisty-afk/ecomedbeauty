@@ -18,7 +18,8 @@ import {
   Star,
   MapPin,
   FileText,
-  ShieldAlert
+  ShieldAlert,
+  UserPlus
 } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,6 +28,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Table,
   TableBody,
@@ -195,9 +197,9 @@ export default function ComercialDashboard() {
         <div className="flex gap-2 items-center">
           <Badge variant="outline" className="h-9 px-4 text-sm hidden md:flex">Gestor Inside Sales: Cesar Camargo</Badge>
 
-          <Button onClick={() => window.location.href = "/crm/intranet/contratos/novo?sector=comercial"} variant="outline" className="gap-2 shadow-sm hover:shadow-md transition-all">
-            <FileText className="h-4 w-4" />
-            Solicitar Contrato
+          <Button onClick={() => window.location.href = "/crm/comercial/operacoes"} variant="outline" className="gap-2 shadow-sm hover:shadow-md transition-all border-orange-200 hover:border-orange-300 bg-orange-50/30 text-orange-700">
+            <UserPlus className="h-4 w-4" />
+            Admissão & Demissão
           </Button>
 
           <Button variant="outline" onClick={() => setIsSearchDialogOpen(true)} className="shadow-sm hover:shadow-md transition-all">
@@ -285,7 +287,7 @@ export default function ComercialDashboard() {
                           <SelectItem value="event">Evento</SelectItem>
                           <SelectItem value="other">Outro</SelectItem>
                         </SelectContent>
-                      </VillageSelect>
+                      </Select>
                     </div>
                   </div>
                   <div className="grid gap-2">
@@ -381,145 +383,178 @@ export default function ComercialDashboard() {
               <TabsTrigger value="new">Novos ({leads?.filter(l => l.status === 'new').length || 0})</TabsTrigger>
               <TabsTrigger value="contacted">Contatados ({leads?.filter(l => l.status === 'contacted').length || 0})</TabsTrigger>
               <TabsTrigger value="qualified">Qualificados ({leads?.filter(l => l.status === 'qualified').length || 0})</TabsTrigger>
+              <TabsTrigger value="contracts">Contratos</TabsTrigger>
             </TabsList>
 
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-muted/30">
-                    <TableHead>Lead</TableHead>
-                    <TableHead>Empresa</TableHead>
-                    <TableHead>Contato</TableHead>
-                    <TableHead>Origem</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="w-[50px]"></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredLeads?.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={6} className="text-center text-muted-foreground py-16">
-                        <div className="flex flex-col items-center gap-2">
-                          <div className="bg-muted rounded-full p-4 mb-2">
-                            <Search className="h-8 w-8 text-muted-foreground" />
-                          </div>
-                          <p className="font-medium">Nenhum lead encontrado</p>
-                          <p className="text-sm">Tente ajustar sua busca ou adicione um novo lead.</p>
-                          <Button variant="outline" size="sm" onClick={() => setIsDialogOpen(true)} className="mt-4">
-                            Adicionar Lead
-                          </Button>
-                        </div>
-                      </TableCell>
+            <TabsContent value="contracts">
+              <Card className="border-none shadow-none bg-transparent">
+                <CardHeader className="px-0">
+                  <CardTitle>Gestão de Contratos</CardTitle>
+                  <CardDescription>Gerencie as solicitações e contratos do departamento Comercial</CardDescription>
+                </CardHeader>
+                <CardContent className="px-0 space-y-4">
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <Button
+                      onClick={() => window.location.href = "/crm/juridico/contratos/novo?sector=comercial"}
+                      className="h-24 flex flex-col gap-2 bg-primary/5 hover:bg-primary/10 border-primary/20 text-primary"
+                      variant="outline"
+                    >
+                      <FileText className="h-6 w-6" />
+                      <span>Solicitar Novo Contrato</span>
+                    </Button>
+                    <Button
+                      onClick={() => window.location.href = "/crm/comercial/contratos"}
+                      className="h-24 flex flex-col gap-2"
+                      variant="outline"
+                    >
+                      <Search className="h-6 w-6" />
+                      <span>Ver Todos os Contratos do Setor</span>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="all" className="mt-0">
+
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-muted/30">
+                      <TableHead>Lead</TableHead>
+                      <TableHead>Empresa</TableHead>
+                      <TableHead>Contato</TableHead>
+                      <TableHead>Origem</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="w-[50px]"></TableHead>
                     </TableRow>
-                  ) : (
-                    filteredLeads?.map((lead) => (
-                      <TableRow key={lead.id} className="group hover:bg-muted/30 transition-colors">
-                        <TableCell>
-                          <div>
-                            <p className="font-semibold text-foreground">{lead.first_name} {lead.last_name}</p>
-                            <span className="text-xs text-muted-foreground">Cadastrado em {new Date(lead.created_at).toLocaleDateString()}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {lead.company ? (
-                            <div className="flex items-center gap-1.5 p-1 px-2 rounded-md bg-muted/50 w-fit">
-                              <Building className="h-3 w-3 text-muted-foreground" />
-                              <span className="text-sm font-medium">{lead.company}</span>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredLeads?.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center text-muted-foreground py-16">
+                          <div className="flex flex-col items-center gap-2">
+                            <div className="bg-muted rounded-full p-4 mb-2">
+                              <Search className="h-8 w-8 text-muted-foreground" />
                             </div>
-                          ) : (
-                            <span className="text-muted-foreground text-sm">-</span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <div className="space-y-1.5">
-                            {lead.email && (
-                              <div className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
-                                <Mail className="h-3.5 w-3.5" />
-                                {lead.email}
-                              </div>
-                            )}
-                            {lead.phone && (
-                              <div className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
-                                <Phone className="h-3.5 w-3.5" />
-                                {lead.phone}
-                              </div>
-                            )}
+                            <p className="font-medium">Nenhum lead encontrado</p>
+                            <p className="text-sm">Tente ajustar sua busca ou adicione um novo lead.</p>
+                            <Button variant="outline" size="sm" onClick={() => setIsDialogOpen(true)} className="mt-4">
+                              Adicionar Lead
+                            </Button>
                           </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="secondary" className="font-normal capitalize">
-                            {lead.source || 'Manual'}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{getStatusBadge(lead.status)}</TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-48">
-                              <DropdownMenuItem className="cursor-pointer" onClick={() => setSelectedLead(lead)}>
-                                Ver Perfil Completo
-                              </DropdownMenuItem>
-                              {canEdit && (
-                                <>
-                                  <DropdownMenuItem className="cursor-pointer">Editar Informações</DropdownMenuItem>
-                                  <DropdownMenuSeparator />
-                                </>
-                              )}
-                              <DropdownMenuItem className="cursor-pointer">
-                                <Phone className="mr-2 h-3.5 w-3.5" /> Ligar
-                              </DropdownMenuItem>
-                              <DropdownMenuItem className="cursor-pointer">
-                                <Mail className="mr-2 h-3.5 w-3.5" /> Enviar Email
-                              </DropdownMenuItem>
-                              {canEdit && (
-                                <>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                      <DropdownMenuItem className="cursor-pointer" onSelect={(e) => e.preventDefault()}>
-                                        Alterar Status
-                                      </DropdownMenuItem>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent side="left" align="start">
-                                      <DropdownMenuItem onClick={() => handleUpdateStatus(lead.id, 'new')}>
-                                        Novo
-                                      </DropdownMenuItem>
-                                      <DropdownMenuItem onClick={() => handleUpdateStatus(lead.id, 'contacted')}>
-                                        Contatado
-                                      </DropdownMenuItem>
-                                      <DropdownMenuItem onClick={() => handleUpdateStatus(lead.id, 'qualified')}>
-                                        Qualificado
-                                      </DropdownMenuItem>
-                                      <DropdownMenuItem onClick={() => handleUpdateStatus(lead.id, 'converted')}>
-                                        Convertido
-                                      </DropdownMenuItem>
-                                      <DropdownMenuItem onClick={() => handleUpdateStatus(lead.id, 'lost')}>
-                                        Perdido
-                                      </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                  </DropdownMenu>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem
-                                    className="cursor-pointer text-destructive focus:text-destructive"
-                                    onClick={() => handleDeleteLead(lead.id)}
-                                  >
-                                    Remover Lead
-                                  </DropdownMenuItem>
-                                </>
-                              )}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
                         </TableCell>
                       </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
+                    ) : (
+                      filteredLeads?.map((lead) => (
+                        <TableRow key={lead.id} className="group hover:bg-muted/30 transition-colors">
+                          <TableCell>
+                            <div>
+                              <p className="font-semibold text-foreground">{lead.first_name} {lead.last_name}</p>
+                              <span className="text-xs text-muted-foreground">Cadastrado em {new Date(lead.created_at).toLocaleDateString()}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {lead.company ? (
+                              <div className="flex items-center gap-1.5 p-1 px-2 rounded-md bg-muted/50 w-fit">
+                                <Building className="h-3 w-3 text-muted-foreground" />
+                                <span className="text-sm font-medium">{lead.company}</span>
+                              </div>
+                            ) : (
+                              <span className="text-muted-foreground text-sm">-</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <div className="space-y-1.5">
+                              {lead.email && (
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
+                                  <Mail className="h-3.5 w-3.5" />
+                                  {lead.email}
+                                </div>
+                              )}
+                              {lead.phone && (
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
+                                  <Phone className="h-3.5 w-3.5" />
+                                  {lead.phone}
+                                </div>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="secondary" className="font-normal capitalize">
+                              {lead.source || 'Manual'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>{getStatusBadge(lead.status)}</TableCell>
+                          <TableCell>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="w-48">
+                                <DropdownMenuItem className="cursor-pointer" onClick={() => setSelectedLead(lead)}>
+                                  Ver Perfil Completo
+                                </DropdownMenuItem>
+                                {canEdit && (
+                                  <>
+                                    <DropdownMenuItem className="cursor-pointer">Editar Informações</DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                  </>
+                                )}
+                                <DropdownMenuItem className="cursor-pointer">
+                                  <Phone className="mr-2 h-3.5 w-3.5" /> Ligar
+                                </DropdownMenuItem>
+                                <DropdownMenuItem className="cursor-pointer">
+                                  <Mail className="mr-2 h-3.5 w-3.5" /> Enviar Email
+                                </DropdownMenuItem>
+                                {canEdit && (
+                                  <>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenu>
+                                      <DropdownMenuTrigger asChild>
+                                        <DropdownMenuItem className="cursor-pointer" onSelect={(e) => e.preventDefault()}>
+                                          Alterar Status
+                                        </DropdownMenuItem>
+                                      </DropdownMenuTrigger>
+                                      <DropdownMenuContent side="left" align="start">
+                                        <DropdownMenuItem onClick={() => handleUpdateStatus(lead.id, 'new')}>
+                                          Novo
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => handleUpdateStatus(lead.id, 'contacted')}>
+                                          Contatado
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => handleUpdateStatus(lead.id, 'qualified')}>
+                                          Qualificado
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => handleUpdateStatus(lead.id, 'converted')}>
+                                          Convertido
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => handleUpdateStatus(lead.id, 'lost')}>
+                                          Perdido
+                                        </DropdownMenuItem>
+                                      </DropdownMenuContent>
+                                    </DropdownMenu>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem
+                                      className="cursor-pointer text-destructive focus:text-destructive"
+                                      onClick={() => handleDeleteLead(lead.id)}
+                                    >
+                                      Remover Lead
+                                    </DropdownMenuItem>
+                                  </>
+                                )}
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </TabsContent>
           </Tabs>
         </CardContent>
       </Card>

@@ -56,16 +56,19 @@ create table if not exists public.termination_processes (
 alter table public.termination_processes enable row level security;
 
 -- Policies (Adjust strictly as needed, simple for now)
+DROP POLICY IF EXISTS "Enable read access for authenticated users" ON public.termination_processes;
 create policy "Enable read access for authenticated users"
   on public.termination_processes for select
   to authenticated
   using (true);
 
+DROP POLICY IF EXISTS "Enable insert for authenticated users" ON public.termination_processes;
 create policy "Enable insert for authenticated users"
   on public.termination_processes for insert
   to authenticated
   with check (true);
 
+DROP POLICY IF EXISTS "Enable update for authenticated users" ON public.termination_processes;
 create policy "Enable update for authenticated users"
   on public.termination_processes for update
   to authenticated
@@ -86,6 +89,7 @@ create table if not exists public.termination_notifications (
 
 alter table public.termination_notifications enable row level security;
 
+DROP POLICY IF EXISTS "Enable all for authenticated users" ON public.termination_notifications;
 create policy "Enable all for authenticated users"
   on public.termination_notifications for all
   to authenticated

@@ -48,7 +48,6 @@ const FinanceiroAdmissaoPage = lazy(() => import("./pages/crm/financeiro/Finance
 const MarketingDashboard = lazy(() => import("./pages/crm/marketing/MarketingDashboard"));
 const MarketingAdmissaoPage = lazy(() => import("./pages/crm/marketing/MarketingAdmissaoPage"));
 const MarketingCampaignsPage = lazy(() => import("./pages/crm/marketing/MarketingCampaignsPage"));
-const MarketingSolicitacaoPage = lazy(() => import("@/pages/crm/marketing/MarketingSolicitacaoPage"));
 const MarketingRequestsListPage = lazy(() => import("./pages/crm/marketing/MarketingRequestsListPage"));
 const MarketingRequestsManagementPage = lazy(() => import("@/pages/crm/marketing/MarketingRequestsManagementPage"));
 const ComercialDashboard = lazy(() => import("./pages/crm/comercial/ComercialDashboard"));
@@ -100,7 +99,7 @@ const InventoryPage = lazy(() => import("./pages/crm/checklist/InventoryPage"));
 const PlanilhaJeanPage = lazy(() => import("./pages/crm/checklist/PlanilhaJeanPage"));
 const BonusManagementPage = lazy(() => import("./pages/crm/components/BonusManagementPage"));
 const AdminBonusPage = lazy(() => import("./pages/crm/admin/AdminBonusPage"));
-const SectorSupplyRequestPage = lazy(() => import("./pages/crm/components/SectorSupplyRequestPage").then(module => ({ default: module.SectorSupplyRequestPage })));
+const InsumoSolicitationPage = lazy(() => import("./pages/crm/shared/InsumoSolicitationPage"));
 
 const SystemSettingsPage = lazy(() => import("./pages/admin/SystemSettingsPage"));
 
@@ -205,23 +204,25 @@ const App = () => {
                               <Route path="admin/nfe" element={<NFEPage sector="admin" sectorLabel="Administração" />} />
                               <Route path="integracoes/sap" element={<SapIntegrationPage />} />
                               <Route path="admin/contratos" element={<SectorContractDashboard sector="admin" />} />
-                              <Route path="admin/admissao" element={<DepartmentAdmissaoPage department="admin" />} />
+                              <Route path="admin/operacoes" element={<SectorHROperationsPage departmentSlug="admin" departmentName="Administração" />} />
+                              <Route path="admin/admissao" element={<Navigate to="/crm/admin/operacoes" replace />} />
                               <Route path="admin/solicitacoes-setores" element={<SectorRequestsWrapper department="admin" />} />
                               <Route path="admin/processos" element={<ProcessControlPage />} />
                               <Route path="admin/precificacao" element={<PricingPage />} />
-                              <Route path="admin/insumos" element={<SectorSupplyRequestPage currentSector="admin" sectorName="Administração" />} />
+                              <Route path="admin/insumos" element={<InsumoSolicitationPage sector="admin" sectorLabel="Administração" />} />
                             </Route>
 
                             {/* Científica */}
                             <Route path="cientifica" element={<CientificaDashboard />} />
                             <Route path="cientifica/apresentacoes" element={<ScientificPresentationsPage />} />
-                            <Route path="cientifica/admissao" element={<DepartmentAdmissaoPage department="cientifica" />} />
+                            <Route path="cientifica/operacoes" element={<SectorHROperationsPage departmentSlug="cientifica" departmentName="Científica" />} />
+                            <Route path="cientifica/admissao" element={<Navigate to="/crm/cientifica/operacoes" replace />} />
                             <Route path="cientifica/contratos" element={<SectorContractDashboard sector="cientifica" />} />
                             <Route path="cientifica/contrato/:id" element={<ContractViewer />} />
 
                             <Route path="cientifica/solicitacoes-setores" element={<SectorRequestsWrapper department="cientifica" />} />
                             <Route path="cientifica/processos" element={<ProcessControlPage />} />
-                            <Route path="cientifica/insumos" element={<SectorSupplyRequestPage currentSector="cientifica" sectorName="Científica" />} />
+                            <Route path="cientifica/insumos" element={<InsumoSolicitationPage sector="cientifica" sectorLabel="Científica" />} />
                             <Route path="cientifica/nfe" element={<NFEPage sector="cientifica" sectorLabel="Científica" />} />
                             <Route path="cientifica/bonificacoes" element={<BonusManagementPage sectorId="cientifica" sectorName="Científica" />} />
 
@@ -229,7 +230,7 @@ const App = () => {
                             <Route element={<ProtectedRoute requiredModule="comercial" requireEmployee />}>
                               <Route path="comercial" element={<ComercialDashboard />} />
                               <Route path="comercial/franquias" element={<FranquiasPage />} />
-                              <Route path="comercial/admissao" element={<ComercialAdmissaoPage />} />
+                              <Route path="comercial/operacoes" element={<SectorHROperationsPage departmentSlug="comercial" departmentName="Comercial" />} /><Route path="comercial/admissao" element={<Navigate to="/crm/comercial/operacoes" replace />} />
                               <Route path="comercial/contratos" element={<SectorContractDashboard sector="comercial" />} />
                               <Route path="comercial/contrato/:id" element={<ContractViewer />} />
                               <Route path="comercial/inside-sales/contratos" element={<SectorContractDashboard sector="com_inside_sales" />} />
@@ -247,22 +248,33 @@ const App = () => {
 
                               <Route path="comercial/processos" element={<ProcessControlPage />} />
                               <Route path="comercial/precificacao" element={<PricingPage />} />
-                              <Route path="comercial/insumos" element={<SectorSupplyRequestPage currentSector="comercial" sectorName="Comercial" />} />
+                              <Route path="comercial/insumos" element={<InsumoSolicitationPage sector="comercial" sectorLabel="Comercial" />} />
+
+                              {/* Subcomercial Insumos */}
+                              <Route path="comercial/inside-sales/insumos" element={<InsumoSolicitationPage sector="com_inside" sectorLabel="Inside Sales" />} />
+                              <Route path="comercial/franquias/insumos" element={<InsumoSolicitationPage sector="com_franchises" sectorLabel="Franquias" />} />
+                              <Route path="comercial/sudeste/insumos" element={<InsumoSolicitationPage sector="com_sudeste" sectorLabel="Sudeste" />} />
+                              <Route path="comercial/sul/insumos" element={<InsumoSolicitationPage sector="com_sul" sectorLabel="Sul" />} />
+                              <Route path="comercial/centro/insumos" element={<InsumoSolicitationPage sector="com_centro" sectorLabel="Centro-Oeste" />} />
+                              <Route path="comercial/norte/insumos" element={<InsumoSolicitationPage sector="com_norte" sectorLabel="Norte/Nordeste" />} />
+
                               <Route path="comercial/nfe" element={<NFEPage sector="comercial" sectorLabel="Comercial" />} />
                               <Route path="comercial/solicitacoes-setores" element={<SectorRequestsWrapper department="comercial" />} />
+                              <Route path="comercial/contratos" element={<SectorContractDashboard sector="comercial" />} />
+                              <Route path="comercial/contrato/:id" element={<ContractViewer />} />
 
                               <Route path="comercial/:subdepartment" element={<ComercialSubDepartmentPage />} />
                             </Route>
 
                             {/* Compras */}
                             <Route path="compras" element={<ComprasDashboard />} />
-                            <Route path="compras/admissao" element={<DepartmentAdmissaoPage department="compras" />} />
+                            <Route path="compras/operacoes" element={<SectorHROperationsPage departmentSlug="compras" departmentName="Compras" />} /><Route path="compras/admissao" element={<Navigate to="/crm/compras/operacoes" replace />} />
                             <Route path="compras/veiculos" element={<ComprasVeiculosPage />} />
                             <Route path="compras/contratos" element={<SectorContractDashboard sector="compras" />} />
                             <Route path="compras/contrato/:id" element={<ContractViewer />} />
                             <Route path="compras/solicitacoes-setores" element={<SectorRequestsWrapper department="compras" />} />
                             <Route path="compras/processos" element={<ProcessControlPage />} />
-                            <Route path="compras/insumos" element={<SectorSupplyRequestPage currentSector="compras" sectorName="Compras" />} />
+                            <Route path="compras/insumos" element={<InsumoSolicitationPage sector="compras" sectorLabel="Compras" />} />
                             <Route path="compras/bonificacoes" element={<BonusManagementPage sectorId="compras" sectorName="Compras" />} />
 
                             {/* E-commerce */}
@@ -273,26 +285,27 @@ const App = () => {
                             <Route path="ecommerce/clientes" element={<EcommerceCustomersPage />} />
                             <Route path="ecommerce/cms" element={<EcommerceCMSPage />} />
                             <Route path="ecommerce/cupons" element={<EcommerceCuponsPage />} />
-                            <Route path="ecommerce/admissao" element={<EcommerceAdmissaoPage />} />
+                            <Route path="ecommerce/operacoes" element={<SectorHROperationsPage departmentSlug="ecommerce" departmentName="E-commerce" />} /><Route path="ecommerce/admissao" element={<Navigate to="/crm/ecommerce/operacoes" replace />} />
                             <Route path="ecommerce/precificacao" element={<PricingPage />} />
                             <Route path="ecommerce/contratos" element={<SectorContractDashboard sector="ecommerce" />} />
                             <Route path="ecommerce/contrato/:id" element={<ContractViewer />} />
                             <Route path="ecommerce/solicitacoes-setores" element={<SectorRequestsWrapper department="ecommerce" />} />
                             <Route path="ecommerce/processos" element={<ProcessControlPage />} />
-                            <Route path="ecommerce/insumos" element={<SectorSupplyRequestPage currentSector="ecommerce" sectorName="E-commerce" />} />
+                            <Route path="ecommerce/insumos" element={<InsumoSolicitationPage sector="ecommerce" sectorLabel="E-commerce" />} />
                             <Route path="ecommerce/bonificacoes" element={<BonusManagementPage sectorId="ecommerce" sectorName="E-commerce" />} />
 
                             {/* Financeiro */}
                             <Route element={<ProtectedRoute requiredModule="financeiro" requireEmployee />}>
                               <Route path="financeiro" element={<FinanceiroDashboard />} />
-                              <Route path="financeiro/admissao" element={<FinanceiroAdmissaoPage />} />
+                              <Route path="financeiro/operacoes" element={<SectorHROperationsPage departmentSlug="financeiro" departmentName="Financeiro" />} /><Route path="financeiro/admissao" element={<Navigate to="/crm/financeiro/operacoes" replace />} />
                               <Route path="financeiro/contratos" element={<SectorContractDashboard sector="financeiro" />} />
                               <Route path="financeiro/contrato/:id" element={<ContractViewer />} />
                               <Route path="financeiro/solicitacoes-setores" element={<SectorRequestsWrapper department="financeiro" />} />
                               <Route path="financeiro/processos" element={<ProcessControlPage />} />
-                              <Route path="financeiro/insumos" element={<SectorSupplyRequestPage currentSector="financeiro" sectorName="Financeiro" />} />
+                              <Route path="financeiro/insumos" element={<InsumoSolicitationPage sector="financeiro" sectorLabel="Financeiro" />} />
                               <Route path="financeiro/bonificacoes" element={<BonusManagementPage sectorId="financeiro" sectorName="Financeiro" />} />
                               <Route path="financeiro/precificacao" element={<PricingPage />} />
+                              <Route path="financeiro/nfe" element={<NFEPage sector="financeiro" sectorLabel="Financeiro" />} />
                             </Route>
 
 
@@ -300,11 +313,11 @@ const App = () => {
                             <Route path="intranet/contratos/novo" element={<ContractRequestForm />} />
                             <Route path="intranet/contratos/:id/editar" element={<ContractRequestForm />} />
                             <Route path="intranet/contratos/:id/revisao" element={<ContractViewer />} />
-                            <Route path="intranet/contratos" element={<SectorContractDashboard />} />
+                            <Route path="intranet/contratos" element={<Navigate to="/crm/juridico/contratos" replace />} />
 
                             {/* Unificados / Inteligentes */}
                             <Route path="contrato/:id" element={<ContractViewer />} />
-                            <Route path="contratos" element={<Navigate to="/crm/intranet/contratos" replace />} />
+                            <Route path="contratos" element={<Navigate to="/crm/juridico/contratos" replace />} />
 
                             {/* Jurídico */}
                             <Route element={<ProtectedRoute requiredModule="juridico" requireEmployee />}>
@@ -314,12 +327,12 @@ const App = () => {
                               <Route path="juridico/modelos" element={<ProtectedRoute requiredPermission="legal_compliance" requireEmployee><ContractTemplatesSettings /></ProtectedRoute>} />
                               <Route path="juridico/compliance" element={<ProtectedRoute requiredPermission="legal_compliance" requireEmployee><CompliancePage /></ProtectedRoute>} />
                               <Route path="legal" element={<LegalDashboard />} />
-                              <Route path="legal/novo" element={<Navigate to="/crm/intranet/contratos/novo" replace />} />
+                              <Route path="legal/novo" element={<Navigate to="/crm/juridico/contratos/novo" replace />} />
                               <Route path="legal/contrato/:id" element={<ContractViewer />} />
-                              <Route path="juridico/admissao" element={<JuridicoAdmissaoPage />} />
+                              <Route path="juridico/operacoes" element={<SectorHROperationsPage departmentSlug="juridico" departmentName="Jurídico" />} /><Route path="juridico/admissao" element={<Navigate to="/crm/juridico/operacoes" replace />} />
                               <Route path="juridico/solicitacoes-setores" element={<SectorRequestsWrapper department="juridico" />} />
                               <Route path="juridico/processos" element={<ProcessControlPage />} />
-                              <Route path="juridico/insumos" element={<SectorSupplyRequestPage currentSector="juridico" sectorName="Jurídico" />} />
+                              <Route path="juridico/insumos" element={<InsumoSolicitationPage sector="juridico" sectorLabel="Jurídico" />} />
                               <Route path="juridico/nfe" element={<NFEPage sector="juridico" sectorLabel="Jurídico" />} />
                               <Route path="juridico/bonificacoes" element={<BonusManagementPage sectorId="juridico" sectorName="Jurídico" />} />
                             </Route>
@@ -327,14 +340,14 @@ const App = () => {
                             {/* Logistics */}
                             <Route element={<ProtectedRoute requiredModule="logistica" requireEmployee />}>
                               <Route path="logistica" element={<LogisticaDashboard />} />
-                              <Route path="logistica/admissao" element={<LogisticaAdmissaoPage />} />
+                              <Route path="logistica/operacoes" element={<SectorHROperationsPage departmentSlug="logistica" departmentName="Logística" />} /><Route path="logistica/admissao" element={<Navigate to="/crm/logistica/operacoes" replace />} />
                               <Route path="logistica/pedidos" element={<ProtectedRoute requiredPermission="logistics_inventory" requireEmployee><LogisticaPedidosPage /></ProtectedRoute>} />
                               <Route path="logistica/estoque" element={<ProtectedRoute requiredPermission="logistics_inventory" requireEmployee><LogisticaEstoquePage /></ProtectedRoute>} />
                               <Route path="logistica/contratos" element={<SectorContractDashboard sector="logistica" />} />
                               <Route path="logistica/contrato/:id" element={<ContractViewer />} />
                               <Route path="logistica/solicitacoes-setores" element={<SectorRequestsWrapper department="logistica" />} />
                               <Route path="logistica/processos" element={<ProcessControlPage />} />
-                              <Route path="logistica/insumos" element={<SectorSupplyRequestPage currentSector="logistica" sectorName="Logística" />} />
+                              <Route path="logistica/insumos" element={<InsumoSolicitationPage sector="logistica" sectorLabel="Logística" />} />
                               <Route path="logistica/nfe" element={<NFEPage sector="logistica" sectorLabel="Logística" />} />
                               <Route path="logistica/bonificacoes" element={<BonusManagementPage sectorId="logistica" sectorName="Logística" />} />
                             </Route>
@@ -342,22 +355,22 @@ const App = () => {
                             {/* Manutenção */}
                             <Route element={<ProtectedRoute requiredModule="manutencao" requireEmployee />}>
                               <Route path="manutencao" element={<ManutencaoDashboard />} />
-                              <Route path="manutencao/admissao" element={<DepartmentAdmissaoPage department="manutencao" />} />
+                              <Route path="manutencao/operacoes" element={<SectorHROperationsPage departmentSlug="manutencao" departmentName="Manutenção" />} /><Route path="manutencao/admissao" element={<Navigate to="/crm/manutencao/operacoes" replace />} />
                               <Route path="manutencao/contratos" element={<SectorContractDashboard sector="manutencao" />} />
                               <Route path="manutencao/contrato/:id" element={<ContractViewer />} />
                               <Route path="manutencao/solicitacoes-setores" element={<SectorRequestsWrapper department="manutencao" />} />
                               <Route path="manutencao/nfe" element={<NFEPage sector="manutencao" sectorLabel="Manutenção" />} />
                               <Route path="manutencao/processos" element={<ProcessControlPage />} />
-                              <Route path="manutencao/insumos" element={<SectorSupplyRequestPage currentSector="manutencao" sectorName="Manutenção" />} />
+                              <Route path="manutencao/insumos" element={<InsumoSolicitationPage sector="manutencao" sectorLabel="Manutenção" />} />
                               <Route path="manutencao/bonificacoes" element={<BonusManagementPage sectorId="manutencao" sectorName="Manutenção" />} />
                             </Route>
 
                             {/* Marketing */}
                             <Route element={<ProtectedRoute requiredModule="marketing" requireEmployee />}>
                               <Route path="marketing" element={<MarketingDashboard />} />
-                              <Route path="marketing/admissao" element={<MarketingAdmissaoPage />} />
+                              <Route path="marketing/operacoes" element={<SectorHROperationsPage departmentSlug="marketing" departmentName="Marketing" />} /><Route path="marketing/admissao" element={<Navigate to="/crm/marketing/operacoes" replace />} />
                               <Route path="marketing/campanhas" element={<ProtectedRoute requiredPermission="marketing_campaigns" requireEmployee><MarketingCampaignsPage /></ProtectedRoute>} />
-                              <Route path="marketing/solicitacoes" element={<ProtectedRoute requiredPermission="marketing_requests" requireEmployee><MarketingSolicitacaoPage /></ProtectedRoute>} />
+                              <Route path="marketing/solicitacoes" element={<ProtectedRoute requiredPermission="marketing_requests" requireEmployee><InsumoSolicitationPage sector="marketing" sectorLabel="Marketing" /></ProtectedRoute>} />
                               <Route path="marketing/gerenciar" element={<ProtectedRoute requiredPermission="marketing_requests" requireEmployee><MarketingRequestsManagementPage /></ProtectedRoute>} />
                               <Route path="marketing/bonificacoes" element={<BonusManagementPage sectorId="marketing" sectorName="Marketing" />} />
                               <Route path="marketing/contratos" element={<SectorContractDashboard sector="marketing" />} />
@@ -365,17 +378,20 @@ const App = () => {
                               <Route path="marketing/solicitacoes-setores" element={<SectorRequestsWrapper department="marketing" />} />
                               <Route path="marketing/nfe" element={<NFEPage sector="marketing" sectorLabel="Marketing" />} />
                               <Route path="marketing/processos" element={<ProcessControlPage />} />
-                              <Route path="marketing/insumos" element={<SectorSupplyRequestPage currentSector="marketing" sectorName="Marketing" />} />
+                              <Route path="marketing/insumos" element={<InsumoSolicitationPage sector="marketing" sectorLabel="Marketing" />} />
                             </Route>
 
                             {/* RH */}
                             <Route element={<ProtectedRoute requiredModule="rh" requireEmployee />}>
                               <Route path="rh" element={<RHDashboard />} />
+                              <Route path="rh/usuarios" element={<ProtectedRoute allowedRoles={['admin', 'rh_manager']} requiredPermission="manage_hr" requireEmployee><UsersAdminPage /></ProtectedRoute>} />
                               <Route path="rh/operacoes" element={<ProtectedRoute requiredPermission="hr_employees" requireEmployee><HROperationsPage /></ProtectedRoute>} />
                               <Route path="rh/solicitacoes-setores" element={<SectorRequestsWrapper department="rh" />} />
                               <Route path="rh/nfe" element={<NFEPage sector="rh" sectorLabel="RH" />} />
                               <Route path="rh/processos" element={<ProcessControlPage />} />
-                              <Route path="rh/insumos" element={<SectorSupplyRequestPage currentSector="rh" sectorName="Recursos Humanos" />} />
+                              <Route path="rh/insumos" element={<InsumoSolicitationPage sector="rh" sectorLabel="Recursos Humanos" />} />
+                              <Route path="rh/contratos" element={<SectorContractDashboard sector="rh" />} />
+                              <Route path="rh/contrato/:id" element={<ContractViewer />} />
                             </Route>
 
                             {/* E-commerce */}
@@ -388,13 +404,13 @@ const App = () => {
                               <Route path="tech" element={<TechDashboard />} />
                               <Route path="tech/tickets" element={<ProtectedRoute requiredPermission="tech_tickets" requireEmployee><TechTicketsPage /></ProtectedRoute>} />
                               <Route path="tech/kb" element={<TechKBPage />} />
-                              <Route path="tech/admissao" element={<TechAdmissaoPage />} />
+                              <Route path="tech/operacoes" element={<SectorHROperationsPage departmentSlug="tech" departmentName="Tecnologia da Informação" />} /><Route path="tech/admissao" element={<Navigate to="/crm/tech/operacoes" replace />} />
                               <Route path="tech/nfe" element={<NFEPage sector="tech" sectorLabel="Tecnologia da Informação" />} />
                               <Route path="tech/inventario" element={<InventoryPage />} />
                               <Route path="tech/contratos" element={<SectorContractDashboard sector="tech" />} />
                               <Route path="tech/contrato/:id" element={<ContractViewer />} />
                               <Route path="tech/processos" element={<ProcessControlPage />} />
-                              <Route path="tech/insumos" element={<SectorSupplyRequestPage currentSector="tech" sectorName="Tecnologia da Informação" />} />
+                              <Route path="tech/insumos" element={<InsumoSolicitationPage sector="tech" sectorLabel="Tecnologia da Informação" />} />
                               <Route path="tech/bonificacoes" element={<BonusManagementPage sectorId="tech" sectorName="Tech" />} />
                               <Route path="tech/solicitacoes-setores" element={<SectorRequestsWrapper department="tech" />} />
                             </Route>

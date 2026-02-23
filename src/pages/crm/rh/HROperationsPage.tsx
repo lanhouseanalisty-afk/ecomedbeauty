@@ -39,11 +39,11 @@ export default function HROperationsPage() {
                     </div>
 
                     <div className="p-4 md:p-6 bg-background rounded-b-xl border-t border-muted">
-                        <TabsContent value="admissao" className="mt-0 border-none animate-in slide-in-from-left-2 duration-300">
+                        <TabsContent value="admissao" className="mt-0 border-none">
                             <AdmissaoPage />
                         </TabsContent>
 
-                        <TabsContent value="demissao" className="mt-0 border-none animate-in slide-in-from-right-2 duration-300">
+                        <TabsContent value="demissao" className="mt-0 border-none">
                             <DemissaoPage />
                         </TabsContent>
                     </div>

@@ -190,14 +190,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signUp = async (email: string, password: string, fullName: string) => {
-    try {
-      const { error } = await supabase.auth.signUp({
-        email, password, options: { emailRedirectTo: `${window.location.origin}/`, data: { full_name: fullName } }
-      });
-      return { error: error as Error };
-    } catch (error) {
-      return { error: error as Error };
-    }
+    return { error: new Error("Criação de conta desativada. Entre em contato com o administrador.") };
   };
 
   const signIn = async (email: string, password: string) => {

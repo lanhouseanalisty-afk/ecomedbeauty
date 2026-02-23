@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { Database } from '@/integrations/supabase/types';
+import { useDepartments as useGlobalDepartments } from './useDepartments';
 
 type Employee = Database['public']['Tables']['employees']['Row'];
 type EmployeeInsert = Database['public']['Tables']['employees']['Insert'];
@@ -97,21 +98,8 @@ export function useEmployees() {
   };
 }
 
-export function useDepartments() {
-  return useQuery({
-    queryKey: ['departments'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('departments')
-        .select('*')
-        .eq('is_active', true)
-        .order('name');
-
-      if (error) throw error;
-      return data;
-    },
-  });
-}
+// Re-exporting from global hook to maintain backward compatibility but use consolidated logic
+export const useDepartments = useGlobalDepartments;
 
 export function usePositions() {
   return useQuery({

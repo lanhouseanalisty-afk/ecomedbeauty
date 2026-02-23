@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { supabase } from "@/integrations/supabase/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -45,17 +46,14 @@ const DEPARTAMENTOS = [
   { value: "Jurídico", label: "Jurídico" },
   { value: "Tech", label: "Tech Digital (TI)" },
   { value: "Compras", label: "Compras" },
-  { value: "Comercial", label: "Comercial (Geral)" },
   { value: "com_norte", label: "Comercial - Norte" },
   { value: "com_sul", label: "Comercial - Sul" },
   { value: "com_sudeste", label: "Comercial - Sudeste" },
   { value: "com_centro", label: "Comercial - Centro" },
   { value: "com_inside", label: "Comercial - Inside Sales" },
   { value: "franquias", label: "Comercial - Franquias" },
-  { value: "Diretoria", label: "Diretoria" },
   { value: "Científica", label: "Científica" },
   { value: "Manutenção", label: "Manutenção" },
-  { value: "Administração", label: "Administração" },
   { value: "RH", label: "Recursos Humanos" },
 ];
 

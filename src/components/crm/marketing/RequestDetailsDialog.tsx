@@ -96,6 +96,10 @@ export function RequestDetailsDialog({
                                 <p className="text-muted-foreground">Gerente Regional</p>
                                 <Badge>{request.regional_manager}</Badge>
                             </div>
+                            <div>
+                                <p className="text-muted-foreground">Setor Requisitante</p>
+                                <Badge variant="outline" className="capitalize">{request.sector || "Marketing"}</Badge>
+                            </div>
                         </div>
                     </div>
 

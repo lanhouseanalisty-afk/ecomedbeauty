@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +14,7 @@ import { Search, Users, Shield, Edit, Loader2, UserCog, ChevronRight } from 'luc
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import { UserCreationModal } from '@/components/admin/UserCreationModal';
 
 interface Employee {
     id: string;
@@ -162,7 +164,9 @@ const INDEPENDENT_PERMISSIONS = [
 
 export default function UsersAdminPage() {
     const { t } = useTranslation();
+    const location = useLocation();
     const [employees, setEmployees] = useState<Employee[]>([]);
+    const isAdminPath = location.pathname.startsWith('/crm/admin');
     const [userRoles, setUserRoles] = useState<Map<string, UserRole>>(new Map());
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -367,21 +371,44 @@ export default function UsersAdminPage() {
         if (!selectedEmployee || selectedEmployee.user_id) return;
         setSaving(true);
         try {
-            const tempPassword = selectedEmployee.email.split('@')[0] + "!2026";
-            const { data, error } = await supabase.auth.signUp({
-                email: selectedEmployee.email,
-                password: tempPassword,
-                options: { data: { full_name: selectedEmployee.name, employee_id: selectedEmployee.id } }
+            const tempPassword = "MedBeauty@123";
+            const { data, error } = await supabase.functions.invoke('update-user-password', {
+                body: {
+                    email: selectedEmployee.email,
+                    employeeName: selectedEmployee.name,
+                    newPassword: tempPassword
+                }
             });
+
             if (error) throw error;
-            if (data.user) {
-                await supabase.from('employees').update({ user_id: data.user.id }).eq('id', selectedEmployee.id);
-                toast.success(`Acesso habilitado! Senha temp: ${tempPassword}`);
-                fetchData();
-                setIsEditDialogOpen(false);
+
+            if (data?.userId) {
+                // Atualiza o employee com o novo user_id
+                const { error: updateErr } = await supabase
+                    .from('employees')
+                    .update({ user_id: data.userId })
+                    .eq('id', selectedEmployee.id);
+
+                if (updateErr) throw updateErr;
+
+                toast.success(`Acesso habilitado! Senha padrão: ${tempPassword}`);
+
+                // Atualiza o estado local para permitir configurar permissões imediatamente
+                const updatedEmployee = { ...selectedEmployee, user_id: data.userId };
+                setSelectedEmployee(updatedEmployee);
+
+                // Atualiza a lista de funcionários localmente
+                setEmployees(prev => prev.map(emp =>
+                    emp.id === selectedEmployee.id ? updatedEmployee : emp
+                ));
+
+                // Não fechamos o modal aqui para o usuário poder salvar as roles
             }
         } catch (error: any) {
-            toast.error('Erro: ' + error.message);
+            console.error('[UsersAdminPage] handleEnableAccess full error:', error);
+            // Se o erro for um objeto com contexto, tenta extrair mais info
+            const detail = error.context?.status ? ` (Status: ${error.context.status})` : '';
+            toast.error(`Erro ao habilitar acesso: ${error.message}${detail}`);
         } finally {
             setSaving(false);
         }
@@ -438,14 +465,17 @@ export default function UsersAdminPage() {
                             <Users className="w-5 h-5 text-rose-gold" />
                             Colaboradores
                         </CardTitle>
-                        <div className="relative w-[300px]">
-                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                placeholder="Buscar colaborador..."
-                                className="pl-9"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
+                        <div className="flex items-center gap-2">
+                            <div className="relative w-[300px]">
+                                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    placeholder="Buscar colaborador..."
+                                    className="pl-9"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+                            </div>
+                            {isAdminPath && <UserCreationModal onUserCreated={fetchData} />}
                         </div>
                     </div>
                 </CardHeader>

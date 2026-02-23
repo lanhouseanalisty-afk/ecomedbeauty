@@ -41,6 +41,7 @@ export const ContractTable = ({ data, isLoading, isLegalMember, onDelete, sector
             <TableHeader>
                 <TableRow>
                     <TableHead>Título</TableHead>
+                    {!sector && <TableHead>Setor</TableHead>}
                     <TableHead>Status</TableHead>
                     <TableHead>ID SAP</TableHead>
                     <TableHead>Data Criação</TableHead>
@@ -61,6 +62,13 @@ export const ContractTable = ({ data, isLoading, isLegalMember, onDelete, sector
                                     <span className="text-xs text-muted-foreground line-clamp-1">{contract.description || contract.terms_summary || ""}</span>
                                 </div>
                             </TableCell>
+                            {!sector && (
+                                <TableCell>
+                                    <Badge variant="outline" className="bg-slate-50 text-slate-600 border-slate-200">
+                                        {contract.departments?.name || "Geral"}
+                                    </Badge>
+                                </TableCell>
+                            )}
                             <TableCell>{getStatusBadge(contract.status)}</TableCell>
                             <TableCell className="font-mono text-xs">{contract.sap_request_id || contract.payment_terms || "-"}</TableCell>
                             <TableCell className="text-muted-foreground text-sm">

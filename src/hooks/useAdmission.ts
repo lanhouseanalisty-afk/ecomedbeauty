@@ -10,7 +10,8 @@ async function createNotificationAndSendEmail(
   employeeName: string,
   targetEmail?: string | null,
   position?: string,
-  managerName?: string
+  managerName?: string,
+  checklistId?: string
 ) {
   // Create notification in database
   const { data: notification, error: notifError } = await supabase
@@ -26,6 +27,7 @@ async function createNotificationAndSendEmail(
         employee_name: employeeName,
         position,
         manager_name: managerName,
+        checklist_id: checklistId
       },
     })
     .select()
@@ -51,6 +53,7 @@ async function createNotificationAndSendEmail(
           baseUrl,
           managerName,
           position,
+          checklistId // Pass the checklistId to the email function
         },
       });
 
@@ -99,6 +102,12 @@ export interface AdmissionProcess {
   email_distribution_lists: string[] | null;
   shared_folders: string[] | null;
   manager_observations: string | null;
+  // Campos da Compras
+  compras_remarks: string | null;
+  vehicle_id: string | null;
+  pickup_address: string | null;
+  pickup_date: string | null;
+  pickup_time: string | null;
   // Campos da TI (12 itens do checklist)
   email_created: string | null;           // 3. E-mail corporativo criado?
   user_ad_created: boolean | null;        // 2. Conta AD criada?
@@ -118,7 +127,7 @@ export interface AdmissionProcess {
   documents_received: string[] | null;
   documents_pending: string[] | null;
   // Controle de fluxo
-  current_step: 'rh' | 'gestor' | 'compras' | 'ti' | 'rh_review' | 'colaborador' | 'concluido';
+  current_step: 'rh' | 'gestor' | 'ti' | 'compras' | 'rh_review' | 'colaborador' | 'concluido';
   status: 'pending' | 'in_progress' | 'completed' | 'cancelled';
   target_department: string;
   created_by: string | null;
@@ -128,13 +137,10 @@ export interface AdmissionProcess {
   hr_completed_by: string | null;
   manager_completed_at: string | null;
   manager_completed_by: string | null;
-  compras_completed_at?: string | null;
-  compras_completed_by?: string | null;
-  pickup_address?: string | null;
-  pickup_date?: string | null;
-  pickup_time?: string | null;
   ti_completed_at: string | null;
   ti_completed_by: string | null;
+  compras_completed_at: string | null;
+  compras_completed_by: string | null;
   documents_completed_at: string | null;
 }
 
@@ -143,8 +149,16 @@ const departmentToSlug: Record<string, string> = {
   'Financeiro': 'financeiro',
   'Marketing': 'marketing',
   'Comercial': 'comercial',
+  // All Comercial sub-departments use the same 'comercial' page
+  'com_norte': 'com_norte',
+  'com_sul': 'com_sul',
+  'com_sudeste': 'com_sudeste',
+  'com_centro': 'com_centro',
+  'com_inside': 'com_inside',
+  'franquias': 'franquias',
   'Logística': 'logistica',
   'Logistica': 'logistica',
+  'Compras': 'compras',
   'Jurídico': 'juridico',
   'Juridico': 'juridico',
   'TI': 'tech',
@@ -155,6 +169,10 @@ const departmentToSlug: Record<string, string> = {
   'Ecommerce': 'ecommerce',
   'RH': 'rh',
   'Recursos Humanos': 'rh',
+  'Científica': 'cientifica',
+  'Cientifica': 'cientifica',
+  'Manutenção': 'manutencao',
+  'Manutencao': 'manutencao',
 };
 
 export function getDepartmentSlug(department: string): string {
@@ -221,29 +239,6 @@ export function useAdmissionProcesses(department?: string, fetchAll?: boolean) {
       // Determine target department based on the selected department
       const targetDepartment = getDepartmentSlug(data.department);
 
-      // Check for existing employee with this CPF
-      const { data: existingEmployee } = await supabase
-        .from('employees')
-        .select('id')
-        .eq('cpf', data.cpf)
-        .maybeSingle();
-
-      if (existingEmployee) {
-        throw new Error('Já existe um funcionário cadastrado com este CPF.');
-      }
-
-      // Check for existing admission process with this CPF (excluding cancelled ones)
-      const { data: existingProcess } = await supabase
-        .from('admission_processes')
-        .select('id')
-        .eq('cpf', data.cpf)
-        .neq('status', 'cancelled')
-        .maybeSingle();
-
-      if (existingProcess) {
-        throw new Error('Já existe um processo de admissão ativo ou concluído para este CPF.');
-      }
-
       const { data: result, error } = await supabase
         .from('admission_processes')
         .insert({
@@ -292,6 +287,7 @@ export function useAdmissionProcesses(department?: string, fetchAll?: boolean) {
         softwares_necessarios?: string[];
         acessos_necessarios?: string[]; // Mapeado para systems_list
         necessita_impressora?: boolean;
+        necessita_veiculo?: boolean;
         manager_observations?: string;
       };
     }) => {
@@ -300,22 +296,28 @@ export function useAdmissionProcesses(department?: string, fetchAll?: boolean) {
       // Mapear equipamentos_necessarios para os campos individuais do banco
       const equipamentos = data.equipamentos_necessarios || [];
 
+      // Determine next step based on vehicle need
+      // If needs vehicle → go to Compras first, then TI
+      // If no vehicle needed → go directly to TI
+      const nextStep = data.necessita_veiculo ? 'compras' : 'ti';
+      const nextDepartment = data.necessita_veiculo ? 'compras' : 'tech';
+
       const { data: result, error } = await supabase
         .from('admission_processes')
         .update({
           buddy_mentor: data.buddy_mentor,
           // Mapear lista de equipamentos para campos booleanos
-          needs_laptop: equipamentos.includes('Notebook'),
-          needs_monitor: equipamentos.includes('Desktop'),
-          needs_headset: equipamentos.includes('Tablet'),
-          needs_keyboard: equipamentos.includes('Celular'),
-          needs_mouse: false,
-          needs_vehicle: data.needs_vehicle,
+          needs_laptop: equipamentos.includes('Notebook') || equipamentos.includes('Desktop'),
+          needs_monitor: equipamentos.includes('Monitor'),
+          needs_headset: equipamentos.includes('Headset'),
+          needs_keyboard: equipamentos.includes('Teclado'),
+          needs_mouse: equipamentos.includes('Mouse'),
           needs_printer: data.necessita_impressora,
+          needs_vehicle: data.necessita_veiculo,
           software_list: data.softwares_necessarios,
           systems_list: data.acessos_necessarios, // Acessos necessários
           manager_observations: data.manager_observations,
-          current_step: data.needs_vehicle ? 'compras' : 'ti',
+          current_step: nextStep,
           manager_completed_at: new Date().toISOString(),
           manager_completed_by: user?.user?.id,
         })
@@ -325,14 +327,11 @@ export function useAdmissionProcesses(department?: string, fetchAll?: boolean) {
 
       if (error) throw error;
 
-      // Create notification for next step (Compras or TI)
-      const nextStep = data.needs_vehicle ? 'compras' : 'ti';
-      const targetDept = data.needs_vehicle ? 'compras' : 'tech';
-
+      // Create notification for correct next step
       await createNotificationAndSendEmail(
         result.id,
         nextStep,
-        targetDept,
+        nextDepartment,
         result.employee_name,
         null,
         result.position,
@@ -341,18 +340,17 @@ export function useAdmissionProcesses(department?: string, fetchAll?: boolean) {
 
       return result;
     },
-    onSuccess: (data) => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['admission-processes'] });
-      const nextStepLabel = data.current_step === 'compras' ? 'Compras' : 'TI';
-      toast.success(`Definições do gestor salvas. Notificação enviada para ${nextStepLabel}.`);
+      const nextLabel = result.needs_vehicle ? 'Compras' : 'TI';
+      toast.success(`Definições do gestor salvas. Notificação enviada para ${nextLabel}.`);
     },
     onError: (error) => {
       toast.error('Erro ao atualizar: ' + error.message);
     },
   });
 
-  // Update IT step - agora volta para RH revisar
-  // 12 itens do checklist de TI
+  // Update IT step - agora vai para Compras se necessário
   const updateITStep = useMutation({
     mutationFn: async ({ id, data }: {
       id: string;
@@ -373,6 +371,19 @@ export function useAdmissionProcesses(department?: string, fetchAll?: boolean) {
     }) => {
       const { data: user } = await supabase.auth.getUser();
 
+      // Get current process to check if it needs a vehicle
+      const { data: currentProcess } = await supabase
+        .from('admission_processes')
+        .select('needs_vehicle, compras_completed_at')
+        .eq('id', id)
+        .single();
+
+      // If needs vehicle but Compras hasn't completed yet → go to compras
+      // Otherwise → go directly to colaborador
+      const needsVehicle = currentProcess?.needs_vehicle && !currentProcess?.compras_completed_at;
+      const nextStep = needsVehicle ? 'compras' : 'colaborador';
+      const nextDepartment = needsVehicle ? 'compras' : 'rh';
+
       const { data: result, error } = await supabase
         .from('admission_processes')
         .update({
@@ -381,14 +392,13 @@ export function useAdmissionProcesses(department?: string, fetchAll?: boolean) {
           email_created: data.email_created,
           microsoft_licenses: data.microsoft_licenses,
           vpn_configured: data.vpn_configured ? 'Sim' : null,
-          // Softwares instalados são salvos junto com os solicitados
           sap_user_created: data.sap_user_created ? 'Sim' : null,
           salesforce_profile_created: data.salesforce_profile_created ? 'Sim' : null,
           network_folders_released: data.network_folders_released ? 'Sim' : null,
           printers_configured: data.printers_configured ? 'Sim' : null,
           general_tests_done: data.general_tests_done ? 'Sim' : null,
           it_observations: data.it_observations,
-          current_step: 'rh_review', // Volta para RH revisar
+          current_step: nextStep,
           it_completion_date: new Date().toISOString(),
           ti_completed_at: new Date().toISOString(),
           ti_completed_by: user?.user?.id,
@@ -399,56 +409,93 @@ export function useAdmissionProcesses(department?: string, fetchAll?: boolean) {
 
       if (error) throw error;
 
-      // Create notification for RH to review
+      // --- AUTOMATIC USER CREATION + EMPLOYEE RECORD ---
+      // This is now handled by the Edge Function using service_role to bypass RLS
+      if (data.email_created) {
+        try {
+          console.log("Solicitando criação de usuário/funcionário para:", data.email_created);
+          const { data: fnResponse, error: fnError } = await supabase.functions.invoke('update-user-password', {
+            body: {
+              email: data.email_created,
+              employeeName: result.employee_name,
+              hireDate: result.start_date || result.admission_date
+            }
+          });
+
+          if (fnError) {
+            console.error("Erro ao processar criação via Edge Function:", fnError);
+          } else {
+            console.log("Sucesso no processamento:", fnResponse);
+          }
+        } catch (err) {
+          console.error("Erro na comunicação com a Edge Function:", err);
+        }
+      }
+
+      // Create notification for next step
       await createNotificationAndSendEmail(
         result.id,
-        'rh_review',
-        'rh',
+        nextStep,
+        nextDepartment,
         result.employee_name,
-        null, // RH will see in dashboard
+        null,
         result.position,
         result.manager_name
       );
 
       return result;
     },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['admission-processes'] });
+      const nextStepLabel = data.current_step === 'compras' ? 'Compras' : 'Colaborador';
+      toast.success(`Configuração TI concluída. Enviado para ${nextStepLabel}.`);
+    },
     onError: (error) => {
       toast.error('Erro ao atualizar: ' + error.message);
     },
   });
 
-  // Update Compras step
+  // Update Compras step (Vehicle Assignment)
   const updateComprasStep = useMutation({
     mutationFn: async ({ id, data }: {
       id: string;
       data: {
-        vehicle_id?: string;
-        pickup_address?: string;
-        pickup_date?: string;
-        pickup_time?: string;
+        vehicle_id: string;
+        pickup_address: string;
+        pickup_date: string;
+        pickup_time: string;
         compras_remarks?: string;
-        document_urls?: string[];
       };
     }) => {
       const { data: user } = await supabase.auth.getUser();
 
+      // Sanitize: empty string is invalid for UUID columns — must be null
+      const sanitizedData = {
+        ...data,
+        vehicle_id: data.vehicle_id?.trim() || null,
+      };
+
       const { data: result, error } = await supabase
         .from('admission_processes')
         .update({
-          // Note: using available fields if specific ones don't exist
-          manager_observations: data.compras_remarks,
-          pickup_address: data.pickup_address,
-          pickup_date: data.pickup_date,
-          pickup_time: data.pickup_time,
+          ...sanitizedData,
           current_step: 'ti',
           compras_completed_at: new Date().toISOString(),
           compras_completed_by: user?.user?.id,
-        } as any)
+        })
         .eq('id', id)
         .select()
         .single();
 
       if (error) throw error;
+
+      // Update vehicle status to 'assigned'
+      if (data.vehicle_id) {
+        await supabase
+          .from('vehicles')
+          .update({ status: 'assigned' })
+          .eq('id', data.vehicle_id);
+      }
 
       // Create notification for TI
       await createNotificationAndSendEmail(
@@ -465,9 +512,9 @@ export function useAdmissionProcesses(department?: string, fetchAll?: boolean) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admission-processes'] });
-      toast.success('Processo de Compras concluído. Enviado para TI.');
+      toast.success('Veículo atribuído! Processo enviado para TI.');
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast.error('Erro ao atualizar Compras: ' + error.message);
     },
   });
@@ -486,6 +533,34 @@ export function useAdmissionProcesses(department?: string, fetchAll?: boolean) {
 
       if (error) throw error;
 
+      // --- INTEGRATE WITH CHECKLISTS ---
+      // Criar um checklist de admissão se não existir para este processo
+      let checklistId = null;
+      try {
+        const { data: existingChecklist } = await supabase
+          .from('checklists')
+          .select('id')
+          .eq('title', `Admissão: ${result.employee_name}`)
+          .maybeSingle();
+
+        if (!existingChecklist) {
+          const { data: newChecklist } = await supabase.from('checklists').insert({
+            title: `Admissão: ${result.employee_name}`,
+            type: 'admissao',
+            status: 'pending',
+            data: {
+              ...result,
+              currentSection: 5 // Pula direto para a etapa do colaborador no checklist
+            }
+          }).select('id').single();
+          checklistId = newChecklist?.id;
+        } else {
+          checklistId = existingChecklist.id;
+        }
+      } catch (err) {
+        console.error("Erro ao vincular checklist:", err);
+      }
+
       // Create notification for Colaborador
       await createNotificationAndSendEmail(
         result.id,
@@ -494,7 +569,8 @@ export function useAdmissionProcesses(department?: string, fetchAll?: boolean) {
         result.employee_name,
         result.email_created,
         result.position,
-        result.manager_name
+        result.manager_name,
+        checklistId // Pass the captured checklistId
       );
 
       return result;
@@ -512,7 +588,7 @@ export function useAdmissionProcesses(department?: string, fetchAll?: boolean) {
   const returnToStep = useMutation({
     mutationFn: async ({ id, targetStep, reason }: {
       id: string;
-      targetStep: 'gestor' | 'ti';
+      targetStep: 'gestor' | 'ti' | 'compras';
       reason?: string;
     }) => {
       const { data: user } = await supabase.auth.getUser();
@@ -531,6 +607,10 @@ export function useAdmissionProcesses(department?: string, fetchAll?: boolean) {
             ti_completed_at: null,
             ti_completed_by: null,
           } : {}),
+          ...(targetStep === 'compras' ? {
+            compras_completed_at: null,
+            compras_completed_by: null,
+          } : {}),
         })
         .eq('id', id)
         .select()
@@ -539,7 +619,11 @@ export function useAdmissionProcesses(department?: string, fetchAll?: boolean) {
       if (error) throw error;
 
       // Create notification for the target step
-      const targetDepartment = targetStep === 'ti' ? 'tech' : result.target_department;
+      const targetDepartment =
+        targetStep === 'ti' ? 'tech' :
+          targetStep === 'compras' ? 'compras' :
+            result.target_department;
+
       await createNotificationAndSendEmail(
         result.id,
         targetStep,
@@ -554,7 +638,9 @@ export function useAdmissionProcesses(department?: string, fetchAll?: boolean) {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['admission-processes'] });
-      const stepLabel = variables.targetStep === 'gestor' ? 'Gestor' : 'TI';
+      const stepLabel =
+        variables.targetStep === 'gestor' ? 'Gestor' :
+          variables.targetStep === 'compras' ? 'Compras' : 'TI';
       toast.success(`Processo retornado para ${stepLabel}.`);
     },
     onError: (error) => {
@@ -594,23 +680,152 @@ export function useAdmissionProcesses(department?: string, fetchAll?: boolean) {
     },
   });
 
+  const advanceStep = useMutation({
+    mutationFn: async ({ id, reason }: { id: string; reason?: string }) => {
+      const { data: process, error: fetchError } = await supabase
+        .from('admission_processes')
+        .select('current_step, needs_vehicle, hr_observations, employee_name, position, manager_name, manager_email')
+        .eq('id', id)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      const currentStep = process.current_step;
+      let nextStep: 'rh' | 'gestor' | 'ti' | 'compras' | 'rh_review' | 'colaborador' | 'concluido' = 'rh_review';
+      let nextDepartment = 'rh';
+
+      // Logic for advancing step
+      if (currentStep === 'rh') {
+        nextStep = 'gestor';
+        nextDepartment = 'gestor';
+      } else if (currentStep === 'gestor') {
+        nextStep = process.needs_vehicle ? 'compras' : 'ti';
+        nextDepartment = process.needs_vehicle ? 'compras' : 'tech';
+      } else if (currentStep === 'compras') {
+        nextStep = 'ti';
+        nextDepartment = 'tech';
+      } else if (currentStep === 'ti') {
+        nextStep = 'colaborador';
+        nextDepartment = 'colaborador';
+      } else if (currentStep === 'colaborador') {
+        nextStep = 'concluido';
+        nextDepartment = 'rh';
+      } else if (currentStep === 'rh_review') {
+        nextStep = 'colaborador';
+        nextDepartment = 'colaborador';
+      }
+
+      const advanceMessage = `[AVANÇO RÁPIDO] Etapa ${currentStep?.toUpperCase()} pulada/avançada. ${reason ? `Motivo: ${reason}` : ''}`;
+      const newObservations = process.hr_observations
+        ? `${process.hr_observations}\n\n${advanceMessage}`
+        : advanceMessage;
+
+      const { data, error } = await supabase
+        .from('admission_processes')
+        .update({
+          current_step: nextStep,
+          hr_observations: newObservations,
+          updated_at: new Date().toISOString(),
+          // Se for concluído, marcar como completo
+          ...(nextStep === 'concluido' ? { status: 'completed', documents_completed_at: new Date().toISOString() } : {})
+        })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Notify next step
+      if (nextStep !== 'concluido') {
+        await createNotificationAndSendEmail(
+          data.id,
+          nextStep,
+          nextDepartment,
+          process.employee_name,
+          nextStep === 'gestor' ? process.manager_email : null,
+          process.position,
+          process.manager_name
+        );
+      }
+
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['admission-processes'] });
+      toast.success(`Etapa avançada com sucesso para: ${data.current_step.toUpperCase()}`);
+    },
+    onError: (error) => {
+      console.error("Error advancing step:", error);
+      toast.error("Erro ao avançar etapa");
+    },
+  });
+
+  // Cancel admission
+  const cancelAdmission = useMutation({
+    mutationFn: async (id: string) => {
+      const { data: result, error } = await supabase
+        .from('admission_processes')
+        .update({
+          status: 'cancelled',
+          current_step: 'rh', // Move back to initial state
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admission-processes'] });
+      toast.success('Processo de admissão cancelado.');
+    },
+    onError: (error) => {
+      toast.error('Erro ao cancelar: ' + error.message);
+    },
+  });
+
+  // Delete admission permanently
+  const deleteAdmission = useMutation({
+    mutationFn: async (id: string) => {
+      // Logic for deleting from supabase would go here
+      const { error } = await supabase
+        .from('admission_processes')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admission-processes'] });
+      toast.success('Processo de admissão excluído permanentemente.');
+    },
+    onError: (error) => {
+      toast.error('Erro ao excluir: ' + error.message);
+    },
+  });
+
   return {
     processes,
     isLoading,
     error,
     createAdmission,
     updateManagerStep,
-    updateComprasStep,
     updateITStep,
+    updateComprasStep,
     sendToColaborador,
     returnToStep,
     completeAdmission,
+    advanceStep,
+    cancelAdmission,
+    deleteAdmission,
   };
 }
 
 // Hook for department-specific admissions
 export function useDepartmentAdmissions(departmentSlug: string) {
   // Para TI, buscar todos os processos (pois TI processa admissões de todos os departamentos)
-  const fetchAll = departmentSlug === 'tech';
+  const fetchAll = departmentSlug === 'tech' || departmentSlug === 'compras';
   return useAdmissionProcesses(departmentSlug, fetchAll);
 }

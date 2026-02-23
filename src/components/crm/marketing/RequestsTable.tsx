@@ -123,6 +123,7 @@ export function RequestsTable({
                             <TableHead>GR</TableHead>
                             <TableHead>Data</TableHead>
                             <TableHead>KIT</TableHead>
+                            <TableHead>Setor</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead className="text-right">Ações</TableHead>
                         </TableRow>
@@ -153,6 +154,11 @@ export function RequestsTable({
                                     <TableCell>
                                         <Badge variant="secondary" className="text-xs">
                                             {request.kit_type}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge variant="outline" className="capitalize">
+                                            {request.sector || "marketing"}
                                         </Badge>
                                     </TableCell>
                                     <TableCell>

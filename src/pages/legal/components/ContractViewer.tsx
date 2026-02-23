@@ -102,6 +102,9 @@ export default function ContractViewer() {
     const [draftText, setDraftText] = useState("");
     const [isSavingDraft, setIsSavingDraft] = useState(false);
     const [lastSavedText, setLastSavedText] = useState("");
+    const [isSigningDialogOpen, setIsSigningDialogOpen] = useState(false);
+    const [signers, setSigners] = useState<{ email: string }[]>([]);
+    const [newSignerEmail, setNewSignerEmail] = useState("");
 
     const { user, roles: authRoles } = useAuth();
 
@@ -127,7 +130,11 @@ export default function ContractViewer() {
         }
     });
 
-    const isLegalView = (location.pathname.includes('/juridico') || location.pathname.includes('/legal/')) && isLegal;
+    const isLegalView = (
+        location.pathname.includes('/juridico') ||
+        location.pathname.includes('/legal/') ||
+        location.pathname.includes('/crm/contrato')
+    ) && isLegal;
 
     // Helper to render the Overview Dashboard (IA, Info, etc.)
     // Defined later after hook declarations
@@ -376,7 +383,7 @@ export default function ContractViewer() {
             '{{DATA_INICIO}}': contract.start_date ? format(new Date(contract.start_date), "dd/MM/yyyy") : "___/___/____",
             '{{VALOR}}': contract.value ? contract.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : "R$ 0,00",
             '{{CONTRATANTE_NOME}}': "SKINSTORE S.A.", // Hardcoded or from config
-            '{{CONTRATANTE_DOC}}': "49.333.327/0001-90", // Hardcoded or from config
+            '{{CONTRATANTE_DOC}}': "12.979.552/0001-72", // Hardcoded or from config
             '{{CONTRATANTE_ENDERECO}}': "Rua Gomes de Carvalho, 1356, Vila Olímpia, São Paulo/SP",
             '{{CIDADE}}': "São Paulo",
             // Add other variables as needed
@@ -423,18 +430,51 @@ export default function ContractViewer() {
         onError: (error: any) => toast.error(`Erro ao excluir: ${error.message}`)
     });
 
-    // Mock DocuSign Integration
+    // Real DocuSign Integration
     const sendToDocuSign = useMutation({
-        mutationFn: async () => {
-            const { error } = await supabase
-                .from('legal_contracts')
-                .update({ status: 'signing', docusign_id: 'DS-' + Math.random().toString(36).substr(2, 9).toUpperCase() })
-                .eq('id', id);
+        mutationFn: async (signerEmails: string[]) => {
+            // Invokes the real DocuSign edge function
+            const { data, error } = await supabase.functions.invoke('docusign-contracts', {
+                body: {
+                    signerName: signerEmails[0]?.split('@')[0] || "Signatário", // Basic fallback for name
+                    signerEmail: signerEmails[0],
+                    contractTitle: contract?.title,
+                    contractContent: draftText || contract?.description
+                }
+            });
+
             if (error) throw error;
+            if (data?.error) throw new Error(data.error);
+
+            if (data?.url) {
+                // Update local status before redirecting
+                const { error: updateError } = await supabase
+                    .from('legal_contracts')
+                    .update({
+                        status: 'signing',
+                        docusign_id: data.envelopeId,
+                        signer_emails: signerEmails
+                    })
+                    .eq('id', id);
+
+                if (updateError) throw updateError;
+
+                return data.url;
+            } else {
+                throw new Error("Resposta inválida do DocuSign (URL ausente)");
+            }
         },
-        onSuccess: () => {
-            toast.success("Enviado para DocuSign com sucesso!");
-            queryClient.invalidateQueries({ queryKey: ['contract', id] });
+        onSuccess: (url) => {
+            toast.success("Redirecionando para assinatura via DocuSign...");
+            setIsSigningDialogOpen(false);
+            // Redirect to DocuSign signing page
+            setTimeout(() => {
+                window.location.href = url;
+            }, 1000);
+        },
+        onError: (error: any) => {
+            console.error("DocuSign error:", error);
+            toast.error(`Erro ao enviar para DocuSign: ${error.message}`);
         }
     });
 
@@ -577,6 +617,8 @@ export default function ContractViewer() {
             '{{Contratado_cnpj}}': contract.party_document || contract.contractor_cnpj,
             // Lowercase variations just in case
             '{{contratado_nome}}': contract.party_name || contract.contractor_name,
+            // Global CNPJ Fallback (Replace old placeholder with new main CNPJ)
+            '49.333.327/0001-90': "12.979.552/0001-72",
         };
 
         Object.entries(replacements).forEach(([key, value]) => {
@@ -887,7 +929,7 @@ export default function ContractViewer() {
                             if (contratoIndex > 1) {
                                 const sectorPath = pathParts.slice(0, contratoIndex).join('/');
                                 if (sectorPath === '/crm') {
-                                    navigate('/crm/intranet/contratos');
+                                    navigate('/crm/juridico/contratos');
                                 } else {
                                     navigate(sectorPath + '/contratos');
                                 }
@@ -904,7 +946,8 @@ export default function ContractViewer() {
         );
     }
 
-    if (!isLegalView && !isReviewMode) {
+    // Se for Jurídico, nunca mostramos a tela de bloqueio "Aguardando Análise"
+    if (!isLegalView && !isReviewMode && !isLegal) {
         return (
             <div className="container mx-auto p-6 space-y-6 animate-in fade-in">
                 <Button variant="ghost" size="sm" onClick={() => {
@@ -913,12 +956,12 @@ export default function ContractViewer() {
                     if (contratoIndex > 1) {
                         const sectorPath = pathParts.slice(0, contratoIndex).join('/');
                         if (sectorPath === '/crm') {
-                            navigate('/crm/intranet/contratos');
+                            navigate('/crm/juridico/contratos');
                         } else {
                             navigate(sectorPath + '/contratos');
                         }
                     } else {
-                        navigate('/crm/intranet/contratos');
+                        navigate('/crm/juridico/contratos');
                     }
                 }} className="text-slate-500 mb-4 transition-colors hover:text-indigo-600">
                     <ArrowLeft className="h-4 w-4 mr-2" />
@@ -1062,7 +1105,10 @@ export default function ContractViewer() {
                                         <Send className="h-4 w-4" />
                                         Enviar para o Solicitante
                                     </Button>
-                                    <Button onClick={() => updateStatus.mutate('signing')} className="bg-green-600 hover:bg-green-700 gap-2 whitespace-nowrap w-full">
+                                    <Button onClick={() => {
+                                        setSigners([{ email: contract?.party_email || "" }]);
+                                        setIsSigningDialogOpen(true);
+                                    }} className="bg-green-600 hover:bg-green-700 gap-2 whitespace-nowrap w-full">
                                         <CheckCircle className="h-4 w-4" />
                                         Aprovar e Enviar p/ Assinatura
                                     </Button>
@@ -1467,6 +1513,89 @@ export default function ContractViewer() {
 
                 </div>
             </div>
+
+            <Dialog open={isSigningDialogOpen} onOpenChange={setIsSigningDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <PenTool className="h-5 w-5 text-purple-600" />
+                            Configurar Signatários (DocuSign)
+                        </DialogTitle>
+                        <DialogDescription>
+                            Liste os e-mails de todos os participantes que precisam assinar este documento.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="space-y-4 py-4">
+                        <div className="flex gap-2">
+                            <Input
+                                placeholder="exemplo@email.com"
+                                value={newSignerEmail}
+                                onChange={(e) => setNewSignerEmail(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        if (newSignerEmail.includes('@')) {
+                                            setSigners([...signers, { email: newSignerEmail }]);
+                                            setNewSignerEmail("");
+                                        }
+                                    }
+                                }}
+                            />
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => {
+                                    if (newSignerEmail.includes('@')) {
+                                        setSigners([...signers, { email: newSignerEmail }]);
+                                        setNewSignerEmail("");
+                                    } else {
+                                        toast.error("Informe um e-mail válido.");
+                                    }
+                                }}
+                            >
+                                <Plus className="h-4 w-4" />
+                            </Button>
+                        </div>
+
+                        <ScrollArea className="h-[200px] border rounded-lg p-2">
+                            {signers.length === 0 ? (
+                                <p className="text-center text-muted-foreground text-sm py-8">Nenhum e-mail adicionado.</p>
+                            ) : (
+                                <div className="space-y-2">
+                                    {signers.map((signer, idx) => (
+                                        <div key={idx} className="flex items-center justify-between bg-slate-50 p-2 rounded-md border group">
+                                            <span className="text-sm font-medium">{signer.email}</span>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                onClick={() => setSigners(signers.filter((_, i) => i !== idx))}
+                                            >
+                                                <Trash2 className="h-3 w-3 text-red-500" />
+                                            </Button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </ScrollArea>
+                    </div>
+
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsSigningDialogOpen(false)}>
+                            Cancelar
+                        </Button>
+                        <Button
+                            className="bg-purple-600 hover:bg-purple-700 gap-2"
+                            disabled={signers.length === 0 || sendToDocuSign.isPending}
+                            onClick={() => sendToDocuSign.mutate(signers.map(s => s.email))}
+                        >
+                            {sendToDocuSign.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                            Enviar Agora
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
             <ContractAIWizard
                 open={userIsDrafting}

@@ -18,18 +18,7 @@ const signInSchema = z.object({
   password: z.string().min(6, "Senha deve ter pelo menos 6 caracteres"),
 });
 
-const signUpSchema = z.object({
-  fullName: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
-  email: z.string().email("E-mail inválido"),
-  password: z.string().min(6, "Senha deve ter pelo menos 6 caracteres"),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Senhas não conferem",
-  path: ["confirmPassword"],
-});
-
 type SignInData = z.infer<typeof signInSchema>;
-type SignUpData = z.infer<typeof signUpSchema>;
 
 export default function Auth() {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -155,12 +144,10 @@ export default function Auth() {
               <span className="font-serif text-3xl font-bold text-primary">MedBeauty</span>
             </Link>
             <h1 className="mt-6 font-serif text-2xl font-bold text-foreground">
-              {isSignUp ? "Criar sua conta" : "Bem-vindo de volta"}
+              Bem-vindo de volta
             </h1>
             <p className="mt-2 text-muted-foreground">
-              {isSignUp
-                ? "Preencha os dados abaixo para se cadastrar"
-                : "Entre com suas credenciais para continuar"}
+              Entre com suas credenciais para continuar
             </p>
           </div>
 
@@ -182,223 +169,104 @@ export default function Auth() {
               </div>
             </div>
           </div>
-
           <div className="rounded-xl border border-border bg-card p-6 shadow-card animate-fade-in-up">
-            {isSignUp ? (
-              <form onSubmit={signUpForm.handleSubmit(handleSignUp)} className="space-y-4">
-                {/* ... existing sign up fields ... */}
-                <div>
-                  <Label htmlFor="fullName">Nome completo</Label>
-                  <div className="relative mt-1">
-                    <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input
-                      id="fullName"
-                      placeholder="Seu nome"
-                      className="pl-10"
-                      {...signUpForm.register("fullName")}
-                    />
-                  </div>
-                  {signUpForm.formState.errors.fullName && (
-                    <p className="mt-1 text-sm text-destructive">
-                      {signUpForm.formState.errors.fullName.message}
-                    </p>
-                  )}
+            <form onSubmit={signInForm.handleSubmit(handleSignIn)} className="space-y-4">
+              <div>
+                <Label htmlFor="email">E-mail {loginRole === 'employee' ? 'Corporativo' : ''}</Label>
+                <div className="relative mt-1">
+                  <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="seu@email.com"
+                    className="pl-10"
+                    {...signInForm.register("email")}
+                  />
                 </div>
+                {signInForm.formState.errors.email && (
+                  <p className="mt-1 text-sm text-destructive">
+                    {signInForm.formState.errors.email.message}
+                  </p>
+                )}
+              </div>
 
-                <div>
-                  <Label htmlFor="email">E-mail</Label>
-                  <div className="relative mt-1">
-                    <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="seu@email.com"
-                      className="pl-10"
-                      {...signUpForm.register("email")}
-                    />
-                  </div>
-                  {signUpForm.formState.errors.email && (
-                    <p className="mt-1 text-sm text-destructive">
-                      {signUpForm.formState.errors.email.message}
-                    </p>
-                  )}
+              <div>
+                <Label htmlFor="password">Senha</Label>
+                <div className="relative mt-1">
+                  <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    className="pl-10 pr-10"
+                    {...signInForm.register("password")}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
                 </div>
+                {signInForm.formState.errors.password && (
+                  <p className="mt-1 text-sm text-destructive">
+                    {signInForm.formState.errors.password.message}
+                  </p>
+                )}
+              </div>
 
-                <div>
-                  <Label htmlFor="password">Senha</Label>
-                  <div className="relative mt-1">
-                    <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input
-                      id="password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="••••••••"
-                      className="pl-10 pr-10"
-                      {...signUpForm.register("password")}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                  {signUpForm.formState.errors.password && (
-                    <p className="mt-1 text-sm text-destructive">
-                      {signUpForm.formState.errors.password.message}
-                    </p>
-                  )}
-                </div>
+              <Button type="submit" className="w-full gap-2" disabled={isLoading}>
+                {isLoading ? "Entrando..." : "Entrar como " + (loginRole === 'employee' ? 'Colaborador' : 'Cliente')}
+                <LogIn className="h-4 w-4" />
+              </Button>
 
-                <div>
-                  <Label htmlFor="confirmPassword">Confirmar senha</Label>
-                  <div className="relative mt-1">
-                    <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input
-                      id="confirmPassword"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="••••••••"
-                      className="pl-10"
-                      {...signUpForm.register("confirmPassword")}
-                    />
-                  </div>
-                  {signUpForm.formState.errors.confirmPassword && (
-                    <p className="mt-1 text-sm text-destructive">
-                      {signUpForm.formState.errors.confirmPassword.message}
-                    </p>
-                  )}
-                </div>
-
-                <Button type="submit" className="w-full gap-2" disabled={isLoading}>
-                  {isLoading ? "Criando conta..." : "Criar conta"}
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </form>
-            ) : (
-              <Tabs value={loginRole} onValueChange={(v) => setLoginRole(v as 'customer' | 'employee')}>
-                <TabsList className="grid w-full grid-cols-2 mb-6">
-                  <TabsTrigger value="customer" className="gap-2">
-                    <ShoppingBag className="h-4 w-4" />
-                    Cliente
-                  </TabsTrigger>
-                  <TabsTrigger value="employee" className="gap-2">
-                    <Building2 className="h-4 w-4" />
-                    Colaborador
-                  </TabsTrigger>
-                </TabsList>
-
-                <form onSubmit={signInForm.handleSubmit(handleSignIn)} className="space-y-4">
-                  <div>
-                    <Label htmlFor="email">E-mail {loginRole === 'employee' ? 'Corporativo' : ''}</Label>
-                    <div className="relative mt-1">
-                      <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="seu@email.com"
-                        className="pl-10"
-                        {...signInForm.register("email")}
-                      />
-                    </div>
-                    {signInForm.formState.errors.email && (
-                      <p className="mt-1 text-sm text-destructive">
-                        {signInForm.formState.errors.email.message}
-                      </p>
-                    )}
-                  </div>
-
-                  <div>
-                    <Label htmlFor="password">Senha</Label>
-                    <div className="relative mt-1">
-                      <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                      <Input
-                        id="password"
-                        type={showPassword ? "text" : "password"}
-                        placeholder="••••••••"
-                        className="pl-10 pr-10"
-                        {...signInForm.register("password")}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                      >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
-                    </div>
-                    {signInForm.formState.errors.password && (
-                      <p className="mt-1 text-sm text-destructive">
-                        {signInForm.formState.errors.password.message}
-                      </p>
-                    )}
-                  </div>
-
-                  <Button type="submit" className="w-full gap-2" disabled={isLoading}>
-                    {isLoading ? "Entrando..." : "Entrar como " + (loginRole === 'employee' ? 'Colaborador' : 'Cliente')}
-                    <LogIn className="h-4 w-4" />
-                  </Button>
-
-                  <div className="text-center">
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        const email = signInForm.getValues("email");
-                        if (!email) {
-                          toast.error("Por favor, informe seu e-mail para recuperar a senha.");
-                          return;
-                        }
-                        setIsLoading(true);
-                        const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                          redirectTo: `${window.location.origin}/auth/callback?next=/update-password`,
-                        });
-                        setIsLoading(false);
-                        if (error) {
-                          toast.error("Erro ao enviar e-mail de recuperação: " + error.message);
-                        } else {
-                          toast.success("E-mail de recuperação enviado com sucesso!");
-                        }
-                      }}
-                      className="text-sm text-primary hover:underline"
-                    >
-                      Esqueci minha senha
-                    </button>
-                  </div>
-
-                  {loginRole === 'employee' && (
-                    <>
-                      <div className="relative my-4">
-                        <div className="absolute inset-0 flex items-center">
-                          <span className="w-full border-t" />
-                        </div>
-                        <div className="relative flex justify-center text-xs uppercase">
-                          <span className="bg-card px-2 text-muted-foreground">
-                            Ou corporativo
-                          </span>
-                        </div>
-                      </div>
-
-                      <Button variant="outline" type="button" className="w-full gap-2" onClick={handleADLogin} disabled={isLoading}>
-                        <Building2 className="h-4 w-4" />
-                        Entrar com AD (Microsoft 365)
-                      </Button>
-                    </>
-                  )}
-                </form>
-              </Tabs>
-            )}
-
-            <div className="mt-6 text-center">
-              <p className="text-sm text-muted-foreground">
-                {isSignUp ? "Já tem uma conta?" : "Não tem uma conta?"}
+              <div className="text-center">
                 <button
                   type="button"
-                  onClick={() => setIsSignUp(!isSignUp)}
-                  className="ml-1 font-medium text-primary hover:underline"
+                  onClick={async () => {
+                    const email = signInForm.getValues("email");
+                    if (!email) {
+                      toast.error("Por favor, informe seu e-mail para recuperar a senha.");
+                      return;
+                    }
+                    setIsLoading(true);
+                    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                      redirectTo: `${window.location.origin}/auth/callback?next=/update-password`,
+                    });
+                    setIsLoading(false);
+                    if (error) {
+                      toast.error("Erro ao enviar e-mail de recuperação: " + error.message);
+                    } else {
+                      toast.success("E-mail de recuperação enviado com sucesso!");
+                    }
+                  }}
+                  className="text-sm text-primary hover:underline"
                 >
-                  {isSignUp ? "Entrar" : "Criar conta"}
+                  Esqueci minha senha
                 </button>
-              </p>
-            </div>
+              </div>
+
+              {loginRole === 'employee' && (
+                <>
+                  <div className="relative my-4">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-card px-2 text-muted-foreground">
+                        Ou corporativo
+                      </span>
+                    </div>
+                  </div>
+
+                  <Button variant="outline" type="button" className="w-full gap-2" onClick={handleADLogin} disabled={isLoading}>
+                    <Building2 className="h-4 w-4" />
+                    Entrar com AD (Microsoft 365)
+                  </Button>
+                </>
+              )}
+            </form>
           </div>
         </div>
       </div>

@@ -5,6 +5,7 @@ import {
     MapPin,
     Briefcase,
     Plus
+    , UserPlus
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
@@ -111,13 +112,23 @@ export default function LegalDashboard() {
                         <p className="text-sm text-muted-foreground">
                             Para dúvidas gerais, solicitações de contratos ou orientação legal, entre em contato diretamente com nossa central ou abra um chamado.
                         </p>
-                        <Button
-                            onClick={() => navigate("/crm/intranet/contratos/novo")}
-                            className="mt-4 bg-[#D0998B] hover:bg-[#b07d72] text-white rounded-xl px-6"
-                        >
-                            <Plus className="mr-2 h-4 w-4" />
-                            Solicitar Contrato
-                        </Button>
+                        <div className="flex flex-col gap-2 w-full mt-4">
+                            <Button
+                                onClick={() => window.location.href = "/crm/juridico/operacoes"}
+                                variant="outline"
+                                className="w-full gap-2 border-orange-200 hover:border-orange-300 bg-orange-50/30 text-orange-700"
+                            >
+                                <UserPlus className="h-4 w-4" />
+                                Admissão & Demissão
+                            </Button>
+                            <Button
+                                onClick={() => navigate("/crm/intranet/contratos/novo")}
+                                className="w-full bg-[#D0998B] hover:bg-[#b07d72] text-white rounded-xl"
+                            >
+                                <Plus className="mr-2 h-4 w-4" />
+                                Solicitar Contrato
+                            </Button>
+                        </div>
                     </CardContent>
                 </Card>
             </div>

@@ -12,6 +12,7 @@ import {
   FlaskConical,
   FileText,
   Loader2
+  , UserPlus
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -78,10 +79,16 @@ export default function CientificaDashboard() {
           <h1 className="font-serif text-3xl font-bold">Científica</h1>
           <p className="text-muted-foreground">Pesquisa, Desenvolvimento e Inovação em tempo real</p>
         </div>
-        <Button onClick={() => navigate("/crm/cientifica/apresentacoes")}>
-          <Plus className="mr-2 h-4 w-4" />
-          Gerenciar Biblioteca
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={() => window.location.href = "/crm/cientifica/operacoes"} variant="outline" className="gap-2 border-orange-200 hover:border-orange-300 bg-orange-50/30 text-orange-700">
+            <UserPlus className="h-4 w-4" />
+            Admissão & Demissão
+          </Button>
+          <Button onClick={() => navigate("/crm/cientifica/apresentacoes")}>
+            <Plus className="mr-2 h-4 w-4" />
+            Gerenciar Biblioteca
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">
