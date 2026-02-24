@@ -22,10 +22,14 @@ serve(async (req) => {
     }
 
     try {
-        const { signerName, signerEmail, contractTitle, contractContent } = await req.json();
+        const body = await req.json();
+        console.log("Received body:", JSON.stringify(body));
+
+        const { signerName, signerEmail, contractTitle, contractContent } = body;
 
         if (!signerName || !signerEmail) {
-            throw new Error("Missing signerName or signerEmail");
+            console.error("Validation failed. Body keys:", Object.keys(body));
+            throw new Error(`Missing signerName or signerEmail. Received: ${JSON.stringify(body)}`);
         }
 
         // Configuration (Using credentials from the project as per user's existing setup)
@@ -109,10 +113,17 @@ FILA4xy/X69dY0QaacRtU/bGdRpeJQq7TCo1C60fKp19+Yus0+Tf
         }
 
         const accessToken = tokenData.access_token;
+        console.log("Successfully retrieved access token.");
+
         const origin = req.headers.get('origin') || "http://localhost:5173";
         const returnUrl = `${origin}/crm/juridico?docusign=success`;
 
         // 3. Create Envelope
+        const contractBody = contractContent || "Contrato sem conteúdo.";
+        const documentBase64 = Buffer.from(contractBody, 'utf-8').toString('base64');
+
+        console.log("Creating envelope for:", signerEmail, "with title:", contractTitle);
+
         const envelopeReq = await fetch(`${BASE_URL}/v2.1/accounts/${ACCOUNT_ID}/envelopes`, {
             method: 'POST',
             headers: {
@@ -123,7 +134,7 @@ FILA4xy/X69dY0QaacRtU/bGdRpeJQq7TCo1C60fKp19+Yus0+Tf
                 emailSubject: `MedBeauty - ${contractTitle || "Contrato Jurídico"}`,
                 documents: [
                     {
-                        documentBase64: btoa(`${contractContent || "Contrato sem conteúdo."}`),
+                        documentBase64: documentBase64,
                         name: `${contractTitle || "Contrato"}.txt`,
                         fileExtension: "txt",
                         documentId: "1"
@@ -159,6 +170,7 @@ FILA4xy/X69dY0QaacRtU/bGdRpeJQq7TCo1C60fKp19+Yus0+Tf
         }
 
         const envelopeId = envelopeData.envelopeId;
+        console.log("Envelope created successfully:", envelopeId);
 
         // 4. Create View
         const viewReq = await fetch(`${BASE_URL}/v2.1/accounts/${ACCOUNT_ID}/envelopes/${envelopeId}/views/recipient`, {
@@ -182,6 +194,8 @@ FILA4xy/X69dY0QaacRtU/bGdRpeJQq7TCo1C60fKp19+Yus0+Tf
             throw new Error(`View Error: ${viewData.errorCode} - ${viewData.message}`);
         }
 
+        console.log("View URL generated successfully.");
+
         return new Response(
             JSON.stringify({
                 url: viewData.url,
@@ -191,10 +205,16 @@ FILA4xy/X69dY0QaacRtU/bGdRpeJQq7TCo1C60fKp19+Yus0+Tf
         );
 
     } catch (error: any) {
-        console.error("Detailed Error:", error);
+        console.error("Detailed Error:", error.message, error.stack);
         return new Response(
-            JSON.stringify({ error: error.message, details: error.toString() }),
-            { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+            JSON.stringify({
+                error: error.message,
+                details: error.toString()
+            }),
+            {
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                status: 400
+            }
         );
     }
 });

@@ -20,3 +20,6 @@ verify_jwt = false
 
 [functions.search-leads-linkedin]
 verify_jwt = false
+
+[functions.docusign-contracts]
+verify_jwt = false

@@ -1106,7 +1106,8 @@ export default function ContractViewer() {
                                         Enviar para o Solicitante
                                     </Button>
                                     <Button onClick={() => {
-                                        setSigners([{ email: contract?.party_email || "" }]);
+                                        const initialSigners = contract?.party_email ? [{ email: contract.party_email }] : [];
+                                        setSigners(initialSigners);
                                         setIsSigningDialogOpen(true);
                                     }} className="bg-green-600 hover:bg-green-700 gap-2 whitespace-nowrap w-full">
                                         <CheckCircle className="h-4 w-4" />
@@ -1587,8 +1588,15 @@ export default function ContractViewer() {
                         </Button>
                         <Button
                             className="bg-purple-600 hover:bg-purple-700 gap-2"
-                            disabled={signers.length === 0 || sendToDocuSign.isPending}
-                            onClick={() => sendToDocuSign.mutate(signers.map(s => s.email))}
+                            disabled={signers.filter(s => s.email.trim() !== "").length === 0 || sendToDocuSign.isPending}
+                            onClick={() => {
+                                const validEmails = signers.map(s => s.email.trim()).filter(email => email !== "");
+                                if (validEmails.length > 0) {
+                                    sendToDocuSign.mutate(validEmails);
+                                } else {
+                                    toast.error("Adicione pelo menos um e-mail válido.");
+                                }
+                            }}
                         >
                             {sendToDocuSign.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                             Enviar Agora
