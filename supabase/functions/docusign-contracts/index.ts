@@ -1,5 +1,4 @@
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createSign } from "node:crypto";
 import { Buffer } from "node:buffer";
 
@@ -9,14 +8,18 @@ const corsHeaders = {
 };
 
 // Helper to base64url encode
-function base64url(str: string): string {
+function base64url(str: string) {
     return btoa(str)
         .replace(/\+/g, '-')
         .replace(/\//g, '_')
         .replace(/=+$/, '');
 }
 
-serve(async (req) => {
+console.log("Docusign Function Loaded");
+
+Deno.serve(async (req) => {
+    console.log("Request received:", req.method);
+
     if (req.method === 'OPTIONS') {
         return new Response('ok', { headers: corsHeaders });
     }
@@ -28,11 +31,17 @@ serve(async (req) => {
         const { signerName, signerEmail, contractTitle, contractContent } = body;
 
         if (!signerName || !signerEmail) {
-            console.error("Validation failed. Body keys:", Object.keys(body));
-            throw new Error(`Missing signerName or signerEmail. Received: ${JSON.stringify(body)}`);
+            console.error("Validation failed. Body keys:", body ? Object.keys(body) : "no body");
+            return new Response(
+                JSON.stringify({
+                    error: "Missing signerName or signerEmail",
+                    received: body
+                }),
+                { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+            );
         }
 
-        // Configuration (Using credentials from the project as per user's existing setup)
+        // Configuration
         const IK = '05193209-8360-4847-93ce-d614a5880a13';
         const USER_ID = 'ba9ccf8e-cb45-4256-93cb-a06e8ca05261';
         const ACCOUNT_ID = 'd81aebfd-4629-4239-a926-8bfc97c7a22a';
@@ -68,7 +77,7 @@ emYqy2YlNy5cq/CFPbcOuJEyVr4705li3C1yx89xuOl6DkKsDuf/T/8d7gn+f0J/
 FILA4xy/X69dY0QaacRtU/bGdRpeJQq7TCo1C60fKp19+Yus0+Tf
 -----END RSA PRIVATE KEY-----`;
 
-        // 1. Manual JWT Construction using node:crypto
+        // 1. JWT Construction
         const header = { alg: "RS256", typ: "JWT" };
         const iat = Math.floor(Date.now() / 1000);
         const exp = iat + 3600;
@@ -94,26 +103,23 @@ FILA4xy/X69dY0QaacRtU/bGdRpeJQq7TCo1C60fKp19+Yus0+Tf
 
         const jwt = `${dataToSign}.${signature}`;
 
-        // 2. Exchange JWT for Access Token
+        // 2. Token Exchange
         const params = new URLSearchParams();
         params.append('grant_type', 'urn:ietf:params:oauth:grant-type:jwt-bearer');
         params.append('assertion', jwt);
 
         const tokenReq = await fetch(`https://${AUTH_SERVER}/oauth/token`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: params
         });
 
         const tokenData = await tokenReq.json();
-
         if (!tokenReq.ok) {
-            console.error("Token Error Response:", JSON.stringify(tokenData));
-            throw new Error(`Auth Error: ${tokenData.error} - ${tokenData.error_description || JSON.stringify(tokenData)}`);
+            console.error("Auth Error:", JSON.stringify(tokenData));
+            throw new Error(`Auth Error: ${tokenData.error_description || tokenData.error}`);
         }
 
         const accessToken = tokenData.access_token;
-        console.log("Successfully retrieved access token.");
 
         const origin = req.headers.get('origin') || "http://localhost:5173";
         const returnUrl = `${origin}/crm/juridico?docusign=success`;
@@ -121,8 +127,6 @@ FILA4xy/X69dY0QaacRtU/bGdRpeJQq7TCo1C60fKp19+Yus0+Tf
         // 3. Create Envelope
         const contractBody = contractContent || "Contrato sem conteúdo.";
         const documentBase64 = Buffer.from(contractBody, 'utf-8').toString('base64');
-
-        console.log("Creating envelope for:", signerEmail, "with title:", contractTitle);
 
         const envelopeReq = await fetch(`${BASE_URL}/v2.1/accounts/${ACCOUNT_ID}/envelopes`, {
             method: 'POST',
@@ -170,7 +174,6 @@ FILA4xy/X69dY0QaacRtU/bGdRpeJQq7TCo1C60fKp19+Yus0+Tf
         }
 
         const envelopeId = envelopeData.envelopeId;
-        console.log("Envelope created successfully:", envelopeId);
 
         // 4. Create View
         const viewReq = await fetch(`${BASE_URL}/v2.1/accounts/${ACCOUNT_ID}/envelopes/${envelopeId}/views/recipient`, {
@@ -194,8 +197,6 @@ FILA4xy/X69dY0QaacRtU/bGdRpeJQq7TCo1C60fKp19+Yus0+Tf
             throw new Error(`View Error: ${viewData.errorCode} - ${viewData.message}`);
         }
 
-        console.log("View URL generated successfully.");
-
         return new Response(
             JSON.stringify({
                 url: viewData.url,
@@ -205,16 +206,13 @@ FILA4xy/X69dY0QaacRtU/bGdRpeJQq7TCo1C60fKp19+Yus0+Tf
         );
 
     } catch (error: any) {
-        console.error("Detailed Error:", error.message, error.stack);
+        console.error("Catch Block Error:", error.message, error.stack);
         return new Response(
             JSON.stringify({
                 error: error.message,
                 details: error.toString()
             }),
-            {
-                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-                status: 400
-            }
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
         );
     }
 });
