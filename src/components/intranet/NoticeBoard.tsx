@@ -2,13 +2,14 @@ import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { AlertCircle, Info, Bell, Plus, Loader2, Megaphone, Sparkles, Pin } from 'lucide-react';
+import { AlertCircle, Info, Bell, Plus, Loader2, Megaphone, Sparkles, Pin, Trash2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserRole } from "@/hooks/useUserRole";
 import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
 import { motion, AnimatePresence } from "framer-motion";
@@ -20,6 +21,7 @@ interface Notice {
     priority: 'urgent' | 'notice' | 'info';
     target_sector?: string;
     created_at: string;
+    expires_at?: string | null;
 }
 
 interface Position {
@@ -42,9 +44,11 @@ export function NoticeBoard() {
         title: '',
         content: '',
         priority: 'info',
-        target_sector: ''
+        target_sector: '',
+        expires_at: ''
     });
 
+    const { isAdmin, canAccessModule } = useUserRole();
     const isManager = roles.some(role => role === 'admin' || role.includes('_manager'));
 
     useEffect(() => {
@@ -68,6 +72,7 @@ export function NoticeBoard() {
             .from('notices')
             .select('*')
             .eq('active', true)
+            .or(`expires_at.is.null,expires_at.gte.${new Date().toISOString()}`)
             .order('created_at', { ascending: false });
 
         if (error) console.error('Error fetching notices:', error);
@@ -121,6 +126,7 @@ export function NoticeBoard() {
                 content: newNotice.content,
                 priority: newNotice.priority,
                 target_sector: newNotice.target_sector || null,
+                expires_at: newNotice.expires_at || null,
                 active: true
             }]);
 
@@ -128,13 +134,26 @@ export function NoticeBoard() {
 
             toast.success("Aviso publicado com sucesso!");
             setIsCreateOpen(false);
-            setNewNotice({ title: '', content: '', priority: 'info', target_sector: '' });
+            setNewNotice({ title: '', content: '', priority: 'info', target_sector: '', expires_at: '' });
             fetchNotices();
         } catch (error) {
             console.error(error);
             toast.error("Erro ao publicar aviso.");
         } finally {
             setCreating(false);
+        }
+    };
+
+    const handleDelete = async (id: string) => {
+        if (!confirm("Tem certeza que deseja excluir permanentemente este aviso do mural?")) return;
+        try {
+            const { error } = await supabase.from('notices').update({ active: false }).eq('id', id);
+            if (error) throw error;
+            toast.success("Aviso excluído com sucesso!");
+            fetchNotices();
+        } catch (error) {
+            console.error(error);
+            toast.error("Erro ao excluir aviso.");
         }
     };
 
@@ -226,6 +245,15 @@ export function NoticeBoard() {
                                         />
                                     </div>
                                 </div>
+                                <div className="space-y-2">
+                                    <Label className="text-xs font-black text-slate-500 uppercase ml-1">Data de Expiração (Opcional)</Label>
+                                    <Input
+                                        type="datetime-local"
+                                        value={newNotice.expires_at}
+                                        onChange={e => setNewNotice({ ...newNotice, expires_at: e.target.value })}
+                                        className="h-14 rounded-2xl border-2 border-slate-100 font-bold"
+                                    />
+                                </div>
                             </div>
                             <DialogFooter className="pb-4">
                                 <Button onClick={handleCreateNotice} disabled={creating} className="w-full h-16 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl text-xl font-black shadow-2xl shadow-slate-200 transition-all hover:scale-[1.02] active:scale-95">
@@ -273,6 +301,15 @@ export function NoticeBoard() {
                                         <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10 transition-transform group-hover:scale-110">
                                             <Pin className={`w-6 h-6 drop-shadow-md fill-current ${getPinColor(notice.priority)}`} />
                                         </div>
+                                        {(isAdmin || canAccessModule('rh')) && (
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); handleDelete(notice.id); }}
+                                                className="absolute top-2 right-2 text-rose-500 hover:text-rose-700 bg-white/70 hover:bg-white rounded-full p-1.5 backdrop-blur-sm transition-colors shadow-sm z-20"
+                                                title="Excluir aviso permanentemente"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        )}
 
                                         <div className="space-y-3 pt-2">
                                             <h4 className="font-black text-slate-900 text-lg leading-none uppercase tracking-tighter border-b-2 border-black/5 pb-2">
