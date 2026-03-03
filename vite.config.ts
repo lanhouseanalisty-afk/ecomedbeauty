@@ -44,15 +44,5 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     sourcemap: true, // Needed for Sentry
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'ui-vendor': ['@radix-ui/react-dialog', '@radix-ui/react-slot', 'lucide-react', 'class-variance-authority', 'clsx', 'tailwind-merge'],
-          'data-vendor': ['@tanstack/react-query', '@supabase/supabase-js'],
-          'charts-vendor': ['recharts'],
-        },
-      },
-    },
   },
 }));
