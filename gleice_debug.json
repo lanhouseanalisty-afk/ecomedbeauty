@@ -1,0 +1,34 @@
+{
+  "employees": [
+    {
+      "id": "582b5e5d-ab4c-4af1-b5b5-378f9062bd0d",
+      "user_id": "69097b0c-884c-400a-bc7d-3c8ec071e5b5",
+      "employee_code": "e5ac7ed78fd2",
+      "full_name": "Gleice Silva",
+      "cpf": "000.001.002-49",
+      "email": "gleice.silva@medbeauty.com.br",
+      "phone": "",
+      "birth_date": null,
+      "hire_date": "2026-01-27",
+      "termination_date": null,
+      "position_id": "fc547fc4-ba0e-4edf-986e-a90d9362d651",
+      "department_id": "146ed0a2-ea34-4a59-9b9f-3d8a592d7d6a",
+      "manager_id": null,
+      "status": "active",
+      "salary": null,
+      "work_schedule": null,
+      "emergency_contact": null,
+      "address": null,
+      "documents": null,
+      "lgpd_consent_at": null,
+      "created_at": "2026-01-27T23:48:04.518438+00:00",
+      "updated_at": "2026-02-27T01:36:56.939+00:00",
+      "bio": null,
+      "skills": null,
+      "social_links": {}
+    }
+  ],
+  "roles": {
+    "69097b0c-884c-400a-bc7d-3c8ec071e5b5": []
+  }
+}

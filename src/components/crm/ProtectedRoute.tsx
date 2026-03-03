@@ -43,6 +43,12 @@ export function ProtectedRoute({
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
+  // Force password reset if flagged by admin
+  if (user?.user_metadata?.force_password_change) {
+    console.log('[ProtectedRoute] User requires mandatory password change');
+    return <Navigate to="/update-password" state={{ from: location }} replace />;
+  }
+
   // Check if employee access is required but user is a customer
   if (requireEmployee && !isEmployee) {
     console.warn('[ProtectedRoute] Employee required but user is not an employee.');
@@ -95,7 +101,7 @@ function CustomerRedirect() {
               <Link to="/">Ir para a Loja</Link>
             </Button>
             <Button variant="outline" asChild>
-              <Link to="/profile">Minha Conta</Link>
+              <Link to="/perfil">Minha Conta</Link>
             </Button>
           </div>
         </CardContent>

@@ -1,0 +1,13 @@
+[
+  {
+    "id": "587ff1cf-ebfa-44b9-aad7-ab1b5346937e",
+    "consultor_id": "f83663dd-f3f9-489a-925c-acffc9614c16",
+    "data": "2026-02-02",
+    "valor": 10,
+    "etiqueta": null,
+    "origem": null,
+    "created_at": "2026-02-24T21:08:22.522227+00:00",
+    "updated_at": "2026-02-24T21:08:22.522227+00:00",
+    "valor_meta": 100
+  }
+]

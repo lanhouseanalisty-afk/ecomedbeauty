@@ -38,6 +38,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AdmissionProcess } from "@/hooks/useAdmission";
 
 export default function EmployeeProfilePage() {
+    const navigate = useNavigate();
     const { id } = useParams<{ id: string }>();
     // Note: in valid app usage, id should be present.
     const { employee, assets, posts, leaves, visits, isLoading, createPost, deletePost, toggleLike, addComment, recordVisit } = useEmployeeProfile(id || "");

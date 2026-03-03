@@ -52,14 +52,38 @@ export function useTickets() {
   const updateTicket = useMutation({
     mutationFn: async ({ id, status, ...data }: Partial<Ticket> & { id: string }) => {
       // 1. Update the ticket
+      const updatePayload: any = { ...data };
+      if (status) {
+        updatePayload.status = status;
+
+        // If transitioning to resolved, add to metadata
+        if (status === 'resolved') {
+          const currentMeta = data.metadata || {};
+          updatePayload.metadata = {
+            ...currentMeta,
+            resolved_at: new Date().toISOString()
+          };
+        }
+      }
+
       const { data: updated, error } = await supabase
         .from('tickets')
-        .update({ ...data, ...(status ? { status } : {}) })
+        .update(updatePayload)
         .eq('id', id)
         .select()
         .single();
 
       if (error) throw error;
+
+      // 2. If status is resolved, send automated message
+      if (status === 'resolved') {
+        await supabase.from('ticket_messages').insert({
+          ticket_id: id,
+          content: "Sistema: Seu chamado foi marcado como Resolvido pelo TI. Por favor, valide a solução. Caso não haja interação em 3 dias, o chamado será fechado automaticamente.",
+          user_id: (await supabase.auth.getUser()).data.user?.id // Send as system or current user
+        });
+      }
+
       return updated;
     },
     onSuccess: () => {

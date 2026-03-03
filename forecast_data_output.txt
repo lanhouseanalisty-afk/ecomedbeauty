@@ -1,0 +1,147 @@
+--- Consultores ---
+[
+  {
+    "id": "f83663dd-f3f9-489a-925c-acffc9614c16",
+    "nome": "Jean",
+    "ativo": true,
+    "created_at": "2026-02-06T03:12:10.086704+00:00",
+    "updated_at": "2026-02-06T03:12:10.086704+00:00",
+    "email": null
+  }
+]
+
+--- Lancamentos Diarios (Fev 2026) ---
+[
+  {
+    "id": "587ff1cf-ebfa-44b9-aad7-ab1b5346937e",
+    "consultor_id": "f83663dd-f3f9-489a-925c-acffc9614c16",
+    "data": "2026-02-02",
+    "valor": 10,
+    "etiqueta": null,
+    "origem": null,
+    "created_at": "2026-02-24T21:08:22.522227+00:00",
+    "updated_at": "2026-02-24T21:08:22.522227+00:00",
+    "valor_meta": 100
+  },
+  {
+    "id": "2cb6baef-f726-441d-8445-d6cb6e3e5f0f",
+    "consultor_id": "f83663dd-f3f9-489a-925c-acffc9614c16",
+    "data": "2026-02-03",
+    "valor": 2000,
+    "etiqueta": null,
+    "origem": null,
+    "created_at": "2026-02-24T21:08:36.298061+00:00",
+    "updated_at": "2026-02-24T21:08:36.298061+00:00",
+    "valor_meta": 2000
+  },
+  {
+    "id": "91301eee-e6e7-4542-8b32-83cc14ee2fd8",
+    "consultor_id": "f83663dd-f3f9-489a-925c-acffc9614c16",
+    "data": "2026-02-04",
+    "valor": 0.01,
+    "etiqueta": null,
+    "origem": null,
+    "created_at": "2026-02-25T00:31:14.606002+00:00",
+    "updated_at": "2026-02-25T00:31:14.606002+00:00",
+    "valor_meta": 0.1
+  },
+  {
+    "id": "efad35d5-6a3a-41c8-a044-d296b01eeb75",
+    "consultor_id": "f83663dd-f3f9-489a-925c-acffc9614c16",
+    "data": "2026-02-05",
+    "valor": 1,
+    "etiqueta": null,
+    "origem": null,
+    "created_at": "2026-02-25T00:31:21.14715+00:00",
+    "updated_at": "2026-02-25T00:31:21.14715+00:00",
+    "valor_meta": 1
+  },
+  {
+    "id": "d1c2e378-40c1-4ecb-9577-c12ebd7daf2e",
+    "consultor_id": "f83663dd-f3f9-489a-925c-acffc9614c16",
+    "data": "2026-02-06",
+    "valor": 10,
+    "etiqueta": null,
+    "origem": null,
+    "created_at": "2026-02-25T00:31:29.392303+00:00",
+    "updated_at": "2026-02-25T00:31:29.392303+00:00",
+    "valor_meta": 2
+  },
+  {
+    "id": "1dc810fa-07b1-4961-a9c7-1d07022f8a18",
+    "consultor_id": "f83663dd-f3f9-489a-925c-acffc9614c16",
+    "data": "2026-02-09",
+    "valor": 200,
+    "etiqueta": null,
+    "origem": null,
+    "created_at": "2026-02-25T01:00:50.491256+00:00",
+    "updated_at": "2026-02-25T01:00:50.491256+00:00",
+    "valor_meta": 20000
+  },
+  {
+    "id": "b4d4f311-93e2-4981-a7eb-bacc9b783f7a",
+    "consultor_id": "f83663dd-f3f9-489a-925c-acffc9614c16",
+    "data": "2026-02-10",
+    "valor": 35000,
+    "etiqueta": null,
+    "origem": null,
+    "created_at": "2026-02-25T01:07:37.216698+00:00",
+    "updated_at": "2026-02-25T01:07:37.216698+00:00",
+    "valor_meta": 50000
+  },
+  {
+    "id": "b8679398-61c4-4921-a4d7-7411499e8d5b",
+    "consultor_id": "f83663dd-f3f9-489a-925c-acffc9614c16",
+    "data": "2026-02-11",
+    "valor": 55000,
+    "etiqueta": null,
+    "origem": null,
+    "created_at": "2026-02-25T01:07:59.270554+00:00",
+    "updated_at": "2026-02-25T01:07:59.270554+00:00",
+    "valor_meta": 50000
+  },
+  {
+    "id": "50e71232-a4cc-4480-864c-aecb8a68e822",
+    "consultor_id": "f83663dd-f3f9-489a-925c-acffc9614c16",
+    "data": "2026-02-12",
+    "valor": 20000,
+    "etiqueta": null,
+    "origem": null,
+    "created_at": "2026-02-25T01:08:25.55446+00:00",
+    "updated_at": "2026-02-25T01:08:25.55446+00:00",
+    "valor_meta": 0.01
+  },
+  {
+    "id": "64b83f87-7f24-4aca-8785-07c81d8fd36f",
+    "consultor_id": "f83663dd-f3f9-489a-925c-acffc9614c16",
+    "data": "2026-02-13",
+    "valor": 20000,
+    "etiqueta": null,
+    "origem": null,
+    "created_at": "2026-02-25T01:09:32.949186+00:00",
+    "updated_at": "2026-02-25T01:09:32.949186+00:00",
+    "valor_meta": 0.1
+  },
+  {
+    "id": "520e3307-aefe-413d-9230-896b648d6506",
+    "consultor_id": "f83663dd-f3f9-489a-925c-acffc9614c16",
+    "data": "2026-02-16",
+    "valor": 50000,
+    "etiqueta": null,
+    "origem": null,
+    "created_at": "2026-02-25T01:10:04.553507+00:00",
+    "updated_at": "2026-02-25T01:10:04.553507+00:00",
+    "valor_meta": 50000
+  },
+  {
+    "id": "8c5f41a5-8f87-4f2f-a40c-30589727b28f",
+    "consultor_id": "f83663dd-f3f9-489a-925c-acffc9614c16",
+    "data": "2026-02-17",
+    "valor": 8000,
+    "etiqueta": null,
+    "origem": null,
+    "created_at": "2026-02-25T01:10:46.125947+00:00",
+    "updated_at": "2026-02-25T01:10:46.125947+00:00",
+    "valor_meta": 1000
+  }
+]

@@ -12,9 +12,10 @@ import {
   BarChart3,
   Eye,
   RefreshCw,
-  FileText
-  , UserPlus
-  , Send
+  Search,
+  FileText,
+  UserPlus,
+  Send
 } from "lucide-react";
 import { useMarketingRequest } from "@/hooks/useMarketingRequest";
 import { useEffect } from "react";

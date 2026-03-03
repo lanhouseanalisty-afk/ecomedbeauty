@@ -15,7 +15,9 @@ import {
     ShoppingCart,
     Wrench,
     UserCircle,
-    Briefcase
+    Briefcase,
+    Scale,
+    Beaker
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -125,6 +127,28 @@ const orgStructure = {
             children: [
                 { name: "Predial", role: "Infraestrutura" },
                 { name: "Equipamentos", role: "Preventiva/Corretiva" }
+            ]
+        },
+        {
+            id: "juridico",
+            name: "Jurídico",
+            role: "Gestor: Denis Ranieri",
+            icon: Scale,
+            color: "bg-amber-100 text-amber-700",
+            children: [
+                { name: "Contratos", role: "Gestão Legal" },
+                { name: "Compliance", role: "Conformidade" }
+            ]
+        },
+        {
+            id: "cientifica",
+            name: "Científica",
+            role: "Gestora: Luciana Maluf",
+            icon: Beaker,
+            color: "bg-orange-100 text-orange-700",
+            children: [
+                { name: "Pesquisa & Desenvolvimento", role: "P&D" },
+                { name: "Inovação", role: "Novas Tecnologias" }
             ]
         }
     ]

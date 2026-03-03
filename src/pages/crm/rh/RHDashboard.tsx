@@ -17,6 +17,7 @@ import {
   Briefcase,
   Eye,
   UserPlus,
+  Calculator
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -284,6 +285,11 @@ export default function RHDashboard() {
         </div>
         <div className="flex gap-2 items-center">
           <Badge variant="outline" className="h-9 px-4 text-sm hidden md:flex">Gestora: Gleice Silva</Badge>
+
+          <Button onClick={() => navigate("/crm/rh/ferias")} variant="outline" className="gap-2 border-blue-200 hover:border-blue-300 bg-blue-50/30 text-blue-700">
+            <Calculator className="h-4 w-4" />
+            Análise de Férias
+          </Button>
 
           <Button onClick={() => navigate("/crm/rh/operacoes")} variant="outline" className="gap-2 border-orange-200 hover:border-orange-300 bg-orange-50/30 text-orange-700">
             <UserPlus className="h-4 w-4" />

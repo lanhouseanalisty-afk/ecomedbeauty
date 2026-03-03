@@ -16,14 +16,14 @@ import { Badge } from "@/components/ui/badge";
 const TEAM_MEMBERS = [
     {
         id: 1,
-        name: "Luciana Maluf",
-        role: "Head Jurídico",
-        email: "luciana.maluf@medbeauty.com.br",
+        name: "Denis Ranieri",
+        role: "Gestor Jurídico",
+        email: "denis.ranieri@medbeauty.com.br",
         phone: "+55 11 99999-9999",
         location: "São Paulo - SP",
-        initials: "LM",
-        expertises: ["Contratos", "Compliance", "Societário"],
-        bio: "Advogada sênior com mais de 15 anos de experiência em direito empresarial e gestão de riscos corporativos. Lidera a estratégia jurídica da MedBeauty com foco em inovação e segurança."
+        initials: "DR",
+        expertises: ["Direito Contratual", "Compliance", "Gestão Legal"],
+        bio: "Gestor jurídico com ampla experiência em governança corporativa e processos contratuais. Lidera a conformidade legal e segurança das operações da MedBeauty."
     },
     {
         id: 2,

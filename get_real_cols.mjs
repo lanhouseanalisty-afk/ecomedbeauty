@@ -1,18 +1,14 @@
-import { createClient } from '@supabase/supabase-js';
-import dotenv from 'dotenv';
-import fs from 'fs';
-dotenv.config();
+import { createClient } from '@supabase/supabase-js'
+import dotenv from 'dotenv'
 
-const supabaseUrl = process.env.VITE_SUPABASE_URL;
-const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
+dotenv.config()
 
-async function check() {
-    const { data: cols, error } = await supabase.from('legal_contracts').select('*').limit(1);
-    if (cols && cols.length > 0) {
-        fs.writeFileSync('real_columns.json', JSON.stringify(Object.keys(cols[0]), null, 2));
-    } else {
-        fs.writeFileSync('real_columns.json', JSON.stringify({ error: "No data found or table empty", details: error }, null, 2));
-    }
+const supabase = createClient(process.env.VITE_SUPABASE_URL, process.env.VITE_SUPABASE_ANON_KEY)
+
+async function getRealColumns() {
+    const { data, error } = await supabase.from('profiles').select().limit(1)
+    if (error) console.error('Error:', error.message)
+    else if (data && data.length > 0) console.log('Actual columns:', Object.keys(data[0]).join(', '))
 }
-check();
+
+getRealColumns()

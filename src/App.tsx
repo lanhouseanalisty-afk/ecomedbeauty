@@ -12,6 +12,7 @@ import { CMSProvider } from "@/contexts/CMSContext";
 import { Layout } from "@/components/layout/Layout";
 import { CRMLayout } from "@/components/crm/CRMLayout";
 import { ProtectedRoute } from "@/components/crm/ProtectedRoute";
+import ComunicarTIPage from "./pages/crm/ComunicarTIPage";
 import { Loader2 } from "lucide-react";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { AnalyticsTracker } from "@/components/AnalyticsTracker";
@@ -31,6 +32,7 @@ import Admin from "./pages/Admin";
 import OrderTracking from "./pages/OrderTracking";
 import AuthCallback from "./pages/AuthCallback";
 import UpdatePassword from "./pages/UpdatePassword";
+import CustomerRegister from "./pages/CustomerRegister";
 import NotFound from "./pages/NotFound";
 
 // Lazy Loaded CRM Pages
@@ -42,6 +44,7 @@ const RHAdmissaoPage = lazy(() => import("./pages/crm/rh/AdmissaoPage"));
 const DemissaoPage = lazy(() => import("./pages/crm/rh/DemissaoPage"));
 const HROperationsPage = lazy(() => import("./pages/crm/rh/HROperationsPage"));
 const EmployeeProfilePage = lazy(() => import("./pages/crm/rh/EmployeeProfilePage"));
+const VacationAnalysisPage = lazy(() => import("@/pages/crm/rh/VacationAnalysisPage"));
 
 const FinanceiroDashboard = lazy(() => import("./pages/crm/financeiro/FinanceiroDashboard"));
 const FinanceiroAdmissaoPage = lazy(() => import("./pages/crm/financeiro/FinanceiroAdmissaoPage"));
@@ -100,6 +103,9 @@ const PlanilhaJeanPage = lazy(() => import("./pages/crm/checklist/PlanilhaJeanPa
 const BonusManagementPage = lazy(() => import("./pages/crm/components/BonusManagementPage"));
 const AdminBonusPage = lazy(() => import("./pages/crm/admin/AdminBonusPage"));
 const InsumoSolicitationPage = lazy(() => import("./pages/crm/shared/InsumoSolicitationPage"));
+const PowerBIPage = lazy(() => import("./pages/crm/PowerBIPage"));
+const RankingDashboardPage = lazy(() => import("./pages/crm/RankingDashboardPage"));
+const GamificationPage = lazy(() => import("./pages/crm/comercial/GamificationPage"));
 
 const SystemSettingsPage = lazy(() => import("./pages/admin/SystemSettingsPage"));
 
@@ -160,20 +166,27 @@ const App = () => {
                             <Route path="/auth" element={<Auth />} />
                             <Route path="/conta" element={<Auth />} />
                             <Route path="/perfil" element={<Profile />} />
+                            <Route path="/profile" element={<Navigate to="/perfil" replace />} />
                             <Route path="/pedido/:orderId" element={<OrderTracking />} />
                             <Route path="/auth/callback" element={<AuthCallback />} />
                             <Route path="/update-password" element={<UpdatePassword />} />
                             <Route path="/admin" element={<Admin />} />
                           </Route>
 
+                          <Route path="/cadastro-profissional" element={<CustomerRegister />} />
+
                           {/* CRM Routes - RESTORING ... */}
-                          <Route path="/crm" element={<ProtectedRoute allowedRoles={['admin', 'manager', 'editor', 'rh', 'financeiro', 'marketing', 'comercial', 'logistica', 'juridico', 'tech', 'ecommerce', 'compras', 'manutencao', 'tecnico']}><CRMLayout /></ProtectedRoute>}>
-                            <Route index element={<CRMDashboard />} />
+                          <Route path="/crm" element={<ProtectedRoute requireEmployee><CRMLayout /></ProtectedRoute>}>
+                            <Route index element={<Navigate to="intranet" replace />} />
+                            <Route path="visao-geral" element={<ProtectedRoute allowedRoles={['admin', 'manager']}><CRMDashboard /></ProtectedRoute>} />
 
                             {/* Principal */}
                             <Route path="intranet" element={<ProtectedRoute requireEmployee><IntranetPage /></ProtectedRoute>} />
+                            <Route path="intranet/chamados" element={<ProtectedRoute requireEmployee><ComunicarTIPage /></ProtectedRoute>} />
                             <Route path="intranet/loja" element={<ProtectedRoute requireEmployee><CorporateStorePage /></ProtectedRoute>} />
                             <Route path="intranet/ideias" element={<ProtectedRoute requireEmployee><IdeaBankPage /></ProtectedRoute>} />
+                            <Route path="power-bi" element={<PowerBIPage />} />
+                            <Route path="ranking" element={<ProtectedRoute requiredPermission="access_crm_ranking"><RankingDashboardPage /></ProtectedRoute>} />
                             <Route path="rh/meu-perfil" element={<EmployeeProfilePage />} />
                             <Route path="rh/perfil/:id" element={<EmployeeProfilePage />} />
                             <Route path="rh/contratos" element={<SectorContractDashboard sector="rh" />} />
@@ -181,131 +194,137 @@ const App = () => {
                             <Route path="colaboradores" element={<ProtectedRoute requireEmployee><EmployeeDirectoryPage /></ProtectedRoute>} />
 
                             {/* Bonificações */}
-                            <Route path="admin/bonificacoes" element={<AdminBonusPage />} />
-                            <Route path="rh/bonificacoes" element={<BonusManagementPage sectorId="rh" sectorName="Recursos Humanos" />} />
-                            <Route path="comercial/inside-sales/bonificacoes" element={<BonusManagementPage sectorId="com_inside" sectorName="Inside Sales" />} />
-                            <Route path="comercial/franquias/bonificacoes" element={<BonusManagementPage sectorId="com_franchises" sectorName="Franquias" />} />
-                            <Route path="comercial/sudeste/bonificacoes" element={<BonusManagementPage sectorId="com_sudeste" sectorName="Sudeste" />} />
-                            <Route path="comercial/sul/bonificacoes" element={<BonusManagementPage sectorId="com_sul" sectorName="Sul" />} />
-                            <Route path="comercial/centro/bonificacoes" element={<BonusManagementPage sectorId="com_centro" sectorName="Centro" />} />
-                            <Route path="comercial/norte/bonificacoes" element={<BonusManagementPage sectorId="com_norte" sectorName="Norte" />} />
+                            <Route path="rh/bonificacoes" element={<ProtectedRoute requiredPermission="rh_bonuses"><BonusManagementPage sectorId="rh" sectorName="Recursos Humanos" /></ProtectedRoute>} />
+                            <Route path="comercial/inside-sales/bonificacoes" element={<ProtectedRoute requiredPermission="comercial_bonuses"><BonusManagementPage sectorId="com_inside" sectorName="Inside Sales" /></ProtectedRoute>} />
+                            <Route path="comercial/franquias/bonificacoes" element={<ProtectedRoute requiredPermission="comercial_bonuses"><BonusManagementPage sectorId="com_franchises" sectorName="Franquias" /></ProtectedRoute>} />
+                            <Route path="comercial/sudeste/bonificacoes" element={<ProtectedRoute requiredPermission="comercial_bonuses"><BonusManagementPage sectorId="com_sudeste" sectorName="Sudeste" /></ProtectedRoute>} />
+                            <Route path="comercial/sul/bonificacoes" element={<ProtectedRoute requiredPermission="comercial_bonuses"><BonusManagementPage sectorId="com_sul" sectorName="Sul" /></ProtectedRoute>} />
+                            <Route path="comercial/centro/bonificacoes" element={<ProtectedRoute requiredPermission="comercial_bonuses"><BonusManagementPage sectorId="com_centro" sectorName="Centro" /></ProtectedRoute>} />
+                            <Route path="comercial/norte/bonificacoes" element={<ProtectedRoute requiredPermission="comercial_bonuses"><BonusManagementPage sectorId="com_norte" sectorName="Norte" /></ProtectedRoute>} />
 
                             <Route path="biblioteca" element={<KnowledgeBasePage />} />
-                            <Route path="checklist/planilha-jean" element={<PlanilhaJeanPage />} />
+                            <Route path="checklist/planilha-jean" element={<ProtectedRoute requiredPermission="intranet_forecast"><PlanilhaJeanPage /></ProtectedRoute>} />
                             <Route path="controle-processos" element={<ProcessControlPage />} />
+                            <Route path="solicitacoes" element={<RequestCenterPage />} />
+                            <Route path="solicitacoes/nova" element={<NewRequestPage />} />
+                            <Route path="solicitacoes/:id" element={<RequestDetailPage />} />
+                            <Route path="tarefas/nova" element={<NewRequestPage />} />
 
                             {/* Admin - Restricted to Admin role */}
                             <Route element={<ProtectedRoute allowedRoles={['admin']} requireEmployee />}>
                               <Route path="admin" element={<AdminCRMDashboard />} />
-                              <Route path="admin/usuarios" element={<UsersAdminPage />} />
-                              <Route path="admin/permissoes" element={<AdminPermissionsPage />} />
-                              <Route path="admin/analytics" element={<AnalyticsDashboard />} />
-                              <Route path="admin/bonificacoes" element={<AdminBonusPage />} />
-                              <Route path="admin/nfe" element={<NFEPage sector="admin" sectorLabel="Administração" />} />
-                              <Route path="integracoes/sap" element={<SapIntegrationPage />} />
-                              <Route path="admin/contratos" element={<SectorContractDashboard sector="admin" />} />
+                              <Route path="admin/usuarios" element={<ProtectedRoute requiredPermission="admin_users"><UsersAdminPage /></ProtectedRoute>} />
+                              <Route path="admin/permissoes" element={<ProtectedRoute requiredPermission="admin_permissions"><AdminPermissionsPage /></ProtectedRoute>} />
+                              <Route path="admin/analytics" element={<ProtectedRoute requiredPermission="admin_analytics"><AnalyticsDashboard /></ProtectedRoute>} />
+                              <Route path="admin/bonificacoes" element={<ProtectedRoute requiredPermission="admin_bonuses"><AdminBonusPage /></ProtectedRoute>} />
+                              <Route path="admin/nfe" element={<ProtectedRoute requiredPermission="admin_nfe"><NFEPage sector="admin" sectorLabel="Administração" /></ProtectedRoute>} />
+                              <Route path="integracoes/sap" element={<ProtectedRoute requiredPermission="sap_monitor"><SapIntegrationPage /></ProtectedRoute>} />
+                              <Route path="admin/contratos" element={<ProtectedRoute requiredPermission="admin_contracts"><SectorContractDashboard sector="admin" /></ProtectedRoute>} />
                               <Route path="admin/operacoes" element={<SectorHROperationsPage departmentSlug="admin" departmentName="Administração" />} />
                               <Route path="admin/admissao" element={<Navigate to="/crm/admin/operacoes" replace />} />
-                              <Route path="admin/solicitacoes-setores" element={<SectorRequestsWrapper department="admin" />} />
-                              <Route path="admin/processos" element={<ProcessControlPage />} />
-                              <Route path="admin/precificacao" element={<PricingPage />} />
-                              <Route path="admin/insumos" element={<InsumoSolicitationPage sector="admin" sectorLabel="Administração" />} />
+                              <Route path="admin/solicitacoes-setores" element={<ProtectedRoute requiredPermission="admin_intersector"><SectorRequestsWrapper department="admin" /></ProtectedRoute>} />
+                              <Route path="admin/processos" element={<ProtectedRoute requiredPermission="admin_processes"><ProcessControlPage /></ProtectedRoute>} />
+                              <Route path="admin/precificacao" element={<ProtectedRoute requiredPermission="admin_pricing"><PricingPage /></ProtectedRoute>} />
+                              <Route path="admin/insumos" element={<ProtectedRoute requiredPermission="admin_supplies"><InsumoSolicitationPage sector="admin" sectorLabel="Administração" /></ProtectedRoute>} />
                             </Route>
 
                             {/* Científica */}
-                            <Route path="cientifica" element={<CientificaDashboard />} />
-                            <Route path="cientifica/apresentacoes" element={<ScientificPresentationsPage />} />
-                            <Route path="cientifica/operacoes" element={<SectorHROperationsPage departmentSlug="cientifica" departmentName="Científica" />} />
-                            <Route path="cientifica/admissao" element={<Navigate to="/crm/cientifica/operacoes" replace />} />
-                            <Route path="cientifica/contratos" element={<SectorContractDashboard sector="cientifica" />} />
-                            <Route path="cientifica/contrato/:id" element={<ContractViewer />} />
+                            <Route element={<ProtectedRoute requiredModule="cientifica" requireEmployee />}>
+                              <Route path="cientifica" element={<CientificaDashboard />} />
+                              <Route path="cientifica/apresentacoes" element={<ProtectedRoute requiredPermission="cientifica_presentations"><ScientificPresentationsPage /></ProtectedRoute>} />
+                              <Route path="cientifica/operacoes" element={<SectorHROperationsPage departmentSlug="cientifica" departmentName="Científica" />} />
+                              <Route path="cientifica/admissao" element={<Navigate to="/crm/cientifica/operacoes" replace />} />
+                              <Route path="cientifica/contratos" element={<ProtectedRoute requiredPermission="cientifica_contracts"><SectorContractDashboard sector="cientifica" /></ProtectedRoute>} />
+                              <Route path="cientifica/contrato/:id" element={<ProtectedRoute requiredPermission="cientifica_contracts"><ContractViewer /></ProtectedRoute>} />
 
-                            <Route path="cientifica/solicitacoes-setores" element={<SectorRequestsWrapper department="cientifica" />} />
-                            <Route path="cientifica/processos" element={<ProcessControlPage />} />
-                            <Route path="cientifica/insumos" element={<InsumoSolicitationPage sector="cientifica" sectorLabel="Científica" />} />
-                            <Route path="cientifica/nfe" element={<NFEPage sector="cientifica" sectorLabel="Científica" />} />
-                            <Route path="cientifica/bonificacoes" element={<BonusManagementPage sectorId="cientifica" sectorName="Científica" />} />
+                              <Route path="cientifica/solicitacoes-setores" element={<ProtectedRoute requiredPermission="cientifica_intersector"><SectorRequestsWrapper department="cientifica" /></ProtectedRoute>} />
+                              <Route path="cientifica/processos" element={<ProtectedRoute requiredPermission="cientifica_processes"><ProcessControlPage /></ProtectedRoute>} />
+                              <Route path="cientifica/insumos" element={<ProtectedRoute requiredPermission="cientifica_supplies"><InsumoSolicitationPage sector="cientifica" sectorLabel="Científica" /></ProtectedRoute>} />
+                              <Route path="cientifica/nfe" element={<ProtectedRoute requiredPermission="cientifica_nfe"><NFEPage sector="cientifica" sectorLabel="Científica" /></ProtectedRoute>} />
+                              <Route path="cientifica/bonificacoes" element={<ProtectedRoute requiredPermission="cientifica_bonuses"><BonusManagementPage sectorId="cientifica" sectorName="Científica" /></ProtectedRoute>} />
+                            </Route>
 
                             {/* Comercial */}
                             <Route element={<ProtectedRoute requiredModule="comercial" requireEmployee />}>
                               <Route path="comercial" element={<ComercialDashboard />} />
-                              <Route path="comercial/franquias" element={<FranquiasPage />} />
+                              <Route path="comercial/gamificacao" element={<ProtectedRoute requiredPermission="comercial_gamification"><GamificationPage /></ProtectedRoute>} />
+                              <Route path="comercial/franquias" element={<ProtectedRoute requiredPermission="comercial_franchises"><FranquiasPage /></ProtectedRoute>} />
                               <Route path="comercial/operacoes" element={<SectorHROperationsPage departmentSlug="comercial" departmentName="Comercial" />} /><Route path="comercial/admissao" element={<Navigate to="/crm/comercial/operacoes" replace />} />
-                              <Route path="comercial/contratos" element={<SectorContractDashboard sector="comercial" />} />
-                              <Route path="comercial/contrato/:id" element={<ContractViewer />} />
-                              <Route path="comercial/inside-sales/contratos" element={<SectorContractDashboard sector="com_inside_sales" />} />
-                              <Route path="comercial/inside-sales/contrato/:id" element={<ContractViewer />} />
-                              <Route path="comercial/franquias/contratos" element={<SectorContractDashboard sector="com_franchises" />} />
-                              <Route path="comercial/franquias/contrato/:id" element={<ContractViewer />} />
-                              <Route path="comercial/sudeste/contratos" element={<SectorContractDashboard sector="com_sudeste" />} />
-                              <Route path="comercial/sudeste/contrato/:id" element={<ContractViewer />} />
-                              <Route path="comercial/sul/contratos" element={<SectorContractDashboard sector="com_sul" />} />
-                              <Route path="comercial/sul/contrato/:id" element={<ContractViewer />} />
-                              <Route path="comercial/centro/contratos" element={<SectorContractDashboard sector="com_centro" />} />
-                              <Route path="comercial/centro/contrato/:id" element={<ContractViewer />} />
-                              <Route path="comercial/norte/contratos" element={<SectorContractDashboard sector="com_norte" />} />
-                              <Route path="comercial/norte/contrato/:id" element={<ContractViewer />} />
+                              <Route path="comercial/contratos" element={<ProtectedRoute requiredPermission="comercial_contracts"><SectorContractDashboard sector="comercial" /></ProtectedRoute>} />
+                              <Route path="comercial/contrato/:id" element={<ProtectedRoute requiredPermission="comercial_contracts"><ContractViewer /></ProtectedRoute>} />
+                              <Route path="comercial/inside-sales/contratos" element={<ProtectedRoute requiredPermission="comercial_contracts"><SectorContractDashboard sector="com_inside_sales" /></ProtectedRoute>} />
+                              <Route path="comercial/inside-sales/contrato/:id" element={<ProtectedRoute requiredPermission="comercial_contracts"><ContractViewer /></ProtectedRoute>} />
+                              <Route path="comercial/franquias/contratos" element={<ProtectedRoute requiredPermission="comercial_contracts"><SectorContractDashboard sector="com_franchises" /></ProtectedRoute>} />
+                              <Route path="comercial/franquias/contrato/:id" element={<ProtectedRoute requiredPermission="comercial_contracts"><ContractViewer /></ProtectedRoute>} />
+                              <Route path="comercial/sudeste/contratos" element={<ProtectedRoute requiredPermission="comercial_contracts"><SectorContractDashboard sector="com_sudeste" /></ProtectedRoute>} />
+                              <Route path="comercial/sudeste/contrato/:id" element={<ProtectedRoute requiredPermission="comercial_contracts"><ContractViewer /></ProtectedRoute>} />
+                              <Route path="comercial/sul/contratos" element={<ProtectedRoute requiredPermission="comercial_contracts"><SectorContractDashboard sector="com_sul" /></ProtectedRoute>} />
+                              <Route path="comercial/sul/contrato/:id" element={<ProtectedRoute requiredPermission="comercial_contracts"><ContractViewer /></ProtectedRoute>} />
+                              <Route path="comercial/centro/contratos" element={<ProtectedRoute requiredPermission="comercial_contracts"><SectorContractDashboard sector="com_centro" /></ProtectedRoute>} />
+                              <Route path="comercial/centro/contrato/:id" element={<ProtectedRoute requiredPermission="comercial_contracts"><ContractViewer /></ProtectedRoute>} />
+                              <Route path="comercial/norte/contratos" element={<ProtectedRoute requiredPermission="comercial_contracts"><SectorContractDashboard sector="com_norte" /></ProtectedRoute>} />
+                              <Route path="comercial/norte/contrato/:id" element={<ProtectedRoute requiredPermission="comercial_contracts"><ContractViewer /></ProtectedRoute>} />
 
-                              <Route path="comercial/processos" element={<ProcessControlPage />} />
-                              <Route path="comercial/precificacao" element={<PricingPage />} />
-                              <Route path="comercial/insumos" element={<InsumoSolicitationPage sector="comercial" sectorLabel="Comercial" />} />
+                              <Route path="comercial/processos" element={<ProtectedRoute requiredPermission="comercial_processes"><ProcessControlPage /></ProtectedRoute>} />
+                              <Route path="comercial/precificacao" element={<ProtectedRoute requiredPermission="comercial_pricing"><PricingPage /></ProtectedRoute>} />
+                              <Route path="comercial/insumos" element={<ProtectedRoute requiredPermission="comercial_supplies"><InsumoSolicitationPage sector="comercial" sectorLabel="Comercial" /></ProtectedRoute>} />
 
                               {/* Subcomercial Insumos */}
-                              <Route path="comercial/inside-sales/insumos" element={<InsumoSolicitationPage sector="com_inside" sectorLabel="Inside Sales" />} />
-                              <Route path="comercial/franquias/insumos" element={<InsumoSolicitationPage sector="com_franchises" sectorLabel="Franquias" />} />
-                              <Route path="comercial/sudeste/insumos" element={<InsumoSolicitationPage sector="com_sudeste" sectorLabel="Sudeste" />} />
-                              <Route path="comercial/sul/insumos" element={<InsumoSolicitationPage sector="com_sul" sectorLabel="Sul" />} />
-                              <Route path="comercial/centro/insumos" element={<InsumoSolicitationPage sector="com_centro" sectorLabel="Centro-Oeste" />} />
-                              <Route path="comercial/norte/insumos" element={<InsumoSolicitationPage sector="com_norte" sectorLabel="Norte/Nordeste" />} />
+                              <Route path="comercial/inside-sales/insumos" element={<ProtectedRoute requiredPermission="comercial_supplies"><InsumoSolicitationPage sector="com_inside" sectorLabel="Inside Sales" /></ProtectedRoute>} />
+                              <Route path="comercial/franquias/insumos" element={<ProtectedRoute requiredPermission="comercial_supplies"><InsumoSolicitationPage sector="com_franchises" sectorLabel="Franquias" /></ProtectedRoute>} />
+                              <Route path="comercial/sudeste/insumos" element={<ProtectedRoute requiredPermission="comercial_supplies"><InsumoSolicitationPage sector="com_sudeste" sectorLabel="Sudeste" /></ProtectedRoute>} />
+                              <Route path="comercial/sul/insumos" element={<ProtectedRoute requiredPermission="comercial_supplies"><InsumoSolicitationPage sector="com_sul" sectorLabel="Sul" /></ProtectedRoute>} />
+                              <Route path="comercial/centro/insumos" element={<ProtectedRoute requiredPermission="comercial_supplies"><InsumoSolicitationPage sector="com_centro" sectorLabel="Centro-Oeste" /></ProtectedRoute>} />
+                              <Route path="comercial/norte/insumos" element={<ProtectedRoute requiredPermission="comercial_supplies"><InsumoSolicitationPage sector="com_norte" sectorLabel="Norte/Nordeste" /></ProtectedRoute>} />
 
-                              <Route path="comercial/nfe" element={<NFEPage sector="comercial" sectorLabel="Comercial" />} />
-                              <Route path="comercial/solicitacoes-setores" element={<SectorRequestsWrapper department="comercial" />} />
-                              <Route path="comercial/contratos" element={<SectorContractDashboard sector="comercial" />} />
-                              <Route path="comercial/contrato/:id" element={<ContractViewer />} />
+                              <Route path="comercial/nfe" element={<ProtectedRoute requiredPermission="comercial_nfe"><NFEPage sector="comercial" sectorLabel="Comercial" /></ProtectedRoute>} />
+                              <Route path="comercial/solicitacoes-setores" element={<ProtectedRoute requiredPermission="comercial_intersector"><SectorRequestsWrapper department="comercial" /></ProtectedRoute>} />
 
                               <Route path="comercial/:subdepartment" element={<ComercialSubDepartmentPage />} />
                             </Route>
 
                             {/* Compras */}
-                            <Route path="compras" element={<ComprasDashboard />} />
-                            <Route path="compras/operacoes" element={<SectorHROperationsPage departmentSlug="compras" departmentName="Compras" />} /><Route path="compras/admissao" element={<Navigate to="/crm/compras/operacoes" replace />} />
-                            <Route path="compras/veiculos" element={<ComprasVeiculosPage />} />
-                            <Route path="compras/contratos" element={<SectorContractDashboard sector="compras" />} />
-                            <Route path="compras/contrato/:id" element={<ContractViewer />} />
-                            <Route path="compras/solicitacoes-setores" element={<SectorRequestsWrapper department="compras" />} />
-                            <Route path="compras/processos" element={<ProcessControlPage />} />
-                            <Route path="compras/insumos" element={<InsumoSolicitationPage sector="compras" sectorLabel="Compras" />} />
-                            <Route path="compras/bonificacoes" element={<BonusManagementPage sectorId="compras" sectorName="Compras" />} />
+                            <Route element={<ProtectedRoute requiredModule="compras" requireEmployee />}>
+                              <Route path="compras" element={<ComprasDashboard />} />
+                              <Route path="compras/operacoes" element={<SectorHROperationsPage departmentSlug="compras" departmentName="Compras" />} /><Route path="compras/admissao" element={<Navigate to="/crm/compras/operacoes" replace />} />
+                              <Route path="compras/veiculos" element={<ProtectedRoute requiredPermission="purchasing_vehicles"><ComprasVeiculosPage /></ProtectedRoute>} />
+                              <Route path="compras/contratos" element={<ProtectedRoute requiredPermission="compras_contracts"><SectorContractDashboard sector="compras" /></ProtectedRoute>} />
+                              <Route path="compras/contrato/:id" element={<ProtectedRoute requiredPermission="compras_contracts"><ContractViewer /></ProtectedRoute>} />
+                              <Route path="compras/solicitacoes-setores" element={<ProtectedRoute requiredPermission="compras_intersector"><SectorRequestsWrapper department="compras" /></ProtectedRoute>} />
+                              <Route path="compras/processos" element={<ProtectedRoute requiredPermission="compras_processes"><ProcessControlPage /></ProtectedRoute>} />
+                              <Route path="compras/insumos" element={<ProtectedRoute requiredPermission="compras_supplies"><InsumoSolicitationPage sector="compras" sectorLabel="Compras" /></ProtectedRoute>} />
+                              <Route path="compras/bonificacoes" element={<ProtectedRoute requiredPermission="compras_bonuses"><BonusManagementPage sectorId="compras" sectorName="Compras" /></ProtectedRoute>} />
+                            </Route>
 
                             {/* E-commerce */}
                             <Route path="ecommerce" element={<ProtectedRoute requiredModule="ecommerce" requireEmployee><EcommerceDashboard /></ProtectedRoute>} />
                             <Route path="ecommerce/pedidos" element={<ProtectedRoute requiredPermission="ecommerce_orders" requireEmployee><EcommercePedidosPage /></ProtectedRoute>} />
                             <Route path="ecommerce/produtos" element={<ProtectedRoute requiredPermission="ecommerce_products" requireEmployee><EcommerceProdutosPage /></ProtectedRoute>} />
                             <Route path="ecommerce/categorias" element={<ProtectedRoute requiredPermission="ecommerce_products" requireEmployee><EcommerceCategoriasPage /></ProtectedRoute>} />
-                            <Route path="ecommerce/clientes" element={<EcommerceCustomersPage />} />
-                            <Route path="ecommerce/cms" element={<EcommerceCMSPage />} />
-                            <Route path="ecommerce/cupons" element={<EcommerceCuponsPage />} />
+                            <Route path="ecommerce/clientes" element={<ProtectedRoute requiredPermission="ecommerce_customers" requireEmployee><EcommerceCustomersPage /></ProtectedRoute>} />
+                            <Route path="ecommerce/cms" element={<ProtectedRoute requiredPermission="ecommerce_cms" requireEmployee><EcommerceCMSPage /></ProtectedRoute>} />
+                            <Route path="ecommerce/cupons" element={<ProtectedRoute requiredPermission="ecommerce_coupons" requireEmployee><EcommerceCuponsPage /></ProtectedRoute>} />
                             <Route path="ecommerce/operacoes" element={<SectorHROperationsPage departmentSlug="ecommerce" departmentName="E-commerce" />} /><Route path="ecommerce/admissao" element={<Navigate to="/crm/ecommerce/operacoes" replace />} />
-                            <Route path="ecommerce/precificacao" element={<PricingPage />} />
-                            <Route path="ecommerce/contratos" element={<SectorContractDashboard sector="ecommerce" />} />
-                            <Route path="ecommerce/contrato/:id" element={<ContractViewer />} />
-                            <Route path="ecommerce/solicitacoes-setores" element={<SectorRequestsWrapper department="ecommerce" />} />
-                            <Route path="ecommerce/processos" element={<ProcessControlPage />} />
-                            <Route path="ecommerce/insumos" element={<InsumoSolicitationPage sector="ecommerce" sectorLabel="E-commerce" />} />
-                            <Route path="ecommerce/bonificacoes" element={<BonusManagementPage sectorId="ecommerce" sectorName="E-commerce" />} />
+                            <Route path="ecommerce/precificacao" element={<ProtectedRoute requiredPermission="ecommerce_pricing"><PricingPage /></ProtectedRoute>} />
+                            <Route path="ecommerce/contratos" element={<ProtectedRoute requiredPermission="ecommerce_contracts"><SectorContractDashboard sector="ecommerce" /></ProtectedRoute>} />
+                            <Route path="ecommerce/contrato/:id" element={<ProtectedRoute requiredPermission="ecommerce_contracts"><ContractViewer /></ProtectedRoute>} />
+                            <Route path="ecommerce/solicitacoes-setores" element={<ProtectedRoute requiredPermission="ecommerce_intersector"><SectorRequestsWrapper department="ecommerce" /></ProtectedRoute>} />
+                            <Route path="ecommerce/processos" element={<ProtectedRoute requiredPermission="ecommerce_processes"><ProcessControlPage /></ProtectedRoute>} />
+                            <Route path="ecommerce/insumos" element={<ProtectedRoute requiredPermission="ecommerce_supplies"><InsumoSolicitationPage sector="ecommerce" sectorLabel="E-commerce" /></ProtectedRoute>} />
+                            <Route path="ecommerce/bonificacoes" element={<ProtectedRoute requiredPermission="ecommerce_bonuses"><BonusManagementPage sectorId="ecommerce" sectorName="E-commerce" /></ProtectedRoute>} />
 
                             {/* Financeiro */}
                             <Route element={<ProtectedRoute requiredModule="financeiro" requireEmployee />}>
                               <Route path="financeiro" element={<FinanceiroDashboard />} />
                               <Route path="financeiro/operacoes" element={<SectorHROperationsPage departmentSlug="financeiro" departmentName="Financeiro" />} /><Route path="financeiro/admissao" element={<Navigate to="/crm/financeiro/operacoes" replace />} />
-                              <Route path="financeiro/contratos" element={<SectorContractDashboard sector="financeiro" />} />
-                              <Route path="financeiro/contrato/:id" element={<ContractViewer />} />
-                              <Route path="financeiro/solicitacoes-setores" element={<SectorRequestsWrapper department="financeiro" />} />
-                              <Route path="financeiro/processos" element={<ProcessControlPage />} />
-                              <Route path="financeiro/insumos" element={<InsumoSolicitationPage sector="financeiro" sectorLabel="Financeiro" />} />
-                              <Route path="financeiro/bonificacoes" element={<BonusManagementPage sectorId="financeiro" sectorName="Financeiro" />} />
-                              <Route path="financeiro/precificacao" element={<PricingPage />} />
-                              <Route path="financeiro/nfe" element={<NFEPage sector="financeiro" sectorLabel="Financeiro" />} />
+                              <Route path="financeiro/contratos" element={<ProtectedRoute requiredPermission="finance_contracts"><SectorContractDashboard sector="financeiro" /></ProtectedRoute>} />
+                              <Route path="financeiro/contrato/:id" element={<ProtectedRoute requiredPermission="finance_contracts"><ContractViewer /></ProtectedRoute>} />
+                              <Route path="financeiro/solicitacoes-setores" element={<ProtectedRoute requiredPermission="finance_intersector"><SectorRequestsWrapper department="financeiro" /></ProtectedRoute>} />
+                              <Route path="financeiro/processos" element={<ProtectedRoute requiredPermission="finance_processes"><ProcessControlPage /></ProtectedRoute>} />
+                              <Route path="financeiro/insumos" element={<ProtectedRoute requiredPermission="finance_supplies"><InsumoSolicitationPage sector="financeiro" sectorLabel="Financeiro" /></ProtectedRoute>} />
+                              <Route path="financeiro/bonificacoes" element={<ProtectedRoute requiredPermission="finance_bonuses"><BonusManagementPage sectorId="financeiro" sectorName="Financeiro" /></ProtectedRoute>} />
+                              <Route path="financeiro/precificacao" element={<ProtectedRoute requiredPermission="finance_pricing"><PricingPage /></ProtectedRoute>} />
+                              <Route path="financeiro/nfe" element={<ProtectedRoute requiredPermission="finance_nfe"><NFEPage sector="financeiro" sectorLabel="Financeiro" /></ProtectedRoute>} />
                             </Route>
 
 
@@ -330,39 +349,39 @@ const App = () => {
                               <Route path="legal/novo" element={<Navigate to="/crm/juridico/contratos/novo" replace />} />
                               <Route path="legal/contrato/:id" element={<ContractViewer />} />
                               <Route path="juridico/operacoes" element={<SectorHROperationsPage departmentSlug="juridico" departmentName="Jurídico" />} /><Route path="juridico/admissao" element={<Navigate to="/crm/juridico/operacoes" replace />} />
-                              <Route path="juridico/solicitacoes-setores" element={<SectorRequestsWrapper department="juridico" />} />
-                              <Route path="juridico/processos" element={<ProcessControlPage />} />
-                              <Route path="juridico/insumos" element={<InsumoSolicitationPage sector="juridico" sectorLabel="Jurídico" />} />
-                              <Route path="juridico/nfe" element={<NFEPage sector="juridico" sectorLabel="Jurídico" />} />
-                              <Route path="juridico/bonificacoes" element={<BonusManagementPage sectorId="juridico" sectorName="Jurídico" />} />
+                              <Route path="juridico/solicitacoes-setores" element={<ProtectedRoute requiredPermission="juridico_intersector"><SectorRequestsWrapper department="juridico" /></ProtectedRoute>} />
+                              <Route path="juridico/processos" element={<ProtectedRoute requiredPermission="juridico_processes"><ProcessControlPage /></ProtectedRoute>} />
+                              <Route path="juridico/insumos" element={<ProtectedRoute requiredPermission="juridico_supplies"><InsumoSolicitationPage sector="juridico" sectorLabel="Jurídico" /></ProtectedRoute>} />
+                              <Route path="juridico/nfe" element={<ProtectedRoute requiredPermission="juridico_nfe"><NFEPage sector="juridico" sectorLabel="Jurídico" /></ProtectedRoute>} />
+                              <Route path="juridico/bonificacoes" element={<ProtectedRoute requiredPermission="juridico_bonuses"><BonusManagementPage sectorId="juridico" sectorName="Jurídico" /></ProtectedRoute>} />
                             </Route>
 
                             {/* Logistics */}
                             <Route element={<ProtectedRoute requiredModule="logistica" requireEmployee />}>
                               <Route path="logistica" element={<LogisticaDashboard />} />
                               <Route path="logistica/operacoes" element={<SectorHROperationsPage departmentSlug="logistica" departmentName="Logística" />} /><Route path="logistica/admissao" element={<Navigate to="/crm/logistica/operacoes" replace />} />
-                              <Route path="logistica/pedidos" element={<ProtectedRoute requiredPermission="logistics_inventory" requireEmployee><LogisticaPedidosPage /></ProtectedRoute>} />
+                              <Route path="logistica/pedidos" element={<ProtectedRoute requiredPermission="logistics_orders" requireEmployee><LogisticaPedidosPage /></ProtectedRoute>} />
                               <Route path="logistica/estoque" element={<ProtectedRoute requiredPermission="logistics_inventory" requireEmployee><LogisticaEstoquePage /></ProtectedRoute>} />
-                              <Route path="logistica/contratos" element={<SectorContractDashboard sector="logistica" />} />
-                              <Route path="logistica/contrato/:id" element={<ContractViewer />} />
-                              <Route path="logistica/solicitacoes-setores" element={<SectorRequestsWrapper department="logistica" />} />
-                              <Route path="logistica/processos" element={<ProcessControlPage />} />
-                              <Route path="logistica/insumos" element={<InsumoSolicitationPage sector="logistica" sectorLabel="Logística" />} />
-                              <Route path="logistica/nfe" element={<NFEPage sector="logistica" sectorLabel="Logística" />} />
-                              <Route path="logistica/bonificacoes" element={<BonusManagementPage sectorId="logistica" sectorName="Logística" />} />
+                              <Route path="logistica/contratos" element={<ProtectedRoute requiredPermission="logistics_contracts"><SectorContractDashboard sector="logistica" /></ProtectedRoute>} />
+                              <Route path="logistica/contrato/:id" element={<ProtectedRoute requiredPermission="logistics_contracts"><ContractViewer /></ProtectedRoute>} />
+                              <Route path="logistica/solicitacoes-setores" element={<ProtectedRoute requiredPermission="logistics_intersector"><SectorRequestsWrapper department="logistica" /></ProtectedRoute>} />
+                              <Route path="logistica/processos" element={<ProtectedRoute requiredPermission="logistics_processes"><ProcessControlPage /></ProtectedRoute>} />
+                              <Route path="logistica/insumos" element={<ProtectedRoute requiredPermission="logistics_supplies"><InsumoSolicitationPage sector="logistica" sectorLabel="Logística" /></ProtectedRoute>} />
+                              <Route path="logistica/nfe" element={<ProtectedRoute requiredPermission="logistics_nfe"><NFEPage sector="logistica" sectorLabel="Logística" /></ProtectedRoute>} />
+                              <Route path="logistica/bonificacoes" element={<ProtectedRoute requiredPermission="logistics_bonuses"><BonusManagementPage sectorId="logistica" sectorName="Logística" /></ProtectedRoute>} />
                             </Route>
 
                             {/* Manutenção */}
                             <Route element={<ProtectedRoute requiredModule="manutencao" requireEmployee />}>
                               <Route path="manutencao" element={<ManutencaoDashboard />} />
                               <Route path="manutencao/operacoes" element={<SectorHROperationsPage departmentSlug="manutencao" departmentName="Manutenção" />} /><Route path="manutencao/admissao" element={<Navigate to="/crm/manutencao/operacoes" replace />} />
-                              <Route path="manutencao/contratos" element={<SectorContractDashboard sector="manutencao" />} />
-                              <Route path="manutencao/contrato/:id" element={<ContractViewer />} />
-                              <Route path="manutencao/solicitacoes-setores" element={<SectorRequestsWrapper department="manutencao" />} />
-                              <Route path="manutencao/nfe" element={<NFEPage sector="manutencao" sectorLabel="Manutenção" />} />
-                              <Route path="manutencao/processos" element={<ProcessControlPage />} />
-                              <Route path="manutencao/insumos" element={<InsumoSolicitationPage sector="manutencao" sectorLabel="Manutenção" />} />
-                              <Route path="manutencao/bonificacoes" element={<BonusManagementPage sectorId="manutencao" sectorName="Manutenção" />} />
+                              <Route path="manutencao/contratos" element={<ProtectedRoute requiredPermission="manutencao_contracts"><SectorContractDashboard sector="manutencao" /></ProtectedRoute>} />
+                              <Route path="manutencao/contrato/:id" element={<ProtectedRoute requiredPermission="manutencao_contracts"><ContractViewer /></ProtectedRoute>} />
+                              <Route path="manutencao/solicitacoes-setores" element={<ProtectedRoute requiredPermission="manutencao_intersector"><SectorRequestsWrapper department="manutencao" /></ProtectedRoute>} />
+                              <Route path="manutencao/nfe" element={<ProtectedRoute requiredPermission="manutencao_nfe"><NFEPage sector="manutencao" sectorLabel="Manutenção" /></ProtectedRoute>} />
+                              <Route path="manutencao/processos" element={<ProtectedRoute requiredPermission="manutencao_processes"><ProcessControlPage /></ProtectedRoute>} />
+                              <Route path="manutencao/insumos" element={<ProtectedRoute requiredPermission="manutencao_supplies"><InsumoSolicitationPage sector="manutencao" sectorLabel="Manutenção" /></ProtectedRoute>} />
+                              <Route path="manutencao/bonificacoes" element={<ProtectedRoute requiredPermission="manutencao_bonuses"><BonusManagementPage sectorId="manutencao" sectorName="Manutenção" /></ProtectedRoute>} />
                             </Route>
 
                             {/* Marketing */}
@@ -372,56 +391,58 @@ const App = () => {
                               <Route path="marketing/campanhas" element={<ProtectedRoute requiredPermission="marketing_campaigns" requireEmployee><MarketingCampaignsPage /></ProtectedRoute>} />
                               <Route path="marketing/solicitacoes" element={<ProtectedRoute requiredPermission="marketing_requests" requireEmployee><InsumoSolicitationPage sector="marketing" sectorLabel="Marketing" /></ProtectedRoute>} />
                               <Route path="marketing/gerenciar" element={<ProtectedRoute requiredPermission="marketing_requests" requireEmployee><MarketingRequestsManagementPage /></ProtectedRoute>} />
-                              <Route path="marketing/bonificacoes" element={<BonusManagementPage sectorId="marketing" sectorName="Marketing" />} />
-                              <Route path="marketing/contratos" element={<SectorContractDashboard sector="marketing" />} />
-                              <Route path="marketing/contrato/:id" element={<ContractViewer />} />
-                              <Route path="marketing/solicitacoes-setores" element={<SectorRequestsWrapper department="marketing" />} />
-                              <Route path="marketing/nfe" element={<NFEPage sector="marketing" sectorLabel="Marketing" />} />
-                              <Route path="marketing/processos" element={<ProcessControlPage />} />
-                              <Route path="marketing/insumos" element={<InsumoSolicitationPage sector="marketing" sectorLabel="Marketing" />} />
+                              <Route path="marketing/bonificacoes" element={<ProtectedRoute requiredPermission="marketing_bonuses"><BonusManagementPage sectorId="marketing" sectorName="Marketing" /></ProtectedRoute>} />
+                              <Route path="marketing/contratos" element={<ProtectedRoute requiredPermission="marketing_contracts"><SectorContractDashboard sector="marketing" /></ProtectedRoute>} />
+                              <Route path="marketing/contrato/:id" element={<ProtectedRoute requiredPermission="marketing_contracts"><ContractViewer /></ProtectedRoute>} />
+                              <Route path="marketing/solicitacoes-setores" element={<ProtectedRoute requiredPermission="marketing_intersector"><SectorRequestsWrapper department="marketing" /></ProtectedRoute>} />
+                              <Route path="marketing/nfe" element={<ProtectedRoute requiredPermission="marketing_nfe"><NFEPage sector="marketing" sectorLabel="Marketing" /></ProtectedRoute>} />
+                              <Route path="marketing/processos" element={<ProtectedRoute requiredPermission="marketing_processes"><ProcessControlPage /></ProtectedRoute>} />
+                              <Route path="marketing/insumos" element={<ProtectedRoute requiredPermission="marketing_supplies"><InsumoSolicitationPage sector="marketing" sectorLabel="Marketing" /></ProtectedRoute>} />
                             </Route>
 
                             {/* RH */}
                             <Route element={<ProtectedRoute requiredModule="rh" requireEmployee />}>
                               <Route path="rh" element={<RHDashboard />} />
-                              <Route path="rh/usuarios" element={<ProtectedRoute allowedRoles={['admin', 'rh_manager']} requiredPermission="manage_hr" requireEmployee><UsersAdminPage /></ProtectedRoute>} />
+                              <Route path="rh/usuarios" element={<ProtectedRoute requiredPermission="admin_users" requireEmployee><UsersAdminPage /></ProtectedRoute>} />
                               <Route path="rh/operacoes" element={<ProtectedRoute requiredPermission="hr_employees" requireEmployee><HROperationsPage /></ProtectedRoute>} />
-                              <Route path="rh/solicitacoes-setores" element={<SectorRequestsWrapper department="rh" />} />
-                              <Route path="rh/nfe" element={<NFEPage sector="rh" sectorLabel="RH" />} />
-                              <Route path="rh/processos" element={<ProcessControlPage />} />
-                              <Route path="rh/insumos" element={<InsumoSolicitationPage sector="rh" sectorLabel="Recursos Humanos" />} />
-                              <Route path="rh/contratos" element={<SectorContractDashboard sector="rh" />} />
-                              <Route path="rh/contrato/:id" element={<ContractViewer />} />
+                              <Route path="rh/solicitacoes-setores" element={<ProtectedRoute requiredPermission="hr_intersector"><SectorRequestsWrapper department="rh" /></ProtectedRoute>} />
+                              <Route path="rh/nfe" element={<ProtectedRoute requiredPermission="hr_nfe"><NFEPage sector="rh" sectorLabel="RH" /></ProtectedRoute>} />
+                              <Route path="rh/processos" element={<ProtectedRoute requiredPermission="hr_processes"><ProcessControlPage /></ProtectedRoute>} />
+                              <Route path="rh/insumos" element={<ProtectedRoute requiredPermission="hr_supplies"><InsumoSolicitationPage sector="rh" sectorLabel="Recursos Humanos" /></ProtectedRoute>} />
+                              <Route path="rh/contratos" element={<ProtectedRoute requiredPermission="hr_contracts"><SectorContractDashboard sector="rh" /></ProtectedRoute>} />
+                              <Route path="rh/contrato/:id" element={<ProtectedRoute requiredPermission="hr_contracts"><ContractViewer /></ProtectedRoute>} />
+                              <Route path="rh/ferias" element={<VacationAnalysisPage />} />
                             </Route>
 
                             {/* E-commerce */}
                             <Route element={<ProtectedRoute requiredModule="ecommerce" requireEmployee />}>
-                              <Route path="ecommerce/nfe" element={<NFEPage sector="ecommerce" sectorLabel="E-commerce" />} />
+                              <Route path="ecommerce/nfe" element={<ProtectedRoute requiredPermission="ecommerce_nfe"><NFEPage sector="ecommerce" sectorLabel="E-commerce" /></ProtectedRoute>} />
                             </Route>
 
                             {/* Tech / TI */}
                             <Route element={<ProtectedRoute requiredModule="tech" requireEmployee />}>
                               <Route path="tech" element={<TechDashboard />} />
                               <Route path="tech/tickets" element={<ProtectedRoute requiredPermission="tech_tickets" requireEmployee><TechTicketsPage /></ProtectedRoute>} />
-                              <Route path="tech/kb" element={<TechKBPage />} />
+                              <Route path="tech/kb" element={<ProtectedRoute requiredPermission="tech_kb"><TechKBPage /></ProtectedRoute>} />
                               <Route path="tech/operacoes" element={<SectorHROperationsPage departmentSlug="tech" departmentName="Tecnologia da Informação" />} /><Route path="tech/admissao" element={<Navigate to="/crm/tech/operacoes" replace />} />
-                              <Route path="tech/nfe" element={<NFEPage sector="tech" sectorLabel="Tecnologia da Informação" />} />
-                              <Route path="tech/inventario" element={<InventoryPage />} />
-                              <Route path="tech/contratos" element={<SectorContractDashboard sector="tech" />} />
-                              <Route path="tech/contrato/:id" element={<ContractViewer />} />
-                              <Route path="tech/processos" element={<ProcessControlPage />} />
-                              <Route path="tech/insumos" element={<InsumoSolicitationPage sector="tech" sectorLabel="Tecnologia da Informação" />} />
-                              <Route path="tech/bonificacoes" element={<BonusManagementPage sectorId="tech" sectorName="Tech" />} />
-                              <Route path="tech/solicitacoes-setores" element={<SectorRequestsWrapper department="tech" />} />
+                              <Route path="tech/nfe" element={<ProtectedRoute requiredPermission="tech_nfe"><NFEPage sector="tech" sectorLabel="Tecnologia da Informação" /></ProtectedRoute>} />
+                              <Route path="tech/inventario" element={<ProtectedRoute requiredPermission="tech_assets"><InventoryPage /></ProtectedRoute>} />
+                              <Route path="tech/contratos" element={<ProtectedRoute requiredPermission="tech_contracts"><SectorContractDashboard sector="tech" /></ProtectedRoute>} />
+                              <Route path="tech/contrato/:id" element={<ProtectedRoute requiredPermission="tech_contracts"><ContractViewer /></ProtectedRoute>} />
+                              <Route path="tech/processos" element={<ProtectedRoute requiredPermission="tech_processes"><ProcessControlPage /></ProtectedRoute>} />
+                              <Route path="tech/insumos" element={<ProtectedRoute requiredPermission="tech_supplies"><InsumoSolicitationPage sector="tech" sectorLabel="Tecnologia da Informação" /></ProtectedRoute>} />
+                              <Route path="tech/bonificacoes" element={<ProtectedRoute requiredPermission="tech_bonuses"><BonusManagementPage sectorId="tech" sectorName="Tech" /></ProtectedRoute>} />
+                              <Route path="tech/solicitacoes-setores" element={<ProtectedRoute requiredPermission="tech_intersector"><SectorRequestsWrapper department="tech" /></ProtectedRoute>} />
                             </Route>
 
                             {/* Compras */}
                             <Route element={<ProtectedRoute requiredModule="compras" requireEmployee />}>
-                              <Route path="compras/nfe" element={<NFEPage sector="compras" sectorLabel="Compras" />} />
+                              <Route path="compras/nfe" element={<ProtectedRoute requiredPermission="compras_nfe"><NFEPage sector="compras" sectorLabel="Compras" /></ProtectedRoute>} />
                             </Route>
 
                             {/* Final CRM Layout cleanup */}
                           </Route>
+                          <Route path="*" element={<NotFound />} />
                         </Routes>
                       </Suspense>
                     </BrowserRouter>

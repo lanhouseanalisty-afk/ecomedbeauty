@@ -22,8 +22,15 @@ export function useUserRole() {
     if (isAdmin) return true;
     if (permissions && permissions.includes('*')) return true;
 
+    // Automatic access based on department
+    if (departmentModule && departmentModule === module) return true;
+
+    // Fallback for Marketing if slug is inconsistent in DB
+    if (module === 'marketing' && departmentId === '3b1395df-21a7-42ed-b735-665ef393dd2b') return true;
+
     const permissionMap: Record<string, string> = {
       'admin': 'manage_employees',
+      // ...
       'rh': 'manage_hr',
       'financeiro': 'manage_finance',
       'marketing': 'manage_marketing',
@@ -76,14 +83,26 @@ export function useUserRole() {
       return true;
     }
 
+    // Grant all permissions for user's own department
+    if (departmentModule && permission.startsWith(`${departmentModule}_`)) return true;
+
+    // Fallback for Marketing if slug is inconsistent
+    if (departmentId === '3b1395df-21a7-42ed-b735-665ef393dd2b' && permission.startsWith('marketing_')) return true;
+
     return permissions ? permissions.includes(permission) : false;
   };
 
   const canEditModule = (module: string): boolean => {
     if (isAdmin) return true;
-    if (permissions.includes('*')) return true;
+    if (permissions && permissions.includes('*')) return true;
 
     if (!canAccessModule(module)) return false;
+
+    // Users can always edit their own department/module
+    if (departmentModule && departmentModule === module) return true;
+
+    // Fallback for Marketing
+    if (module === 'marketing' && departmentId === '3b1395df-21a7-42ed-b735-665ef393dd2b') return true;
 
     const elevatedRoles: AppRole[] = [
       'manager', 'tech_digital', 'marketing_manager', 'rh_manager',

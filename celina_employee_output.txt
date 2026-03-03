@@ -1,0 +1,31 @@
+Searching for employees with emails: ["celina@ecomedbeauty.com.br","celina.ribeiro@medbeauty.com.br"]
+Found by email: [
+  {
+    "id": "4a1539f1-6606-4c1c-81eb-5fff92d4593e",
+    "user_id": "6816c70c-40d8-41ed-b4b8-5627015fbf77",
+    "employee_code": "21298311845",
+    "full_name": "Celina",
+    "cpf": "212.983.118-45",
+    "email": "celina.ribeiro@medbeauty.com.br",
+    "phone": null,
+    "birth_date": null,
+    "hire_date": "2026-02-25",
+    "termination_date": null,
+    "position_id": null,
+    "department_id": "3b1395df-21a7-42ed-b735-665ef393dd2b",
+    "manager_id": null,
+    "status": "active",
+    "salary": null,
+    "work_schedule": null,
+    "emergency_contact": null,
+    "address": null,
+    "documents": null,
+    "lgpd_consent_at": null,
+    "created_at": "2026-02-25T02:19:21.348707+00:00",
+    "updated_at": "2026-02-25T23:06:20.926+00:00",
+    "bio": null,
+    "skills": null,
+    "social_links": {}
+  }
+]
+Error searching by name: column employees.nome does not exist

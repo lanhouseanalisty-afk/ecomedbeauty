@@ -1,9 +1,8 @@
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { AlertCircle, Info, Bell, Plus, Loader2 } from 'lucide-react';
+import { AlertCircle, Info, Bell, Plus, Loader2, Megaphone, Sparkles, Pin } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Notice {
     id: string;
@@ -22,10 +22,18 @@ interface Notice {
     created_at: string;
 }
 
+interface Position {
+    x: number;
+    y: number;
+    rotate: number;
+}
+
 export function NoticeBoard() {
     const { roles } = useAuth();
     const [notices, setNotices] = useState<Notice[]>([]);
     const [loading, setLoading] = useState(true);
+    const [itemPositions, setItemPositions] = useState<Record<string, Position>>({});
+    const boardRef = useRef<HTMLDivElement>(null);
 
     // Create Notice States
     const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -43,6 +51,18 @@ export function NoticeBoard() {
         fetchNotices();
     }, []);
 
+    // Load positions from localStorage
+    useEffect(() => {
+        const savedPositions = localStorage.getItem('notice_positions');
+        if (savedPositions) {
+            try {
+                setItemPositions(JSON.parse(savedPositions));
+            } catch (e) {
+                console.error("Error parsing saved positions", e);
+            }
+        }
+    }, []);
+
     const fetchNotices = async () => {
         const { data, error } = await supabase
             .from('notices')
@@ -51,8 +71,41 @@ export function NoticeBoard() {
             .order('created_at', { ascending: false });
 
         if (error) console.error('Error fetching notices:', error);
-        else setNotices(data || []);
+        else {
+            const fetchedNotices: Notice[] = data || [];
+            setNotices(fetchedNotices);
+
+            // Generate random positions for new notices if not saved
+            setItemPositions(prev => {
+                const newPos = { ...prev };
+                fetchedNotices.forEach((notice, index) => {
+                    if (!newPos[notice.id]) {
+                        newPos[notice.id] = {
+                            x: (index % 3) * 280 + 20,
+                            y: Math.floor(index / 3) * 200 + 20,
+                            rotate: Math.random() * 6 - 3 // -3 to 3 degrees
+                        };
+                    }
+                });
+                return newPos;
+            });
+        }
         setLoading(false);
+    };
+
+    const handleDragEnd = (id: string, info: any) => {
+        setItemPositions(prev => {
+            const updated = {
+                ...prev,
+                [id]: {
+                    ...prev[id],
+                    x: prev[id].x + info.offset.x,
+                    y: prev[id].y + info.offset.y
+                }
+            };
+            localStorage.setItem('notice_positions', JSON.stringify(updated));
+            return updated;
+        });
     };
 
     const handleCreateNotice = async () => {
@@ -85,124 +138,165 @@ export function NoticeBoard() {
         }
     };
 
-    const getPriorityIcon = (priority: string) => {
+    const getPriorityStyles = (priority: string) => {
         switch (priority) {
-            case 'urgent': return <AlertCircle className="w-5 h-5 text-red-500" />;
-            case 'notice': return <Bell className="w-5 h-5 text-amber-500" />;
-            default: return <Info className="w-5 h-5 text-blue-500" />;
+            case 'urgent': return 'bg-[#fff0f0] border-rose-200 shadow-rose-100';
+            case 'notice': return 'bg-[#fff9e6] border-amber-200 shadow-amber-100';
+            default: return 'bg-[#f0f9ff] border-sky-200 shadow-sky-100';
         }
     };
 
-    const getPriorityColor = (priority: string) => {
+    const getPinColor = (priority: string) => {
         switch (priority) {
-            case 'urgent': return 'bg-red-100 text-red-800 border-red-200';
-            case 'notice': return 'bg-amber-100 text-amber-800 border-amber-200';
-            default: return 'bg-blue-100 text-blue-800 border-blue-200';
+            case 'urgent': return 'text-rose-500';
+            case 'notice': return 'text-amber-500';
+            default: return 'text-sky-500';
         }
     };
 
     return (
-        <Card className="h-full">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="flex items-center gap-2 text-lg font-bold">
-                    <Bell className="w-5 h-5" />
-                    Mural de Avisos
-                </CardTitle>
+        <Card className="h-full border-none shadow-2xl bg-slate-100 overflow-hidden flex flex-col rounded-3xl">
+            <CardHeader className="flex flex-row items-center justify-between pb-4 border-b bg-white/50 backdrop-blur-md px-8 z-20">
+                <div className="flex items-center gap-3">
+                    <div className="bg-slate-800 p-2.5 rounded-2xl text-white shadow-lg">
+                        <Pin className="w-5 h-5 rotate-45" />
+                    </div>
+                    <div>
+                        <CardTitle className="text-2xl font-black text-slate-800 tracking-tightest uppercase">
+                            Mural Interativo
+                        </CardTitle>
+                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Arraste os avisos como quiser</p>
+                    </div>
+                </div>
                 {isManager && (
                     <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
                         <DialogTrigger asChild>
-                            <Button size="sm" variant="outline" className="gap-2">
-                                <Plus className="w-4 h-4" /> Novo Aviso
+                            <Button size="sm" className="gap-2 bg-slate-900 hover:bg-slate-800 text-white rounded-full px-6 h-11 shadow-xl transition-all hover:scale-105 active:scale-95">
+                                <Plus className="w-5 h-5" /> Novo Post-it
                             </Button>
                         </DialogTrigger>
-                        <DialogContent>
+                        <DialogContent className="sm:max-w-[500px] rounded-[2rem] border-none shadow-2xl">
                             <DialogHeader>
-                                <DialogTitle>Novo Aviso</DialogTitle>
+                                <DialogTitle className="text-3xl font-black text-slate-900 text-center pt-4">CRIAR AVISO</DialogTitle>
                             </DialogHeader>
-                            <div className="space-y-4 py-4">
+                            <div className="space-y-6 py-8 px-2">
                                 <div className="space-y-2">
-                                    <Label>Título</Label>
+                                    <Label className="text-xs font-black text-slate-500 uppercase ml-1">Título</Label>
                                     <Input
-                                        placeholder="Ex: Manutenção Programada"
+                                        placeholder="Título curto e direto..."
                                         value={newNotice.title}
                                         onChange={e => setNewNotice({ ...newNotice, title: e.target.value })}
+                                        className="h-14 rounded-2xl border-2 border-slate-100 focus:border-slate-900 transition-all text-lg font-bold"
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label>Conteúdo</Label>
+                                    <Label className="text-xs font-black text-slate-500 uppercase ml-1">Mensagem</Label>
                                     <Textarea
-                                        placeholder="Digite a mensagem..."
+                                        placeholder="O que você quer comunicar?"
                                         rows={4}
                                         value={newNotice.content}
                                         onChange={e => setNewNotice({ ...newNotice, content: e.target.value })}
+                                        className="rounded-2xl border-2 border-slate-100 focus:border-slate-900 transition-all text-base font-medium resize-none"
                                     />
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label>Prioridade</Label>
+                                        <Label className="text-xs font-black text-slate-500 uppercase ml-1">Prioridade</Label>
                                         <Select
                                             value={newNotice.priority}
                                             onValueChange={v => setNewNotice({ ...newNotice, priority: v as any })}
                                         >
-                                            <SelectTrigger><SelectValue /></SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="info">Informação</SelectItem>
-                                                <SelectItem value="notice">Aviso</SelectItem>
-                                                <SelectItem value="urgent">Urgente</SelectItem>
+                                            <SelectTrigger className="h-14 rounded-2xl border-2 border-slate-100 font-bold">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent className="rounded-2xl border-none shadow-2xl">
+                                                <SelectItem value="info" className="font-bold">📘 Informação</SelectItem>
+                                                <SelectItem value="notice" className="font-bold">📙 Aviso</SelectItem>
+                                                <SelectItem value="urgent" className="font-bold">📕 Urgente</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>
                                     <div className="space-y-2">
-                                        <Label>Setor Alvo (Opcional)</Label>
+                                        <Label className="text-xs font-black text-slate-500 uppercase ml-1">Setor</Label>
                                         <Input
-                                            placeholder="Ex: Comercial"
+                                            placeholder="Ex: RH"
                                             value={newNotice.target_sector}
                                             onChange={e => setNewNotice({ ...newNotice, target_sector: e.target.value })}
+                                            className="h-14 rounded-2xl border-2 border-slate-100 font-bold"
                                         />
                                     </div>
                                 </div>
                             </div>
-                            <DialogFooter>
-                                <Button variant="outline" onClick={() => setIsCreateOpen(false)}>Cancelar</Button>
-                                <Button onClick={handleCreateNotice} disabled={creating}>
-                                    {creating && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                                    Publicar
+                            <DialogFooter className="pb-4">
+                                <Button onClick={handleCreateNotice} disabled={creating} className="w-full h-16 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl text-xl font-black shadow-2xl shadow-slate-200 transition-all hover:scale-[1.02] active:scale-95">
+                                    {creating ? <Loader2 className="w-6 h-6 animate-spin" /> : <Sparkles className="w-6 h-6 mr-2" />}
+                                    PUBLICAR NO MURAL
                                 </Button>
                             </DialogFooter>
                         </DialogContent>
                     </Dialog>
                 )}
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex-1 p-0 relative overflow-hidden bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:20px_20px]" ref={boardRef}>
                 {loading ? (
-                    <div className="text-center py-4">Carregando...</div>
+                    <div className="flex flex-col items-center justify-center h-full">
+                        <Loader2 className="w-12 h-12 text-slate-800 animate-spin" />
+                    </div>
                 ) : notices.length === 0 ? (
-                    <div className="text-center text-muted-foreground py-4">Nenhum aviso no momento.</div>
+                    <div className="flex flex-col items-center justify-center h-full space-y-4 opacity-30 grayscale">
+                        <Megaphone className="w-32 h-32 text-slate-400" />
+                        <p className="text-2xl font-black text-slate-500 uppercase tracking-tighter">O mural está limpo</p>
+                    </div>
                 ) : (
-                    <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
-                        {notices.map((notice) => (
-                            <div key={notice.id} className={`p-4 rounded-lg border flex gap-4 ${getPriorityColor(notice.priority)} shadow-sm`}>
-                                <div className="mt-1 shrink-0">
-                                    {getPriorityIcon(notice.priority)}
-                                </div>
-                                <div className="flex-1">
-                                    <div className="flex justify-between items-start">
-                                        <h4 className="font-bold text-sm">{notice.title}</h4>
-                                        <span className="text-[10px] opacity-70 whitespace-nowrap ml-2">
-                                            {new Date(notice.created_at).toLocaleDateString()}
-                                        </span>
-                                    </div>
-                                    <p className="text-sm mt-1 whitespace-pre-wrap leading-relaxed opacity-90">{notice.content}</p>
-                                    {notice.target_sector && (
-                                        <div className="mt-2 text-right">
-                                            <Badge variant="outline" className="bg-white/40 border-current text-[10px]">
-                                                {notice.target_sector}
-                                            </Badge>
+                    <div className="w-full h-[700px] p-8">
+                        <AnimatePresence>
+                            {notices.map((notice) => {
+                                const pos = itemPositions[notice.id] || { x: 0, y: 0, rotate: 0 };
+                                return (
+                                    <motion.div
+                                        key={notice.id}
+                                        drag
+                                        dragConstraints={boardRef}
+                                        dragElastic={0.1}
+                                        dragTransition={{ bounceStiffness: 200, bounceDamping: 20 }}
+                                        onDragEnd={(_, info) => handleDragEnd(notice.id, info)}
+                                        initial={{ opacity: 0, scale: 0.5, x: pos.x, y: pos.y, rotate: pos.rotate }}
+                                        animate={{ opacity: 1, scale: 1, x: pos.x, y: pos.y, rotate: pos.rotate }}
+                                        whileDrag={{
+                                            scale: 1.05,
+                                            zIndex: 50,
+                                            rotate: 0,
+                                            boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)"
+                                        }}
+                                        className={`absolute w-[260px] p-6 rounded-sm border-t-4 shadow-xl cursor-grab active:cursor-grabbing select-none ${getPriorityStyles(notice.priority)}`}
+                                    >
+                                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10 transition-transform group-hover:scale-110">
+                                            <Pin className={`w-6 h-6 drop-shadow-md fill-current ${getPinColor(notice.priority)}`} />
                                         </div>
-                                    )}
-                                </div>
-                            </div>
-                        ))}
+
+                                        <div className="space-y-3 pt-2">
+                                            <h4 className="font-black text-slate-900 text-lg leading-none uppercase tracking-tighter border-b-2 border-black/5 pb-2">
+                                                {notice.title}
+                                            </h4>
+                                            <p className="text-sm text-slate-800 font-bold leading-relaxed whitespace-pre-wrap italic">
+                                                "{notice.content}"
+                                            </p>
+
+                                            <div className="flex justify-between items-center pt-2 mt-4 border-t border-black/5">
+                                                <span className="text-[9px] font-black uppercase text-black/40">
+                                                    {new Date(notice.created_at).toLocaleDateString('pt-BR')}
+                                                </span>
+                                                {notice.target_sector && (
+                                                    <span className="text-[9px] font-black uppercase bg-black/10 px-2 py-0.5 rounded">
+                                                        {notice.target_sector}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                );
+                            })}
+                        </AnimatePresence>
                     </div>
                 )}
             </CardContent>

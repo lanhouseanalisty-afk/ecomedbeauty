@@ -176,6 +176,52 @@ export default function TechTicketsPage() {
     }
   }, [messages, isDetailsOpen]);
 
+  // Auto-close resolved tickets after 3 days
+  useEffect(() => {
+    if (!tickets || isLoading) return;
+
+    const autoCloseTickets = async () => {
+      const now = new Date();
+      const threeDaysInMs = 3 * 24 * 60 * 60 * 1000;
+
+      const ticketsToAutoClose = tickets.filter(t => {
+        const metadata = (t as any).metadata;
+        if (t.status !== 'resolved' || !metadata?.resolved_at) return false;
+
+        const resolvedAt = new Date(metadata.resolved_at);
+        return (now.getTime() - resolvedAt.getTime()) > threeDaysInMs;
+      });
+
+      if (ticketsToAutoClose.length > 0) {
+        console.log(`Auto-closing ${ticketsToAutoClose.length} resolved tickets...`);
+
+        for (const ticket of ticketsToAutoClose) {
+          updateTicket.mutate({
+            id: ticket.id,
+            status: 'closed',
+            metadata: {
+              ...(ticket as any).metadata,
+              closed_by: 'system_auto_close',
+              closed_at: now.toISOString()
+            }
+          });
+
+          // Send system message for closure
+          sendMessage.mutate({
+            ticket_id: ticket.id,
+            content: "Sistema: Chamado fechado automaticamente após 3 dias de inatividade no status Resolvido.",
+            user_id: user?.id || ''
+          });
+        }
+
+        toast.success(`${ticketsToAutoClose.length} chamados foram fechados automaticamente.`);
+      }
+    };
+
+    // Run check once on load if user is admin/tech
+    autoCloseTickets();
+  }, [tickets, isLoading, user]);
+
   const handlePaste = (e: React.ClipboardEvent) => {
     const items = e.clipboardData.items;
     for (const item of items) {

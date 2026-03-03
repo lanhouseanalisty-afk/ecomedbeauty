@@ -129,6 +129,8 @@ export interface AdmissionProcess {
   // Controle de fluxo
   current_step: 'rh' | 'gestor' | 'ti' | 'compras' | 'rh_review' | 'colaborador' | 'concluido';
   status: 'pending' | 'in_progress' | 'completed' | 'cancelled';
+  docusign_envelope_id?: string | null;
+  docusign_status?: 'pending' | 'sent' | 'signed' | 'voided' | string | null;
   target_department: string;
   created_by: string | null;
   created_at: string;

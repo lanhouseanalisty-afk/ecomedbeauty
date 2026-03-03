@@ -31,13 +31,18 @@ export default function UpdatePassword() {
         setLoading(true);
         try {
             const { error } = await supabase.auth.updateUser({
-                password: password
+                password: password,
+                data: {
+                    force_password_change: null
+                }
             });
 
             if (error) throw error;
 
             toast.success("Senha atualizada com sucesso!");
-            navigate("/auth");
+            setTimeout(() => {
+                navigate("/auth");
+            }, 1000);
         } catch (error: any) {
             console.error("Error updating password:", error);
             toast.error(error.message || "Erro ao atualizar senha.");

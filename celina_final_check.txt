@@ -1,0 +1,4 @@
+--- Checking Roles for User ID: 6816c70c-40d8-41ed-b4b8-5627015fbf77 ---
+Roles: []
+
+Employee Permissions: []

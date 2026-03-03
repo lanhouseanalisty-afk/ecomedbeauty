@@ -1,0 +1,13 @@
+{
+  "employees": [
+    {
+      "id": "66fcc73d-67bc-4650-a2ca-c5aa8d45e85a",
+      "user_id": "9afa3fdd-79d1-4bb7-adbf-1601a6e15dde",
+      "full_name": "Reginaldo Mazaro",
+      "email": "reginaldo.mazaro@ext.medbeauty.com.br"
+    }
+  ],
+  "roles": {
+    "9afa3fdd-79d1-4bb7-adbf-1601a6e15dde": []
+  }
+}

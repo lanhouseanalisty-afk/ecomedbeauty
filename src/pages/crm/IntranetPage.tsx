@@ -11,19 +11,7 @@ export default function IntranetPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Main Content: Notice Board (Takes up 2 columns) */}
                 <div className="md:col-span-2 space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <Card className="bg-gradient-to-br from-purple-50 to-pink-50 border-purple-100 cursor-pointer hover:shadow-md transition-shadow">
-                            <CardContent className="p-6 flex items-center gap-4">
-                                <div className="p-3 bg-purple-100 rounded-full">
-                                    <Megaphone className="w-6 h-6 text-purple-600" />
-                                </div>
-                                <div>
-                                    <h3 className="font-semibold text-purple-900">Comunicar TI</h3>
-                                    <p className="text-sm text-purple-700">Abra um chamado técnico</p>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
+
                     <NoticeBoard />
                 </div>
 

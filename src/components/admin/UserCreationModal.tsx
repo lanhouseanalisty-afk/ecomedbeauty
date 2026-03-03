@@ -1,7 +1,5 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import {
     Dialog,
@@ -12,104 +10,66 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
-} from "@/components/ui/form";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { usePositions } from "@/hooks/useRH";
 import { UserPlus, Loader2 } from "lucide-react";
 
-const userSchema = z.object({
-    fullName: z.string().min(3, "Nome deve ter pelo menos 3 caracteres"),
-    email: z.string().email("Email inválido"),
-    password: z.string().min(6, "Senha deve ter pelo menos 6 caracteres"),
-    role: z.string().min(1, "Selecione uma permissão"),
-    positionId: z.string().optional(),
-});
-
-type UserFormValues = z.infer<typeof userSchema>;
-
-interface UserCreationModalProps {
-    onUserCreated?: () => void;
-}
-
-const ROLES = [
-    { value: "admin", label: "Administrador" },
-    { value: "rh_manager", label: "Gestor RH" },
-    { value: "finance_manager", label: "Gestor Financeiro" },
-    { value: "marketing_manager", label: "Gestor Marketing" },
-    { value: "sales_manager", label: "Gestor Comercial" },
-    { value: "logistics_manager", label: "Gestor Logística" },
-    { value: "tech_support", label: "Suporte Técnico" },
-    { value: "ecommerce_manager", label: "Gestor E-commerce" },
-    { value: "tech_digital", label: "Tech Digital (TI)" },
-    { value: "manager", label: "Gerente" },
-    { value: "analyst", label: "Analista" },
-    { value: "user", label: "Usuário Padrão" },
-];
-
-export function UserCreationModal({ onUserCreated }: UserCreationModalProps) {
+export function UserCreationModal({ onUserCreated }: { onUserCreated?: () => void }) {
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const { data: positions } = usePositions();
 
-    const form = useForm<UserFormValues>({
-        resolver: zodResolver(userSchema),
+    const { register, handleSubmit, reset } = useForm({
         defaultValues: {
             fullName: "",
             email: "",
             password: "",
             role: "user",
             positionId: "",
+            cpf: "",
+            employeeCode: "",
         },
     });
 
-    async function onSubmit(data: UserFormValues) {
+    async function onSubmit(data: any) {
         setLoading(true);
+        console.log("Submitting user creation:", data);
         try {
-            const { data: response, error } = await supabase.functions.invoke("update-user-password", {
+            const { error: invokeError } = await supabase.functions.invoke("update-user-password", {
                 body: {
                     email: data.email,
                     newPassword: data.password,
                     employeeName: data.fullName,
                     role: data.role,
                     positionId: data.positionId || null,
+                    cpf: data.cpf,
+                    employeeCode: data.employeeCode,
                 },
             });
 
-            if (error) throw error;
+            if (invokeError) throw invokeError;
 
             toast.success("Usuário criado com sucesso!");
-            setOpen(false);
-            form.reset();
-            onUserCreated?.();
+
+            // Defensive delay to let toast/DOM settle before closing and refreshing
+            setTimeout(() => {
+                setOpen(false);
+                reset();
+                onUserCreated?.();
+            }, 1000);
         } catch (error: any) {
             console.error("Error creating user:", error);
-            toast.error("Erro ao criar usuário: " + (error.message || "Tente novamente mais tarde"));
+            toast.error("Erro: " + (error.message || "Falha desconhecida"));
         } finally {
             setLoading(false);
         }
     }
 
     return (
-        <Dialog open={open} onOpenChange={(v) => {
-            setOpen(v);
-            if (!v) form.reset();
-        }}>
+        <Dialog open={open} onOpenChange={(val) => !loading && setOpen(val)}>
             <DialogTrigger asChild>
                 <Button className="gap-2">
                     <UserPlus className="h-4 w-4" />
@@ -120,117 +80,67 @@ export function UserCreationModal({ onUserCreated }: UserCreationModalProps) {
                 <DialogHeader>
                     <DialogTitle>Criar Novo Usuário</DialogTitle>
                     <DialogDescription>
-                        Cadastre um novo colaborador e defina seus acessos e cargo.
+                        Cadastre um novo colaborador preenchendo as informações obrigatórias.
                     </DialogDescription>
                 </DialogHeader>
 
-                <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
-                        <FormField
-                            control={form.control}
-                            name="fullName"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Nome Completo</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="Ex: João Silva" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-4">
+                    <div className="space-y-2">
+                        <Label>Nome Completo</Label>
+                        <Input {...register("fullName")} placeholder="João Silva" required disabled={loading} />
+                    </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                            <FormField
-                                control={form.control}
-                                name="email"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>E-mail</FormLabel>
-                                        <FormControl>
-                                            <Input type="email" placeholder="usuario@medbeauty.com.br" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-
-                            <FormField
-                                control={form.control}
-                                name="password"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Senha inicial</FormLabel>
-                                        <FormControl>
-                                            <Input type="password" placeholder="••••••••" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label>E-mail</Label>
+                            <Input {...register("email")} type="email" placeholder="usuario@medbeauty.com.br" required disabled={loading} />
                         </div>
+                        <div className="space-y-2">
+                            <Label>Senha</Label>
+                            <Input {...register("password")} type="password" placeholder="••••••••" required disabled={loading} />
+                        </div>
+                    </div>
 
-                        <FormField
-                            control={form.control}
-                            name="role"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Nível de Acesso (Role)</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                        <FormControl>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Selecione uma permissão" />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            {ROLES.map((role) => (
-                                                <SelectItem key={role.value} value={role.value}>
-                                                    {role.label}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label>CPF</Label>
+                            <Input {...register("cpf")} placeholder="000.000.000-00" required disabled={loading} />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Código do Funcionário</Label>
+                            <Input {...register("employeeCode")} placeholder="Ex: MB-123" required disabled={loading} />
+                        </div>
+                    </div>
 
-                        <FormField
-                            control={form.control}
-                            name="positionId"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Cargo / Função</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                        <FormControl>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Selecione um cargo" />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            {positions?.map((position) => (
-                                                <SelectItem key={position.id} value={position.id}>
-                                                    {position.title}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+                    <div className="space-y-2">
+                        <Label>Nível de Acesso (Role)</Label>
+                        <select {...register("role")} className="w-full p-2 border rounded-md bg-transparent" disabled={loading}>
+                            <option value="user">Usuário Padrão</option>
+                            <option value="admin">Administrador</option>
+                            <option value="manager">Gerente</option>
+                            <option value="analyst">Analista</option>
+                        </select>
+                    </div>
 
-                        <DialogFooter className="pt-4">
-                            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={loading}>
-                                Cancelar
-                            </Button>
-                            <Button type="submit" disabled={loading}>
-                                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                Criar Usuário
-                            </Button>
-                        </DialogFooter>
-                    </form>
-                </Form>
+                    <div className="space-y-2">
+                        <Label>Cargo / Função</Label>
+                        <select {...register("positionId")} className="w-full p-2 border rounded-md bg-transparent" required disabled={loading}>
+                            <option value="">Selecione um cargo</option>
+                            {positions?.map((p: any) => (
+                                <option key={p.id} value={p.id}>{p.title}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <DialogFooter className="pt-4">
+                        <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={loading}>
+                            Cancelar
+                        </Button>
+                        <Button type="submit" disabled={loading}>
+                            {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Criar Usuário"}
+                        </Button>
+                    </DialogFooter>
+                </form>
             </DialogContent>
         </Dialog>
     );

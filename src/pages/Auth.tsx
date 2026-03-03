@@ -4,7 +4,7 @@ import { Helmet } from "react-helmet-async";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Building2, ShoppingBag, LogIn } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Building2, ShoppingBag, LogIn, GraduationCap } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +18,14 @@ const signInSchema = z.object({
   password: z.string().min(6, "Senha deve ter pelo menos 6 caracteres"),
 });
 
+const signUpSchema = z.object({
+  fullName: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
+  email: z.string().email("E-mail inválido"),
+  password: z.string().min(6, "Senha deve ter pelo menos 6 caracteres"),
+});
+
 type SignInData = z.infer<typeof signInSchema>;
+type SignUpData = z.infer<typeof signUpSchema>;
 
 export default function Auth() {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -27,19 +34,19 @@ export default function Auth() {
   const [searchParams] = useSearchParams();
   const initialRole = searchParams.get('role') === 'employee' ? 'employee' : 'customer';
   const [loginRole, setLoginRole] = useState<'customer' | 'employee'>(initialRole);
-  const { signIn, signUp, signOut, user, isEmployee, loading } = useAuth();
+  const { signIn, signUp, signOut, user, isEmployee, loading, roles, departmentModule } = useAuth();
   const navigate = useNavigate();
 
   // Redirect based on user role when already logged in
   useEffect(() => {
     if (!loading && user) {
       if (isEmployee) {
-        navigate("/crm");
+        navigate("/crm/intranet");
       } else {
         navigate("/");
       }
     }
-  }, [user, isEmployee, loading, navigate]);
+  }, [user, isEmployee, loading, navigate, roles, departmentModule]);
 
   const signInForm = useForm<SignInData>({
     resolver: zodResolver(signInSchema),
@@ -91,7 +98,7 @@ export default function Auth() {
 
     // Redirect based on role
     if (isEmployeeUser && loginRole === 'employee') {
-      navigate("/crm");
+      navigate("/crm/intranet");
     } else {
       navigate("/");
     }
@@ -265,6 +272,18 @@ export default function Auth() {
                     Entrar com AD (Microsoft 365)
                   </Button>
                 </>
+              )}
+              {loginRole === 'customer' && (
+                <div className="pt-4 border-t text-center space-y-3">
+                  <p className="text-sm text-muted-foreground">Novo profissional na MedBeauty?</p>
+                  <Button variant="outline" type="button" className="w-full gap-2 text-primary border-primary/20 hover:bg-primary/5 hover:text-primary-dark" asChild>
+                    <Link to="/cadastro-profissional">
+                      <GraduationCap className="h-4 w-4" />
+                      Cadastrar como Profissional (B2B)
+                    </Link>
+                  </Button>
+                  <p className="text-[10px] text-muted-foreground italic">Acesso exclusivo para Médicos e HOF</p>
+                </div>
               )}
             </form>
           </div>

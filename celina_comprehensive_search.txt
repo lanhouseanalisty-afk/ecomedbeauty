@@ -1,0 +1,12 @@
+{
+  "email": "celina.ribeiro@medbeauty.com.br",
+  "employees": [
+    {
+      "id": "4a1539f1-6606-4c1c-81eb-5fff92d4593e",
+      "user_id": "6816c70c-40d8-41ed-b4b8-5627015fbf77",
+      "email": "celina.ribeiro@medbeauty.com.br",
+      "full_name": "Celina"
+    }
+  ],
+  "celinaRoles": []
+}

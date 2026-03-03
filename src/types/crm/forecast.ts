@@ -28,6 +28,13 @@ export interface LancamentoDiario {
     origem: string;
 }
 
+export interface ForecastDailyNote {
+    id: string;
+    data: string;
+    nota: string;
+    created_at?: string;
+}
+
 export interface WeekSummary {
     weekNumber: number;
     startDate: string;

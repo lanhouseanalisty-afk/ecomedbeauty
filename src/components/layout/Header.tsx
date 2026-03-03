@@ -133,8 +133,8 @@ export function Header() {
                   </DropdownMenuItem>
                   <DropdownMenuSeparator className="bg-white/10" />
                   <DropdownMenuItem asChild>
-                    <Link to="/conta" className="cursor-pointer text-[11px] text-white/50 hover:text-white">
-                      Criar nova conta
+                    <Link to="/cadastro-profissional" className="cursor-pointer text-[11px] text-[#ECB546] hover:text-[#ECB546]/80 font-bold">
+                      Criar nova conta (B2B)
                     </Link>
                   </DropdownMenuItem>
                 </DropdownMenuContent>

@@ -8,8 +8,13 @@ export default function AuthCallback() {
 
   useEffect(() => {
     const handleAuthCallback = async () => {
+      // Capture hash and params BEFORE getSession (which might clear the hash from URL)
+      const currentHash = window.location.hash;
+      const params = new URLSearchParams(window.location.search);
+      const next = params.get("next");
+
       const { data, error } = await supabase.auth.getSession();
-      
+
       if (error) {
         console.error("Auth error:", error.message);
         navigate("/auth");
@@ -17,11 +22,7 @@ export default function AuthCallback() {
       }
 
       // Check if this is a password recovery flow
-      const hash = window.location.hash;
-      const params = new URLSearchParams(window.location.search);
-      const next = params.get("next");
-
-      if (hash && hash.includes("type=recovery")) {
+      if (currentHash && currentHash.includes("type=recovery")) {
         navigate("/update-password");
         return;
       }

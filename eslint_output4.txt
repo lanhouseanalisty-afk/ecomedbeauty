@@ -1,0 +1,8 @@
+
+C:\Users\reginaldo.mazaro\OneDrive - Skinstore S.A\Documentos\GitHub\ecomedbeauty-main\src\pages\crm\rh\VacationAnalysisPage.tsx
+   82:77  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  116:64  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  332:59  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+??? 3 problems (3 errors, 0 warnings)
+

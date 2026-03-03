@@ -1,0 +1,201 @@
+﻿
+> vite_react_shadcn_ts@0.0.0 build
+> vite build
+
+[36mvite v5.4.21 [32mbuilding for production...[36m[39m
+transforming...
+[32mÔ£ô[39m 4959 modules transformed.
+node.exe : Circular 
+chunk: react-vendor -> 
+ui-vendor -> 
+react-vendor. Please 
+adjust the manual 
+chunk logic for these 
+chunks.
+No linha:1 caractere:1
++ & "C:\Program 
+Files\nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo 
+...
++ ~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+~~
+    + CategoryInfo     
+         : NotSpecifi  
+  ed: (Circular chun   
+ k:...r these chunk    
+s.:String) [], Rem    
+oteException
+    + FullyQualifiedEr 
+   rorId : NativeComm  
+  andError
+ 
+Circular chunk: 
+ui-vendor -> 
+data-vendor -> 
+ui-vendor. Please 
+adjust the manual 
+chunk logic for these 
+chunks.
+rendering chunks...
+computing gzip size...
+[2mdist/[22m[32mregisterSW.js                                       [39m[1m[2m  0.13 kB[22m[1m[22m
+[2mdist/[22m[32mmanifest.webmanifest                                [39m[1m[2m  0.36 kB[22m[1m[22m
+[2mdist/[22m[32mindex.html                                          [39m[1m[2m  1.58 kB[22m[1m[22m[2m Ôöé gzip:   0.62 kB[22m
+[2mdist/[22m[32massets/product-ithread-7eTse2zl.jpg                 [39m[1m[2m 16.13 kB[22m[1m[22m
+[2mdist/[22m[32massets/product-nanocannula-jsWL_GVE.jpg             [39m[1m[2m 16.17 kB[22m[1m[22m
+[2mdist/[22m[32massets/product-eptq-DkvKpo9L.jpg                    [39m[1m[2m 17.56 kB[22m[1m[22m
+[2mdist/[22m[32massets/product-idebenone-BfN-NANp.jpg               [39m[1m[2m 30.52 kB[22m[1m[22m
+[2mdist/[22m[35massets/index-1dWCAIoe.css                           [39m[1m[2m178.19 kB[22m[1m[22m[2m Ôöé gzip:  27.07 kB[22m
+[2mdist/[22m[36massets/isSameDay-Bc96GJyR.js                        [39m[1m[2m  0.15 kB[22m[1m[22m[2m Ôöé gzip:   0.16 kB[22m[2m Ôöé map:     1.80 kB[22m
+[2mdist/[22m[36massets/addDays-mG_KvS6x.js                          [39m[1m[2m  0.20 kB[22m[1m[22m[2m Ôöé gzip:   0.19 kB[22m[2m Ôöé map:     1.54 kB[22m
+[2mdist/[22m[36massets/isBefore-ChY43y_u.js                         [39m[1m[2m  0.22 kB[22m[1m[22m[2m Ôöé gzip:   0.18 kB[22m[2m Ôöé map:     2.52 kB[22m
+[2mdist/[22m[36massets/addMonths-DGMyPx3S.js                        [39m[1m[2m  0.34 kB[22m[1m[22m[2m Ôöé gzip:   0.26 kB[22m[2m Ôöé map:     3.57 kB[22m
+[2mdist/[22m[36massets/differenceInDays-DxridUIZ.js                 [39m[1m[2m  0.55 kB[22m[1m[22m[2m Ôöé gzip:   0.33 kB[22m[2m Ôöé map:     4.63 kB[22m
+[2mdist/[22m[36massets/TechAdmissaoPage-Jzd8OjCl.js                 [39m[1m[2m  0.59 kB[22m[1m[22m[2m Ôöé gzip:   0.37 kB[22m[2m Ôöé map:     0.51 kB[22m
+[2mdist/[22m[36massets/JuridicoAdmissaoPage-BheezoZl.js             [39m[1m[2m  0.59 kB[22m[1m[22m[2m Ôöé gzip:   0.37 kB[22m[2m Ôöé map:     0.53 kB[22m
+[2mdist/[22m[36massets/MarketingAdmissaoPage-BvTTgi4P.js            [39m[1m[2m  0.60 kB[22m[1m[22m[2m Ôöé gzip:   0.36 kB[22m[2m Ôöé map:     0.53 kB[22m
+[2mdist/[22m[36massets/ComercialAdmissaoPage-DMxodcM0.js            [39m[1m[2m  0.60 kB[22m[1m[22m[2m Ôöé gzip:   0.36 kB[22m[2m Ôöé map:     0.53 kB[22m
+[2mdist/[22m[36massets/LogisticaAdmissaoPage-dDptLW0x.js            [39m[1m[2m  0.60 kB[22m[1m[22m[2m Ôöé gzip:   0.37 kB[22m[2m Ôöé map:     0.53 kB[22m
+[2mdist/[22m[36massets/EcommerceAdmissaoPage-Sx68euq-.js            [39m[1m[2m  0.60 kB[22m[1m[22m[2m Ôöé gzip:   0.36 kB[22m[2m Ôöé map:     0.54 kB[22m
+[2mdist/[22m[36massets/FinanceiroAdmissaoPage-CA7ycKAB.js           [39m[1m[2m  0.60 kB[22m[1m[22m[2m Ôöé gzip:   0.36 kB[22m[2m Ôöé map:     0.54 kB[22m
+[2mdist/[22m[36massets/ConfirmDialog-6zm1YDkt.js                    [39m[1m[2m  0.67 kB[22m[1m[22m[2m Ôöé gzip:   0.40 kB[22m[2m Ôöé map:     2.40 kB[22m
+[2mdist/[22m[36massets/SectorRequestsWrapper-QAowUres.js            [39m[1m[2m  0.67 kB[22m[1m[22m[2m Ôöé gzip:   0.44 kB[22m[2m Ôöé map:     1.39 kB[22m
+[2mdist/[22m[36massets/currency-input-1ppz7BmM.js                   [39m[1m[2m  0.76 kB[22m[1m[22m[2m Ôöé gzip:   0.49 kB[22m[2m Ôöé map:     3.25 kB[22m
+[2mdist/[22m[36massets/EmptyState-CEXnZIur.js                       [39m[1m[2m  1.07 kB[22m[1m[22m[2m Ôöé gzip:   0.56 kB[22m[2m Ôöé map:     3.01 kB[22m
+[2mdist/[22m[36massets/useMarketing-CGmrbeRz.js                     [39m[1m[2m  1.22 kB[22m[1m[22m[2m Ôöé gzip:   0.61 kB[22m[2m Ôöé map:     4.77 kB[22m
+[2mdist/[22m[36massets/InsumoSolicitationPage-BAa6SQ-H.js           [39m[1m[2m  1.28 kB[22m[1m[22m[2m Ôöé gzip:   0.76 kB[22m[2m Ôöé map:     3.21 kB[22m
+[2mdist/[22m[36massets/useScientific-D3MZJeHa.js                    [39m[1m[2m  1.37 kB[22m[1m[22m[2m Ôöé gzip:   0.65 kB[22m[2m Ôöé map:     4.95 kB[22m
+[2mdist/[22m[36massets/forecastUtils-XHdkj8-z.js                    [39m[1m[2m  1.41 kB[22m[1m[22m[2m Ôöé gzip:   0.80 kB[22m[2m Ôöé map:    14.83 kB[22m
+[2mdist/[22m[36massets/EcommerceCMSPage-o6anyDTN.js                 [39m[1m[2m  1.67 kB[22m[1m[22m[2m Ôöé gzip:   0.77 kB[22m[2m Ôöé map:     4.57 kB[22m
+[2mdist/[22m[36massets/QuickStats-BUIonQuJ.js                       [39m[1m[2m  1.68 kB[22m[1m[22m[2m Ôöé gzip:   0.71 kB[22m[2m Ôöé map:     5.33 kB[22m
+[2mdist/[22m[36massets/form-CZB1eCj3.js                             [39m[1m[2m  1.75 kB[22m[1m[22m[2m Ôöé gzip:   0.78 kB[22m[2m Ôöé map:     6.78 kB[22m
+[2mdist/[22m[36massets/HROperationsPage-C-YAW02h.js                 [39m[1m[2m  2.00 kB[22m[1m[22m[2m Ôöé gzip:   0.86 kB[22m[2m Ôöé map:     4.11 kB[22m
+[2mdist/[22m[36massets/useIntranet-Dt_tq4jt.js                      [39m[1m[2m  2.29 kB[22m[1m[22m[2m Ôöé gzip:   0.90 kB[22m[2m Ôöé map:     8.43 kB[22m
+[2mdist/[22m[36massets/useLogistica-CGNBFi3C.js                     [39m[1m[2m  2.39 kB[22m[1m[22m[2m Ôöé gzip:   0.90 kB[22m[2m Ôöé map:     7.66 kB[22m
+[2mdist/[22m[36massets/switch-0vH9jSTu.js                           [39m[1m[2m  2.53 kB[22m[1m[22m[2m Ôöé gzip:   1.28 kB[22m[2m Ôöé map:     9.85 kB[22m
+[2mdist/[22m[36massets/parseISO-BT22aWbu.js                         [39m[1m[2m  2.72 kB[22m[1m[22m[2m Ôöé gzip:   1.22 kB[22m[2m Ôöé map:    13.55 kB[22m
+[2mdist/[22m[36massets/AdminPermissionsPage-DKKYSE7D.js             [39m[1m[2m  2.79 kB[22m[1m[22m[2m Ôöé gzip:   1.18 kB[22m[2m Ôöé map:    10.68 kB[22m
+[2mdist/[22m[36massets/KPIChart-Q3gXWjip.js                         [39m[1m[2m  2.82 kB[22m[1m[22m[2m Ôöé gzip:   0.90 kB[22m[2m Ôöé map:     8.82 kB[22m
+[2mdist/[22m[36massets/ContractTable-xxE7yt54.js                    [39m[1m[2m  2.87 kB[22m[1m[22m[2m Ôöé gzip:   1.18 kB[22m[2m Ôöé map:     9.06 kB[22m
+[2mdist/[22m[36massets/NewRequestPage-ClC9TaLb.js                   [39m[1m[2m  3.19 kB[22m[1m[22m[2m Ôöé gzip:   1.43 kB[22m[2m Ôöé map:    10.89 kB[22m
+[2mdist/[22m[36massets/MarketingRequestsListPage-Cm1luKAe.js        [39m[1m[2m  3.59 kB[22m[1m[22m[2m Ôöé gzip:   1.16 kB[22m[2m Ôöé map:     9.49 kB[22m
+[2mdist/[22m[36massets/KnowledgeBasePage-DyKItdfi.js                [39m[1m[2m  3.69 kB[22m[1m[22m[2m Ôöé gzip:   1.64 kB[22m[2m Ôöé map:    10.14 kB[22m
+[2mdist/[22m[36massets/JuridicoDashboard-CFLYbqoH.js                [39m[1m[2m  3.84 kB[22m[1m[22m[2m Ôöé gzip:   1.59 kB[22m[2m Ôöé map:     8.21 kB[22m
+[2mdist/[22m[36massets/DataExport-ka8mp-0h.js                       [39m[1m[2m  3.91 kB[22m[1m[22m[2m Ôöé gzip:   1.63 kB[22m[2m Ôöé map:    14.41 kB[22m
+[2mdist/[22m[36massets/PowerBIPage-D8JL2TCP.js                      [39m[1m[2m  3.93 kB[22m[1m[22m[2m Ôöé gzip:   1.56 kB[22m[2m Ôöé map:     9.87 kB[22m
+[2mdist/[22m[36massets/radio-group-DN5GGjrz.js                      [39m[1m[2m  4.03 kB[22m[1m[22m[2m Ôöé gzip:   1.84 kB[22m[2m Ôöé map:    18.73 kB[22m
+[2mdist/[22m[36massets/MarketingRequestsManagementPage-rLSHkk-O.js  [39m[1m[2m  4.04 kB[22m[1m[22m[2m Ôöé gzip:   1.59 kB[22m[2m Ôöé map:    12.93 kB[22m
+[2mdist/[22m[36massets/RequestCenterPage-BhVQYiBz.js                [39m[1m[2m  4.14 kB[22m[1m[22m[2m Ôöé gzip:   1.59 kB[22m[2m Ôöé map:    11.90 kB[22m
+[2mdist/[22m[36massets/useMarketingRequest-BUlRLaoU.js              [39m[1m[2m  4.21 kB[22m[1m[22m[2m Ôöé gzip:   1.27 kB[22m[2m Ôöé map:    14.67 kB[22m
+[2mdist/[22m[36massets/MarketingDashboard-DtFbZmmQ.js               [39m[1m[2m  4.25 kB[22m[1m[22m[2m Ôöé gzip:   1.72 kB[22m[2m Ôöé map:    10.73 kB[22m
+[2mdist/[22m[36massets/LegalDashboard-CYJj22nT.js                   [39m[1m[2m  4.35 kB[22m[1m[22m[2m Ôöé gzip:   1.76 kB[22m[2m Ôöé map:    10.50 kB[22m
+[2mdist/[22m[36massets/ChecklistDashboardPage-C5luEo9T.js           [39m[1m[2m  4.41 kB[22m[1m[22m[2m Ôöé gzip:   1.81 kB[22m[2m Ôöé map:    12.87 kB[22m
+[2mdist/[22m[36massets/accordion-C4dTqjxa.js                        [39m[1m[2m  4.63 kB[22m[1m[22m[2m Ôöé gzip:   1.86 kB[22m[2m Ôöé map:    22.11 kB[22m
+[2mdist/[22m[36massets/alert-dialog-DdW4jTXO.js                     [39m[1m[2m  4.81 kB[22m[1m[22m[2m Ôöé gzip:   1.78 kB[22m[2m Ôöé map:    18.45 kB[22m
+[2mdist/[22m[36massets/EmployeeDirectoryPage-DEFyB_wn.js            [39m[1m[2m  5.25 kB[22m[1m[22m[2m Ôöé gzip:   1.94 kB[22m[2m Ôöé map:    13.73 kB[22m
+[2mdist/[22m[36massets/useEcommerce-BNjJ8A8J.js                     [39m[1m[2m  5.32 kB[22m[1m[22m[2m Ôöé gzip:   1.25 kB[22m[2m Ôöé map:    18.12 kB[22m
+[2mdist/[22m[36massets/ComprasDashboard-CUhN97kA.js                 [39m[1m[2m  6.24 kB[22m[1m[22m[2m Ôöé gzip:   1.81 kB[22m[2m Ôöé map:    16.62 kB[22m
+[2mdist/[22m[36massets/LegalContractsDashboard-C93BOkKb.js          [39m[1m[2m  6.32 kB[22m[1m[22m[2m Ôöé gzip:   2.14 kB[22m[2m Ôöé map:    18.92 kB[22m
+[2mdist/[22m[36massets/AdminCRMDashboard-DjffOk0F.js                [39m[1m[2m  6.48 kB[22m[1m[22m[2m Ôöé gzip:   2.28 kB[22m[2m Ôöé map:    17.60 kB[22m
+[2mdist/[22m[36massets/SystemSettingsPage-ZTnvd8lB.js               [39m[1m[2m  6.51 kB[22m[1m[22m[2m Ôöé gzip:   2.44 kB[22m[2m Ôöé map:    24.29 kB[22m
+[2mdist/[22m[36massets/LogisticaEstoquePage-CylF9JEJ.js             [39m[1m[2m  6.54 kB[22m[1m[22m[2m Ôöé gzip:   2.36 kB[22m[2m Ôöé map:    23.38 kB[22m
+[2mdist/[22m[36massets/CientificaDashboard-d5Yvc1n5.js              [39m[1m[2m  6.60 kB[22m[1m[22m[2m Ôöé gzip:   2.27 kB[22m[2m Ôöé map:    16.86 kB[22m
+[2mdist/[22m[36massets/AnalyticsDashboard-Dl-pzDxn.js               [39m[1m[2m  6.66 kB[22m[1m[22m[2m Ôöé gzip:   2.32 kB[22m[2m Ôöé map:    21.71 kB[22m
+[2mdist/[22m[36massets/RequestDetailPage-OEDmmBEH.js                [39m[1m[2m  6.90 kB[22m[1m[22m[2m Ôöé gzip:   2.47 kB[22m[2m Ôöé map:    22.77 kB[22m
+[2mdist/[22m[36massets/EcommerceCategoriasPage-D6AgqN7E.js          [39m[1m[2m  6.92 kB[22m[1m[22m[2m Ôöé gzip:   2.33 kB[22m[2m Ôöé map:    21.85 kB[22m
+[2mdist/[22m[36massets/LogisticaPedidosPage-B5jbW5F9.js             [39m[1m[2m  6.94 kB[22m[1m[22m[2m Ôöé gzip:   2.44 kB[22m[2m Ôöé map:    25.29 kB[22m
+[2mdist/[22m[36massets/MarketingCampaignsPage-CkIsw2Ap.js           [39m[1m[2m  7.07 kB[22m[1m[22m[2m Ôöé gzip:   2.39 kB[22m[2m Ôöé map:    24.33 kB[22m
+[2mdist/[22m[36massets/ManutencaoDashboard-DOgmsYwG.js              [39m[1m[2m  7.53 kB[22m[1m[22m[2m Ôöé gzip:   1.99 kB[22m[2m Ôöé map:    20.06 kB[22m
+[2mdist/[22m[36massets/SectorContractDashboard-CGWmhYNL.js          [39m[1m[2m  7.58 kB[22m[1m[22m[2m Ôöé gzip:   2.64 kB[22m[2m Ôöé map:    24.49 kB[22m
+[2mdist/[22m[36massets/AdminBonusPage-3zzPa9Kr.js                   [39m[1m[2m  7.68 kB[22m[1m[22m[2m Ôöé gzip:   2.60 kB[22m[2m Ôöé map:    27.24 kB[22m
+[2mdist/[22m[36massets/BonusManagementPage-C0c1PQRP.js              [39m[1m[2m  7.72 kB[22m[1m[22m[2m Ôöé gzip:   2.61 kB[22m[2m Ôöé map:    25.86 kB[22m
+[2mdist/[22m[36massets/ComprasVeiculosPage-DeSYYwX8.js              [39m[1m[2m  8.06 kB[22m[1m[22m[2m Ôöé gzip:   2.67 kB[22m[2m Ôöé map:    26.94 kB[22m
+[2mdist/[22m[36massets/IdeaBankPage-BqDVFlaU.js                     [39m[1m[2m  8.06 kB[22m[1m[22m[2m Ôöé gzip:   2.67 kB[22m[2m Ôöé map:    22.77 kB[22m
+[2mdist/[22m[36massets/FranquiasPage-CwP-oGhD.js                    [39m[1m[2m  8.31 kB[22m[1m[22m[2m Ôöé gzip:   2.74 kB[22m[2m Ôöé map:    28.06 kB[22m
+[2mdist/[22m[36massets/EcommerceCustomersPage-Dv95SQJK.js           [39m[1m[2m  8.35 kB[22m[1m[22m[2m Ôöé gzip:   2.46 kB[22m[2m Ôöé map:    30.12 kB[22m
+[2mdist/[22m[36massets/LogisticaDashboard-Cos9xU_o.js               [39m[1m[2m  8.38 kB[22m[1m[22m[2m Ôöé gzip:   2.98 kB[22m[2m Ôöé map:    23.00 kB[22m
+[2mdist/[22m[36massets/EcommerceCuponsPage-C3PIb5iF.js              [39m[1m[2m  8.76 kB[22m[1m[22m[2m Ôöé gzip:   2.72 kB[22m[2m Ôöé map:    27.48 kB[22m
+[2mdist/[22m[36massets/SectorContractReview-onLJkiRK.js             [39m[1m[2m  8.80 kB[22m[1m[22m[2m Ôöé gzip:   3.01 kB[22m[2m Ôöé map:    28.00 kB[22m
+[2mdist/[22m[36massets/ProcessControlPage-DueusgBO.js               [39m[1m[2m  8.83 kB[22m[1m[22m[2m Ôöé gzip:   3.30 kB[22m[2m Ôöé map:    26.38 kB[22m
+[2mdist/[22m[36massets/ContractAIWizard-DtM6NoTn.js                 [39m[1m[2m  8.85 kB[22m[1m[22m[2m Ôöé gzip:   3.58 kB[22m[2m Ôöé map:    32.84 kB[22m
+[2mdist/[22m[36massets/RequestsTable-Rt_jv3gW.js                    [39m[1m[2m  8.89 kB[22m[1m[22m[2m Ôöé gzip:   2.52 kB[22m[2m Ôöé map:    31.05 kB[22m
+[2mdist/[22m[36massets/GamificationPage-CF5SyuEs.js                 [39m[1m[2m  9.10 kB[22m[1m[22m[2m Ôöé gzip:   3.13 kB[22m[2m Ôöé map:    22.40 kB[22m
+[2mdist/[22m[36massets/DemissaoPage-xfDluBr2.js                     [39m[1m[2m  9.18 kB[22m[1m[22m[2m Ôöé gzip:   2.63 kB[22m[2m Ôöé map:    26.66 kB[22m
+[2mdist/[22m[36massets/SectorHROperationsPage-CRSEu-jA.js           [39m[1m[2m  9.68 kB[22m[1m[22m[2m Ôöé gzip:   2.97 kB[22m[2m Ôöé map:    29.83 kB[22m
+[2mdist/[22m[36massets/SapIntegrationPage-BIFRJFln.js               [39m[1m[2m  9.80 kB[22m[1m[22m[2m Ôöé gzip:   3.30 kB[22m[2m Ôöé map:    32.12 kB[22m
+[2mdist/[22m[36massets/ScientificPresentationsPage-3kmbFqFy.js      [39m[1m[2m  9.87 kB[22m[1m[22m[2m Ôöé gzip:   3.25 kB[22m[2m Ôöé map:    30.99 kB[22m
+[2mdist/[22m[36massets/RankingDashboardPage-CqNgpXJu.js             [39m[1m[2m  9.91 kB[22m[1m[22m[2m Ôöé gzip:   3.16 kB[22m[2m Ôöé map:    25.33 kB[22m
+[2mdist/[22m[36massets/ContractRequestForm-Bl3sh966.js              [39m[1m[2m 10.21 kB[22m[1m[22m[2m Ôöé gzip:   3.85 kB[22m[2m Ôöé map:    33.51 kB[22m
+[2mdist/[22m[36massets/LegalContractCreatePage-BzZHWlAh.js          [39m[1m[2m 10.26 kB[22m[1m[22m[2m Ôöé gzip:   3.72 kB[22m[2m Ôöé map:    31.04 kB[22m
+[2mdist/[22m[36massets/IntranetPage-Dp5rWZRe.js                     [39m[1m[2m 10.32 kB[22m[1m[22m[2m Ôöé gzip:   3.48 kB[22m[2m Ôöé map:    30.68 kB[22m
+[2mdist/[22m[36massets/CorporateStorePage-BfiRDWb-.js               [39m[1m[2m 10.51 kB[22m[1m[22m[2m Ôöé gzip:   3.24 kB[22m[2m Ôöé map:    29.64 kB[22m
+[2mdist/[22m[36massets/UnifiedSupplyRequestForm-fW3y1tya.js         [39m[1m[2m 10.59 kB[22m[1m[22m[2m Ôöé gzip:   3.17 kB[22m[2m Ôöé map:    37.52 kB[22m
+[2mdist/[22m[36massets/ComercialSubDepartmentPage-CCXC_88G.js       [39m[1m[2m 10.59 kB[22m[1m[22m[2m Ôöé gzip:   3.26 kB[22m[2m Ôöé map:    31.67 kB[22m
+[2mdist/[22m[36massets/EcommercePedidosPage-DSEkG8mJ.js             [39m[1m[2m 10.66 kB[22m[1m[22m[2m Ôöé gzip:   2.82 kB[22m[2m Ôöé map:    29.64 kB[22m
+[2mdist/[22m[36massets/EcommerceDashboard-CWNo6bd0.js               [39m[1m[2m 10.68 kB[22m[1m[22m[2m Ôöé gzip:   3.73 kB[22m[2m Ôöé map:    29.69 kB[22m
+[2mdist/[22m[36massets/useAdmission-BG4RMKXU.js                     [39m[1m[2m 11.17 kB[22m[1m[22m[2m Ôöé gzip:   3.40 kB[22m[2m Ôöé map:    41.86 kB[22m
+[2mdist/[22m[36massets/EcommerceProdutosPage-7f2otKTV.js            [39m[1m[2m 11.47 kB[22m[1m[22m[2m Ôöé gzip:   3.53 kB[22m[2m Ôöé map:    35.89 kB[22m
+[2mdist/[22m[36massets/TechDashboard-C2jQds7W.js                    [39m[1m[2m 11.66 kB[22m[1m[22m[2m Ôöé gzip:   3.57 kB[22m[2m Ôöé map:    29.51 kB[22m
+[2mdist/[22m[36massets/CRMDashboard-DRVdt8Ch.js                     [39m[1m[2m 12.39 kB[22m[1m[22m[2m Ôöé gzip:   3.85 kB[22m[2m Ôöé map:    32.39 kB[22m
+[2mdist/[22m[36massets/SectorRequestsPage-CjQeRWWZ.js               [39m[1m[2m 12.64 kB[22m[1m[22m[2m Ôöé gzip:   4.09 kB[22m[2m Ôöé map:    46.86 kB[22m
+[2mdist/[22m[36massets/FinanceiroDashboard-B8kblrRU.js              [39m[1m[2m 12.66 kB[22m[1m[22m[2m Ôöé gzip:   3.85 kB[22m[2m Ôöé map:    38.62 kB[22m
+[2mdist/[22m[36massets/format-Coqvy4Kc.js                           [39m[1m[2m 13.06 kB[22m[1m[22m[2m Ôöé gzip:   3.49 kB[22m[2m Ôöé map:    99.01 kB[22m
+[2mdist/[22m[36massets/PricingPage-Bty-OduE.js                      [39m[1m[2m 13.40 kB[22m[1m[22m[2m Ôöé gzip:   3.93 kB[22m[2m Ôöé map:    49.77 kB[22m
+[2mdist/[22m[36massets/TechKBPage-CCrBOCXN.js                       [39m[1m[2m 14.08 kB[22m[1m[22m[2m Ôöé gzip:   4.60 kB[22m[2m Ôöé map:    30.92 kB[22m
+[2mdist/[22m[36massets/NFEPage-DWA_SpNt.js                          [39m[1m[2m 14.79 kB[22m[1m[22m[2m Ôöé gzip:   4.16 kB[22m[2m Ôöé map:    52.53 kB[22m
+[2mdist/[22m[36massets/RHDashboard-CblWDAz2.js                      [39m[1m[2m 18.51 kB[22m[1m[22m[2m Ôöé gzip:   5.72 kB[22m[2m Ôöé map:    61.42 kB[22m
+[2mdist/[22m[36massets/UsersAdminPage-CZOI-vS_.js                   [39m[1m[2m 20.32 kB[22m[1m[22m[2m Ôöé gzip:   5.67 kB[22m[2m Ôöé map:    63.02 kB[22m
+[2mdist/[22m[36massets/CompliancePage-BpG-btgj.js                   [39m[1m[2m 21.97 kB[22m[1m[22m[2m Ôöé gzip:   7.17 kB[22m[2m Ôöé map:    69.05 kB[22m
+[2mdist/[22m[36massets/VacationAnalysisPage-DoTK-2tw.js             [39m[1m[2m 22.58 kB[22m[1m[22m[2m Ôöé gzip:   7.00 kB[22m[2m Ôöé map:    76.77 kB[22m
+[2mdist/[22m[36massets/purify.es-B9ZVCkUG.js                        [39m[1m[2m 22.68 kB[22m[1m[22m[2m Ôöé gzip:   8.79 kB[22m[2m Ôöé map:    92.90 kB[22m
+[2mdist/[22m[36massets/PlanilhaJeanPage-Cy9p-txN.js                 [39m[1m[2m 23.63 kB[22m[1m[22m[2m Ôöé gzip:   7.68 kB[22m[2m Ôöé map:    89.22 kB[22m
+[2mdist/[22m[36massets/EmployeeProfilePage-ZUBpnvhY.js              [39m[1m[2m 23.97 kB[22m[1m[22m[2m Ôöé gzip:   6.89 kB[22m[2m Ôöé map:    80.85 kB[22m
+[2mdist/[22m[36massets/useTermination-CHfR3cFO.js                   [39m[1m[2m 24.16 kB[22m[1m[22m[2m Ôöé gzip:   6.37 kB[22m[2m Ôöé map:    95.21 kB[22m
+[2mdist/[22m[36massets/InventoryPage-CPfC7_IQ.js                    [39m[1m[2m 26.31 kB[22m[1m[22m[2m Ôöé gzip:   6.84 kB[22m[2m Ôöé map:    96.12 kB[22m
+[2mdist/[22m[36massets/ComercialDashboard-CU2uZBuC.js               [39m[1m[2m 28.77 kB[22m[1m[22m[2m Ôöé gzip:   7.66 kB[22m[2m Ôöé map:    87.53 kB[22m
+[2mdist/[22m[36massets/DepartmentAdmissaoPage-DhOVd6DQ.js           [39m[1m[2m 39.73 kB[22m[1m[22m[2m Ôöé gzip:   9.12 kB[22m[2m Ôöé map:   124.30 kB[22m
+[2mdist/[22m[36massets/ContractViewer-C47FTjI_.js                   [39m[1m[2m 49.75 kB[22m[1m[22m[2m Ôöé gzip:  13.19 kB[22m[2m Ôöé map:   179.78 kB[22m
+[2mdist/[22m[36massets/ChecklistDetailPage-CUxfXloS.js              [39m[1m[2m 50.10 kB[22m[1m[22m[2m Ôöé gzip:  12.42 kB[22m[2m Ôöé map:   191.94 kB[22m
+[2mdist/[22m[36massets/AdmissaoPage-_zcQLtv5.js                     [39m[1m[2m 54.29 kB[22m[1m[22m[2m Ôöé gzip:  10.48 kB[22m[2m Ôöé map:   171.99 kB[22m
+[2mdist/[22m[36massets/proxy-BDo1p1wc.js                            [39m[1m[2m124.33 kB[22m[1m[22m[2m Ôöé gzip:  41.04 kB[22m[2m Ôöé map:   688.82 kB[22m
+[2mdist/[22m[36massets/ui-vendor-yNCRw-qP.js                        [39m[1m[2m141.64 kB[22m[1m[22m[2m Ôöé gzip:  36.43 kB[22m[2m Ôöé map:   465.85 kB[22m
+[2mdist/[22m[36massets/index.es-f6hPUwKL.js                         [39m[1m[2m150.79 kB[22m[1m[22m[2m Ôöé gzip:  51.62 kB[22m[2m Ôöé map:   636.53 kB[22m
+[2mdist/[22m[36massets/react-vendor-lxfgY2Nv.js                     [39m[1m[2m157.47 kB[22m[1m[22m[2m Ôöé gzip:  51.61 kB[22m[2m Ôöé map:   692.74 kB[22m
+[2mdist/[22m[36massets/html2canvas.esm-CBrSDip1.js                  [39m[1m[2m201.48 kB[22m[1m[22m[2m Ôöé gzip:  48.08 kB[22m[2m Ôöé map:   602.27 kB[22m
+[2mdist/[22m[36massets/data-vendor-BZdYM1yQ.js                      [39m[1m[2m211.04 kB[22m[1m[22m[2m Ôöé gzip:  55.79 kB[22m[2m Ôöé map:   915.15 kB[22m
+[2mdist/[22m[36massets/charts-vendor-DQp5fed9.js                    [39m[1m[2m420.73 kB[22m[1m[22m[2m Ôöé gzip: 112.08 kB[22m[2m Ôöé map: 1,826.67 kB[22m
+[2mdist/[22m[36massets/xlsx-CKN5doRT.js                             [39m[1m[2m424.27 kB[22m[1m[22m[2m Ôöé gzip: 141.79 kB[22m[2m Ôöé map: 1,665.98 kB[22m
+[2mdist/[22m[36massets/TechTicketsPage-CmmfjaWr.js                  [39m[1m[2m478.65 kB[22m[1m[22m[2m Ôöé gzip: 153.09 kB[22m[2m Ôöé map: 1,583.72 kB[22m
+[2mdist/[22m[36massets/index-goWbm54e.js                            [39m[1m[33m771.48 kB[39m[22m[2m Ôöé gzip: 218.26 kB[22m[2m Ôöé map: 2,567.61 kB[22m
+[2mdist/[22m[36massets/ContractTemplatesSettings-Dt8ojYAc.js        [39m[1m[33m934.59 kB[39m[22m[2m Ôöé gzip: 259.68 kB[22m[2m Ôöé map: 2,966.56 kB[22m
+[33m
+(!) Some chunks are 
+larger than 500 kB 
+after minification. 
+Consider:
+- Using dynamic 
+import() to code-split 
+the application
+- Use build.rollupOptio
+ns.output.manualChunks 
+to improve chunking: ht
+tps://rollupjs.org/conf
+iguration-options/#outp
+ut-manualchunks
+- Adjust chunk size 
+limit for this warning 
+via build.chunkSizeWarn
+ingLimit.[39m
+[32mÔ£ô built in 27.94s[39m
+
+PWA v1.2.0
+mode      generateSW
+precache  127 entries (5079.79 KiB)
+files generated
+  dist/sw.js.map
+  dist/sw.js
+  dist/workbox-8c29f6e4.js.map
+  dist/workbox-8c29f6e4.js

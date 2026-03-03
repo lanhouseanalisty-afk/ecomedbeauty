@@ -1,0 +1,18 @@
+{
+  "user_roles": {
+    "count": 0
+  },
+  "user_roles_sample": [],
+  "employees": {
+    "count": 105
+  },
+  "departments": {
+    "count": 21
+  },
+  "consultores": {
+    "count": 1
+  },
+  "profiles": {
+    "count": 0
+  }
+}

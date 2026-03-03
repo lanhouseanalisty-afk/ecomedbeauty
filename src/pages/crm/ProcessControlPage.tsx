@@ -2,7 +2,7 @@
 import { KanbanBoard } from '@/components/workflow/KanbanBoard';
 import { ReportsDashboard } from '@/components/workflow/ReportsDashboard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LayoutDashboard, Trello } from 'lucide-react';
+import { LayoutDashboard, LayoutGrid } from 'lucide-react';
 
 export default function ProcessControlPage() {
     return (
@@ -17,7 +17,7 @@ export default function ProcessControlPage() {
             <Tabs defaultValue="kanban" className="w-full">
                 <TabsList className="mb-6">
                     <TabsTrigger value="kanban" className="flex items-center gap-2">
-                        <Trello className="w-4 h-4" /> Kanban
+                        <LayoutGrid className="w-4 h-4" /> Kanban
                     </TabsTrigger>
                     <TabsTrigger value="reports" className="flex items-center gap-2">
                         <LayoutDashboard className="w-4 h-4" /> Relatórios

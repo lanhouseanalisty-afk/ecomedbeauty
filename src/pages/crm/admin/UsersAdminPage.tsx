@@ -35,11 +35,11 @@ interface UserRole {
 }
 
 const AVAILABLE_ROLES = [
-    { value: 'admin', label: 'admin.users.roles.admin', description: 'admin.users.roleDescriptions.admin' },
-    { value: 'manager', label: 'admin.users.roles.manager', description: 'admin.users.roleDescriptions.manager' },
-    { value: 'tech_digital', label: 'admin.users.roles.tech_digital', description: 'admin.users.roleDescriptions.tech_digital' },
-    { value: 'analyst', label: 'admin.users.roles.analyst', description: 'admin.users.roleDescriptions.analyst' },
-    { value: 'user', label: 'admin.users.roles.user', description: 'admin.users.roleDescriptions.user' }
+    { value: 'admin', label: 'Administrador' },
+    { value: 'manager', label: 'Gerente Geral' },
+    { value: 'user', label: 'Usuário Padrão' },
+    { value: 'tech_digital', label: 'Tech & Digital' },
+    { value: 'analyst', label: 'Analista' }
 ];
 
 interface PermissionGroup {
@@ -51,12 +51,34 @@ interface PermissionGroup {
 
 const PERMISSION_GROUPS: PermissionGroup[] = [
     {
+        id: 'admin',
+        label: 'Gerenciar Administração',
+        mainPermission: 'admin_dashboard',
+        subPermissions: [
+            { value: 'admin_users', label: 'Gestão de Usuários' },
+            { value: 'admin_permissions', label: 'Gestão de Permissões' },
+            { value: 'admin_analytics', label: 'Analytics' },
+            { value: 'admin_bonuses', label: 'Bonificações' },
+            { value: 'admin_nfe', label: 'Controle de NFE' },
+            { value: 'admin_processes', label: 'Controle de Processos' },
+            { value: 'admin_supplies', label: 'Solicitação de Insumos' },
+            { value: 'admin_contracts', label: 'Contratos' },
+            { value: 'admin_intersector', label: 'Solicitações entre Setores' }
+        ]
+    },
+    {
         id: 'marketing',
         label: 'Gerenciar Marketing',
         mainPermission: 'manage_marketing',
         subPermissions: [
             { value: 'marketing_campaigns', label: 'Campanhas' },
-            { value: 'marketing_requests', label: 'Solicitações de Materiais' }
+            { value: 'marketing_requests', label: 'Gerenciar Solicitações' },
+            { value: 'marketing_bonuses', label: 'Bonificações' },
+            { value: 'marketing_nfe', label: 'Controle de NFE' },
+            { value: 'marketing_processes', label: 'Controle de Processos' },
+            { value: 'marketing_supplies', label: 'Solicitação de Insumos' },
+            { value: 'marketing_contracts', label: 'Contratos' },
+            { value: 'marketing_intersector', label: 'Solicitações entre Setores' }
         ]
     },
     {
@@ -64,7 +86,13 @@ const PERMISSION_GROUPS: PermissionGroup[] = [
         label: 'Gerenciar Financeiro',
         mainPermission: 'manage_finance',
         subPermissions: [
-            { value: 'finance_nfe', label: 'Gerenciar NFE' },
+            { value: 'finance_pricing', label: 'Precificação' },
+            { value: 'finance_nfe', label: 'Controle de NFE' },
+            { value: 'finance_bonuses', label: 'Bonificações' },
+            { value: 'finance_processes', label: 'Controle de Processos' },
+            { value: 'finance_supplies', label: 'Solicitação de Insumos' },
+            { value: 'finance_contracts', label: 'Contratos' },
+            { value: 'finance_intersector', label: 'Solicitações entre Setores' },
             { value: 'finance_reports', label: 'Visualizar Relatórios Financeiros' }
         ]
     },
@@ -75,7 +103,137 @@ const PERMISSION_GROUPS: PermissionGroup[] = [
         subPermissions: [
             { value: 'hr_employees', label: 'Gerenciar Funcionários' },
             { value: 'hr_admission', label: 'Processo de Admissão' },
-            { value: 'hr_demission', label: 'Processo de Demissão' }
+            { value: 'hr_demission', label: 'Processo de Demissão' },
+            { value: 'hr_bonuses', label: 'Bonificações' },
+            { value: 'hr_nfe', label: 'Controle de NFE' },
+            { value: 'hr_processes', label: 'Controle de Processos' },
+            { value: 'hr_supplies', label: 'Solicitação de Insumos' },
+            { value: 'hr_contracts', label: 'Contratos' },
+            { value: 'hr_intersector', label: 'Solicitações entre Setores' }
+        ]
+    },
+    {
+        id: 'cientifica',
+        label: 'Gerenciar Científica',
+        mainPermission: 'manage_scientific',
+        subPermissions: [
+            { value: 'cientifica_presentations', label: 'Apresentações' },
+            { value: 'cientifica_bonuses', label: 'Bonificações' },
+            { value: 'cientifica_nfe', label: 'Controle de NFE' },
+            { value: 'cientifica_processes', label: 'Controle de Processos' },
+            { value: 'cientifica_supplies', label: 'Solicitação de Insumos' },
+            { value: 'cientifica_contracts', label: 'Contratos' },
+            { value: 'cientifica_intersector', label: 'Solicitações entre Setores' }
+        ]
+    },
+    {
+        id: 'comercial',
+        label: 'Gerenciar Comercial',
+        mainPermission: 'manage_commercial',
+        subPermissions: [
+            { value: 'comercial_leads', label: 'Leads / Dashboard' },
+            { value: 'comercial_franchises', label: 'Franquias' },
+            { value: 'comercial_bonuses', label: 'Bonificações' },
+            { value: 'comercial_nfe', label: 'Controle de NFE' },
+            { value: 'comercial_processes', label: 'Controle de Processos' },
+            { value: 'comercial_supplies', label: 'Solicitação de Insumos' },
+            { value: 'comercial_contracts', label: 'Contratos' },
+            { value: 'comercial_intersector', label: 'Solicitações entre Setores' },
+            { value: 'comercial_pricing', label: 'Precificação' },
+            { value: 'comercial_gamification', label: 'Gamificação' }
+        ]
+    },
+    {
+        id: 'logistica',
+        label: 'Gerenciar Logística',
+        mainPermission: 'manage_logistics',
+        subPermissions: [
+            { value: 'logistics_orders', label: 'Pedidos de Insumos' },
+            { value: 'logistics_inventory', label: 'Gerenciar Estoque' },
+            { value: 'logistics_bonuses', label: 'Bonificações' },
+            { value: 'logistics_nfe', label: 'Controle de NFE' },
+            { value: 'logistics_processes', label: 'Controle de Processos' },
+            { value: 'logistics_supplies', label: 'Solicitação de Insumos' },
+            { value: 'logistics_contracts', label: 'Contratos' },
+            { value: 'logistics_intersector', label: 'Solicitações entre Setores' }
+        ]
+    },
+    {
+        id: 'compras',
+        label: 'Gerenciar Compras',
+        mainPermission: 'manage_purchasing',
+        subPermissions: [
+            { value: 'purchasing_vehicles', label: 'Veículos' },
+            { value: 'purchasing_requests', label: 'Solicitações de Compras' },
+            { value: 'compras_bonuses', label: 'Bonificações' },
+            { value: 'compras_nfe', label: 'Controle de NFE' },
+            { value: 'compras_processes', label: 'Controle de Processos' },
+            { value: 'compras_supplies', label: 'Solicitação de Insumos' },
+            { value: 'compras_contracts', label: 'Contratos' },
+            { value: 'compras_intersector', label: 'Solicitações entre Setores' }
+        ]
+    },
+    {
+        id: 'tech',
+        label: 'Gerenciar Tech/TI',
+        mainPermission: 'manage_tickets',
+        subPermissions: [
+            { value: 'tech_tickets', label: 'Gerenciar Tickets' },
+            { value: 'tech_kb', label: 'Base de Conhecimento' },
+            { value: 'tech_assets', label: 'Inventário de Ativos' },
+            { value: 'tech_bonuses', label: 'Bonificações' },
+            { value: 'tech_nfe', label: 'Controle de NFE' },
+            { value: 'tech_processes', label: 'Controle de Processos' },
+            { value: 'tech_supplies', label: 'Solicitação de Insumos' },
+            { value: 'tech_contracts', label: 'Contratos' },
+            { value: 'tech_intersector', label: 'Solicitações entre Setores' }
+        ]
+    },
+    {
+        id: 'ecommerce',
+        label: 'Gerenciar E-commerce',
+        mainPermission: 'manage_ecommerce',
+        subPermissions: [
+            { value: 'ecommerce_orders', label: 'Gerenciar Pedidos' },
+            { value: 'ecommerce_products', label: 'Gerenciar Produtos' },
+            { value: 'ecommerce_customers', label: 'Gerenciar Clientes' },
+            { value: 'ecommerce_cms', label: 'Gerenciar CMS' },
+            { value: 'ecommerce_coupons', label: 'Cupons' },
+            { value: 'ecommerce_pricing', label: 'Precificação' },
+            { value: 'ecommerce_bonuses', label: 'Bonificações' },
+            { value: 'ecommerce_nfe', label: 'Controle de NFE' },
+            { value: 'ecommerce_processes', label: 'Controle de Processos' },
+            { value: 'ecommerce_supplies', label: 'Solicitação de Insumos' },
+            { value: 'ecommerce_contracts', label: 'Contratos' },
+            { value: 'ecommerce_intersector', label: 'Solicitações entre Setores' }
+        ]
+    },
+    {
+        id: 'manutencao',
+        label: 'Gerenciar Manutenção',
+        mainPermission: 'manage_maintenance',
+        subPermissions: [
+            { value: 'maintenance_requests', label: 'Solicitações de Manutenção' },
+            { value: 'manutencao_bonuses', label: 'Bonificações' },
+            { value: 'manutencao_nfe', label: 'Controle de NFE' },
+            { value: 'manutencao_processes', label: 'Controle de Processos' },
+            { value: 'manutencao_supplies', label: 'Solicitação de Insumos' },
+            { value: 'manutencao_contracts', label: 'Contratos' },
+            { value: 'manutencao_intersector', label: 'Solicitações entre Setores' }
+        ]
+    },
+    {
+        id: 'juridico',
+        label: 'Gerenciar Jurídico',
+        mainPermission: 'manage_legal',
+        subPermissions: [
+            { value: 'legal_contracts', label: 'Gerenciar Contratos' },
+            { value: 'legal_compliance', label: 'Acessar Compliance / Modelos' },
+            { value: 'juridico_bonuses', label: 'Bonificações' },
+            { value: 'juridico_nfe', label: 'Controle de NFE' },
+            { value: 'juridico_processes', label: 'Controle de Processos' },
+            { value: 'juridico_supplies', label: 'Solicitação de Insumos' },
+            { value: 'juridico_intersector', label: 'Solicitações entre Setores' }
         ]
     },
     {
@@ -85,58 +243,11 @@ const PERMISSION_GROUPS: PermissionGroup[] = [
         subPermissions: [
             { value: 'intranet_ideas', label: 'Banco de Ideias' },
             { value: 'intranet_directory', label: 'Diretório de Funcionários' },
-            { value: 'intranet_store', label: 'Loja Corporativa' }
-        ]
-    },
-    {
-        id: 'juridico',
-        label: 'Gerenciar Jurídico',
-        mainPermission: 'manage_legal',
-        subPermissions: [
-            { value: 'legal_contracts', label: 'Gerenciar Contratos' },
-            { value: 'legal_compliance', label: 'Acessar Compliance' }
-        ]
-    },
-    {
-        id: 'logistica',
-        label: 'Gerenciar Logística',
-        mainPermission: 'manage_logistics',
-        subPermissions: [
-            { value: 'logistics_inventory', label: 'Gerenciar Inventário' }
-        ]
-    },
-    {
-        id: 'compras',
-        label: 'Gerenciar Compras',
-        mainPermission: 'manage_purchasing',
-        subPermissions: [
-            { value: 'purchasing_requests', label: 'Solicitações de Compras' }
-        ]
-    },
-    {
-        id: 'tech',
-        label: 'Gerenciar Tech/TI',
-        mainPermission: 'manage_tickets',
-        subPermissions: [
-            { value: 'tech_tickets', label: 'Gerenciar Tickets' },
-            { value: 'tech_assets', label: 'Gerenciar Ativos de TI' }
-        ]
-    },
-    {
-        id: 'ecommerce',
-        label: 'Gerenciar E-commerce',
-        mainPermission: 'manage_ecommerce',
-        subPermissions: [
-            { value: 'ecommerce_orders', label: 'Gerenciar Pedidos' },
-            { value: 'ecommerce_products', label: 'Gerenciar Produtos' }
-        ]
-    },
-    {
-        id: 'manutencao',
-        label: 'Gerenciar Manutenção',
-        mainPermission: 'manage_maintenance',
-        subPermissions: [
-            { value: 'maintenance_requests', label: 'Solicitações de Manutenção' }
+            { value: 'intranet_store', label: 'Loja Corporativa' },
+            { value: 'intranet_news', label: 'Mural de Avisos' },
+            { value: 'intranet_library', label: 'Biblioteca Interna' },
+            { value: 'intranet_forecast', label: 'Previsão & Faturamento' },
+            { value: 'access_crm_ranking', label: 'Ranking CRM (Principal)' }
         ]
     },
     {
@@ -152,6 +263,7 @@ const PERMISSION_GROUPS: PermissionGroup[] = [
         label: 'Analytics',
         mainPermission: 'view_analytics',
         subPermissions: [
+            { value: 'analytics_powerbi', label: 'Power BI' },
             { value: 'analytics_dashboards', label: 'Dashboards Avançados' }
         ]
     }
@@ -179,6 +291,7 @@ export default function UsersAdminPage() {
     const [departments, setDepartments] = useState<{ id: string, name: string }[]>([]);
     const [positions, setPositions] = useState<{ id: string, title: string, department_id: string }[]>([]);
     const [editingPassword, setEditingPassword] = useState('');
+    const [forcePasswordChange, setForcePasswordChange] = useState(true);
     const [editingDepartment, setEditingDepartment] = useState('');
     const [editingPosition, setEditingPosition] = useState('');
 
@@ -266,8 +379,9 @@ export default function UsersAdminPage() {
         setEditingRole(currentRole?.role || 'user');
         setEditingPermissions(currentRole?.permissions || []);
         setEditingDepartment(employee.department_id || '');
-        setEditingPosition(employee.position_id || '');
+        setEditingPosition(employee.position_id || 'none');
         setEditingPassword('');
+        setForcePasswordChange(true);
         setIsEditDialogOpen(true);
     };
 
@@ -282,7 +396,7 @@ export default function UsersAdminPage() {
                 .from('employees')
                 .update({
                     department_id: editingDepartment || null,
-                    position_id: editingPosition || null,
+                    position_id: (!editingPosition || editingPosition === 'none') ? null : editingPosition,
                     updated_at: new Date().toISOString()
                 })
                 .eq('id', selectedEmployee.id);
@@ -301,28 +415,27 @@ export default function UsersAdminPage() {
 
                 if (fetchError) throw fetchError;
 
-                const matchingRole = currentRoles?.find(r => r.role === editingRole);
+                const existingRole = currentRoles && currentRoles.length > 0 ? currentRoles[0] : null;
 
-                if (matchingRole) {
-                    // Update the matching role row
+                if (existingRole) {
+                    // The user has a role record, update it to the new role selected in dropdown
                     const { error: updateError } = await supabase
                         .from('user_roles')
                         .update({
+                            role: editingRole,
                             permissions: editingPermissions,
                             updated_at: new Date().toISOString()
                         })
-                        .eq('id', matchingRole.id);
+                        .eq('user_id', selectedEmployee.user_id);
                     if (updateError) throw updateError;
 
-                    // Delete any OTHER roles for this user (clean up duplicates/old roles)
-                    const { error: cleanupError } = await supabase
-                        .from('user_roles')
-                        .delete()
-                        .eq('user_id', selectedEmployee.user_id)
-                        .neq('id', matchingRole.id);
-                    if (cleanupError) console.warn('[UsersAdminPage] Cleanup warning:', cleanupError);
+                    // Cleanup any stray duplicate roles just in case
+                    if (currentRoles && currentRoles.length > 1) {
+                        const idsToKeep = [existingRole.id];
+                        await supabase.from('user_roles').delete().eq('user_id', selectedEmployee.user_id).not('id', 'in', `(${idsToKeep.join(',')})`);
+                    }
                 } else {
-                    // No matching role exists, insert new one FIRST
+                    // No existing role found, insert new one
                     const { error: insertError } = await supabase
                         .from('user_roles')
                         .insert({
@@ -331,14 +444,6 @@ export default function UsersAdminPage() {
                             permissions: editingPermissions
                         });
                     if (insertError) throw insertError;
-
-                    // THEN delete any old roles (so there's always at least one role during the process)
-                    const { error: cleanupError } = await supabase
-                        .from('user_roles')
-                        .delete()
-                        .eq('user_id', selectedEmployee.user_id)
-                        .filter('role', 'neq', editingRole);
-                    if (cleanupError) console.warn('[UsersAdminPage] Cleanup warning (new role):', cleanupError);
                 }
                 console.log(`[UsersAdminPage] Role ${editingRole} synced successfully.`);
             } else {
@@ -350,9 +455,22 @@ export default function UsersAdminPage() {
                     await supabase.auth.resetPasswordForEmail(selectedEmployee.email);
                     toast.info("E-mail de redefinição enviado.");
                 } else {
-                    await supabase.functions.invoke('update-user-password', {
-                        body: { userId: selectedEmployee.user_id, newPassword: editingPassword }
+                    const { error } = await supabase.functions.invoke('update-user-password', {
+                        body: { userId: selectedEmployee.user_id, newPassword: editingPassword, forcePasswordChange }
                     });
+
+                    if (error) {
+                        console.error("Edge Function Error:", error);
+                        let errMsg = error.message;
+                        try {
+                            if (error.context) {
+                                const js = await error.context.json();
+                                if (js.error) errMsg = js.error;
+                            }
+                        } catch (e) { }
+                        throw new Error("Falha ao atualizar a senha no servidor. Erro: " + errMsg);
+                    }
+
                     toast.success("Senha atualizada diretamente!");
                 }
             }
@@ -376,7 +494,10 @@ export default function UsersAdminPage() {
                 body: {
                     email: selectedEmployee.email,
                     employeeName: selectedEmployee.name,
-                    newPassword: tempPassword
+                    newPassword: tempPassword,
+                    employeeId: selectedEmployee.id,
+                    role: 'user',
+                    forcePasswordChange: true
                 }
             });
 
@@ -517,7 +638,7 @@ export default function UsersAdminPage() {
             </Card>
 
             <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-                <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+                <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto notranslate" translate="no">
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
                             <Shield className="w-5 h-5 text-rose-gold" />
@@ -538,10 +659,15 @@ export default function UsersAdminPage() {
                             </div>
                             <div className="space-y-2">
                                 <Label>Cargo</Label>
-                                <Select value={editingPosition} onValueChange={setEditingPosition}>
+                                <Select value={editingPosition === 'none' ? '' : editingPosition} onValueChange={(val) => setEditingPosition(val || 'none')}>
                                     <SelectTrigger><SelectValue /></SelectTrigger>
                                     <SelectContent>
-                                        {positions.filter(p => !editingDepartment || p.department_id === editingDepartment).map(p => <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>)}
+                                        <SelectItem value="none">Nenhum (Remover Cargo)</SelectItem>
+                                        {positions.map(p => (
+                                            <SelectItem key={p.id} value={p.id}>
+                                                {p.title} {p.department_id ? `(${departments.find(d => d.id === p.department_id)?.name})` : ''}
+                                            </SelectItem>
+                                        ))}
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -552,12 +678,40 @@ export default function UsersAdminPage() {
                             <Select value={editingRole} onValueChange={setEditingRole}>
                                 <SelectTrigger><SelectValue /></SelectTrigger>
                                 <SelectContent>
-                                    {AVAILABLE_ROLES.map(r => <SelectItem key={r.value} value={r.value}>{t(r.label)}</SelectItem>)}
+                                    {AVAILABLE_ROLES.map(r => <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>)}
                                 </SelectContent>
                             </Select>
                         </div>
 
-                        <div className="space-y-4">
+                        <div className="space-y-4 pt-4 border-t">
+                            <Label className="text-lg font-bold text-rose-gold-dark">Acesso e Senha</Label>
+                            <div className="space-y-2">
+                                <Label>Definir Nova Senha</Label>
+                                <Input
+                                    type="text"
+                                    placeholder="Digite para alterar a senha, ou deixe em branco"
+                                    value={editingPassword}
+                                    onChange={(e) => setEditingPassword(e.target.value)}
+                                    autoComplete="new-password"
+                                    data-lpignore="true"
+                                    data-1p-ignore="true"
+                                />
+                            </div>
+                            {editingPassword && (
+                                <div className="flex items-center space-x-2">
+                                    <Checkbox
+                                        id="forceChange"
+                                        checked={forcePasswordChange}
+                                        onCheckedChange={(checked) => setForcePasswordChange(!!checked)}
+                                    />
+                                    <label htmlFor="forceChange" className="text-sm text-slate-600 font-medium leading-none cursor-pointer">
+                                        Exigir troca de senha no primeiro acesso
+                                    </label>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="space-y-4 pt-4 border-t">
                             <Label className="text-lg font-bold">Permissões Específicas (Sub-acessos)</Label>
 
                             <Accordion type="multiple" className="w-full border rounded-lg overflow-hidden">
@@ -573,7 +727,7 @@ export default function UsersAdminPage() {
                                                     checked={isMainChecked}
                                                     onCheckedChange={(checked) => togglePermissionGroup(group, !!checked)}
                                                 />
-                                                <AccordionTrigger className="hover:no-underline py-2 flex-1">
+                                                <AccordionTrigger className="hover:no-underline py-2 flex-1 relative">
                                                     <div className="flex items-center justify-between w-full pr-4 text-left">
                                                         <Label htmlFor={`main-${group.id}`} className="font-bold cursor-pointer">{group.label}</Label>
                                                         {subsCount > 0 && (
@@ -622,21 +776,26 @@ export default function UsersAdminPage() {
                             </div>
                         </div>
 
-                        {!selectedEmployee?.user_id && (
-                            <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                                <p className="text-sm text-amber-800 font-bold mb-2">Usuário sem conta</p>
-                                <Button className="w-full" variant="secondary" onClick={handleEnableAccess} disabled={saving}>
-                                    Ativar Acesso Agora
-                                </Button>
-                            </div>
-                        )}
+                        <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg" style={{ display: !selectedEmployee?.user_id ? 'block' : 'none' }}>
+                            <p className="text-sm text-amber-800 font-bold mb-2">Usuário sem conta</p>
+                            <Button className="w-full relative flex items-center justify-center" variant="secondary" onClick={handleEnableAccess} disabled={saving}>
+                                <div className={`absolute left-4 transition-opacity ${saving ? 'opacity-100' : 'opacity-0'}`}>
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                </div>
+                                <span className={saving ? 'ml-6' : ''}>Ativar Acesso Agora</span>
+                            </Button>
+                        </div>
                     </div>
 
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>Cancelar</Button>
-                        <Button onClick={handleSaveRoles} disabled={saving}>
-                            {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Salvar Alterações
+                        <Button variant="outline" onClick={() => setIsEditDialogOpen(false)} type="button">
+                            <span>Cancelar</span>
+                        </Button>
+                        <Button onClick={handleSaveRoles} disabled={saving} type="button" className="relative flex items-center justify-center min-w-[140px]">
+                            <div className={`absolute left-4 transition-opacity ${saving ? 'opacity-100' : 'opacity-0'}`}>
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                            </div>
+                            <span className={saving ? 'ml-6' : ''}>Salvar Alterações</span>
                         </Button>
                     </DialogFooter>
                 </DialogContent>

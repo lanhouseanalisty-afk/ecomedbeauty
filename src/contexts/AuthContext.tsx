@@ -25,11 +25,11 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const EMPLOYEE_ROLES: string[] = [
-  "admin", "manager", "tech_digital", "analyst", "rh_manager", "finance_manager",
+  "admin", "manager", "user", "tech_digital", "analyst", "rh_manager", "finance_manager",
   "marketing_manager", "sales_manager", "logistics_manager", "legal_manager",
   "tech_support", "ecommerce_manager", "rh", "financeiro", "marketing",
   "comercial", "logistica", "juridico", "tech", "ecommerce", "compras",
-  "manutencao", "tecnico", "editor", "auditor"
+  "manutencao", "tecnico", "editor", "auditor", "viewer", "operator", "technician"
 ];
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -40,44 +40,53 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [permissions, setPermissions] = useState<string[]>([]);
   const [departmentId, setDepartmentId] = useState<string | null>(null);
   const [departmentModule, setDepartmentModule] = useState<string | null>(null);
+  const [employeeRecordId, setEmployeeRecordId] = useState<string | null>(null);
   const lastActiveUpdate = useRef<number>(0);
 
-  const isEmployee = roles.some(role => EMPLOYEE_ROLES.includes(role)) || roles.includes("admin");
+  const isEmployee = roles.some(role => EMPLOYEE_ROLES.includes(role)) || roles.includes("admin") || !!departmentId || !!employeeRecordId;
   const isCustomer = !isEmployee && user !== null;
 
-  async function fetchDepartmentInfo(userId: string) {
+  async function fetchDepartmentInfo(userId: string, email?: string): Promise<{ empId: string | null; id: string | null; module: string | null }> {
     try {
-      const { data, error } = await supabase
+      const getQuery = () => supabase
         .from("employees")
         .select(`
+          id,
           department_id,
           departments (
             module_slug
           )
-        `)
-        .eq("user_id", userId)
-        .maybeSingle();
+        `);
 
-      if (error) return { id: null, module: null };
-      if (data) {
+      const formatData = (data: any) => {
         const deptData = Array.isArray(data.departments) ? data.departments[0] : data.departments;
         return {
+          empId: data.id,
           id: data.department_id,
           module: (deptData as any)?.module_slug || null
         };
+      };
+
+      // Try by userId first
+      if (userId) {
+        const { data } = await getQuery().eq("user_id", userId).maybeSingle();
+        if (data) return formatData(data);
       }
-      return { id: null, module: null };
+
+      // Fallback to email
+      if (email) {
+        const { data } = await getQuery().eq("email", email).maybeSingle();
+        if (data) return formatData(data);
+      }
+
+      return { empId: null, id: null, module: null };
     } catch (error) {
-      return { id: null, module: null };
+      return { empId: null, id: null, module: null };
     }
   }
 
   async function checkUserRoles(userId: string, email?: string): Promise<{ roles: AppRole[]; permissions: string[] }> {
     try {
-      if (email?.toLowerCase() === "reginaldo.mazaro@ext.medbeauty.com.br") {
-        console.log('[AuthContext] Emergency bypass active for:', email);
-        return { roles: ["admin"], permissions: ["*"] };
-      }
       const { data, error } = await supabase
         .from("user_roles")
         .select("role, permissions")
@@ -127,8 +136,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             new Promise<{ roles: AppRole[]; permissions: string[] }>((res) => setTimeout(() => res({ roles: [], permissions: [] }), 5000))
           ]),
           Promise.race([
-            fetchDepartmentInfo(userId),
-            new Promise<{ id: any; module: any }>((res) => setTimeout(() => res({ id: null, module: null }), 5000))
+            fetchDepartmentInfo(userId, email),
+            new Promise<{ empId: any; id: any; module: any }>((res) => setTimeout(() => res({ empId: null, id: null, module: null }), 5000))
           ])
         ]);
 
@@ -137,6 +146,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setPermissions(authInfo.permissions);
           setDepartmentId(deptInfo.id);
           setDepartmentModule(deptInfo.module);
+          setEmployeeRecordId(deptInfo.empId);
           checkUserActiveStatus(userId);
           if (userId) analytics.identify(userId, { email, role: authInfo.roles.join(","), permissions: authInfo.permissions.join(",") });
         }
@@ -172,25 +182,58 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (session?.user) {
         if (event === "SIGNED_IN" || event === "INITIAL_SESSION") {
           await loadMetadata(session.user.id, session.user.email);
+          if (mounted) setLoading(false);
+        } else if (event === "TOKEN_REFRESHED" || event === "USER_UPDATED") {
+          // If metadata is already loaded, don't set loading to false here, just let it be.
+          // If it isn't loaded, trigger a reload to prevent incomplete state but don't disable loading yet.
+          if (roles.length === 0) {
+            await loadMetadata(session.user.id, session.user.email);
+            if (mounted) setLoading(false);
+          }
         }
       } else {
         setRoles([]);
         setPermissions([]);
         setDepartmentId(null);
         setDepartmentModule(null);
+        setEmployeeRecordId(null);
+        if (mounted) setLoading(false);
       }
-      setLoading(false);
     });
+
+    // Extra safety: Verify if metadata needs to be reloaded when user is present but roles are empty
+    if (user && roles.length === 0 && !loading) {
+      console.log('[AuthContext] User present but no roles, triggering auto-load');
+      setLoading(true);
+      loadMetadata(user.id, user.email).then(() => {
+        if (mounted) setLoading(false);
+      });
+    }
 
     return () => {
       mounted = false;
       clearTimeout(failsafe);
       subscription.unsubscribe();
     };
-  }, []);
+  }, [user?.id, roles.length]); // Add roles.length to catch empty roles after loading
 
-  const signUp = async (email: string, password: string, fullName: string) => {
-    return { error: new Error("Criação de conta desativada. Entre em contato com o administrador.") };
+  const signUp = async (email: string, password: string, fullName: string, metadata: any = {}) => {
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+            ...metadata
+          }
+        }
+      });
+      if (error) throw error;
+      return { data, error: null };
+    } catch (error) {
+      return { data: null, error: error as Error };
+    }
   };
 
   const signIn = async (email: string, password: string) => {
@@ -202,10 +245,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const authInfo = await checkUserRoles(data.user.id, data.user.email);
         setRoles(authInfo.roles);
         setPermissions(authInfo.permissions);
-        const { id, module } = await fetchDepartmentInfo(data.user.id);
+        const { empId, id, module } = await fetchDepartmentInfo(data.user.id, data.user.email || undefined);
         setDepartmentId(id);
         setDepartmentModule(module);
-        isEmp = authInfo.roles.some(role => EMPLOYEE_ROLES.includes(role)) || authInfo.roles.includes("admin");
+        setEmployeeRecordId(empId);
+        isEmp = authInfo.roles.some(role => EMPLOYEE_ROLES.includes(role)) || authInfo.roles.includes("admin") || !!id || !!empId;
       }
       return { error: null, isEmployee: isEmp };
     } catch (error) {
@@ -218,6 +262,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setPermissions([]);
     setDepartmentId(null);
     setDepartmentModule(null);
+    setEmployeeRecordId(null);
     await supabase.auth.signOut();
   };
 

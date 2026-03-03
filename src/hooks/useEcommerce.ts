@@ -357,3 +357,59 @@ export function useDeleteCoupon() {
     },
   });
 }
+// Customers hooks
+export function useEcommerceCustomers() {
+  return useQuery({
+    queryKey: ["ecommerce_customers"],
+    queryFn: async () => {
+      // 1. Fetch profiles that have the 'user' role
+      const { data: roleData, error: roleError } = await supabase
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "user");
+
+      if (roleError) throw roleError;
+      if (!roleData || roleData.length === 0) return [];
+
+      const userIds = roleData.map(r => r.user_id);
+
+      // 2. Fetch profiles and their orders
+      const { data: profiles, error: profileError } = await supabase
+        .from("profiles")
+        .select(`
+          *,
+          orders(*)
+        `)
+        .in("id", userIds);
+
+      if (profileError) throw profileError;
+
+      // 3. Process data for the UI
+      return profiles.map(profile => {
+        const orders = profile.orders || [];
+        const totalSpent = orders.reduce((acc: number, order: any) => acc + Number(order.total || 0), 0);
+        const lastOrder = orders.sort((a: any, b: any) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        )[0];
+
+        return {
+          id: profile.id,
+          name: profile.full_name || "Sem Nome",
+          email: profile.email,
+          phone: profile.phone || "Não informado",
+          since: profile.created_at,
+          totalSpent,
+          lastPurchaseDate: lastOrder ? lastOrder.created_at : null,
+          status: totalSpent > 2000 ? "vip" : totalSpent > 0 ? "active" : "lead",
+          orders,
+          lastOrder: lastOrder ? {
+            id: lastOrder.id.substring(0, 8),
+            date: lastOrder.created_at,
+            total: lastOrder.total,
+            status: lastOrder.status
+          } : null
+        };
+      });
+    },
+  });
+}

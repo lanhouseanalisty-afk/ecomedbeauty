@@ -50,7 +50,9 @@ export function ChangePasswordForm({ onSuccess }: ChangePasswordFormProps) {
             }
 
             toast.success("Senha alterada com sucesso!");
-            onSuccess();
+            setTimeout(() => {
+                onSuccess();
+            }, 1000);
         } catch (error: any) {
             console.error("Error changing password:", error);
             toast.error(error.message || "Erro ao alterar senha.");
