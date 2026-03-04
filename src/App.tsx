@@ -333,6 +333,7 @@ const App = () => {
                             <Route path="intranet/contratos/:id/editar" element={<ContractRequestForm />} />
                             <Route path="intranet/contratos/:id/revisao" element={<ContractViewer />} />
                             <Route path="intranet/contratos" element={<Navigate to="/crm/juridico/contratos" replace />} />
+                            <Route path="intranet/compliance" element={<ProtectedRoute requireEmployee><CompliancePage /></ProtectedRoute>} />
 
                             {/* Unificados / Inteligentes */}
                             <Route path="contrato/:id" element={<ContractViewer />} />
@@ -344,7 +345,6 @@ const App = () => {
                               <Route path="juridico/contratos" element={<ProtectedRoute requiredPermission="legal_contracts" requireEmployee><LegalContractsDashboard /></ProtectedRoute>} />
                               <Route path="juridico/contratos/novo" element={<ProtectedRoute requiredPermission="legal_contracts" requireEmployee><LegalContractCreatePage /></ProtectedRoute>} />
                               <Route path="juridico/modelos" element={<ProtectedRoute requiredPermission="legal_compliance" requireEmployee><ContractTemplatesSettings /></ProtectedRoute>} />
-                              <Route path="juridico/compliance" element={<ProtectedRoute requiredPermission="legal_compliance" requireEmployee><CompliancePage /></ProtectedRoute>} />
                               <Route path="legal" element={<LegalDashboard />} />
                               <Route path="legal/novo" element={<Navigate to="/crm/juridico/contratos/novo" replace />} />
                               <Route path="legal/contrato/:id" element={<ContractViewer />} />

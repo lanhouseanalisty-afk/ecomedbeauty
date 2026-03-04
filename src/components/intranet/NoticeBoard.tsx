@@ -50,6 +50,7 @@ export function NoticeBoard() {
 
     const { isAdmin, canAccessModule } = useUserRole();
     const isManager = roles.some(role => role === 'admin' || role.includes('_manager'));
+    const canManageNotices = isManager || isAdmin || canAccessModule('rh');
 
     useEffect(() => {
         fetchNotices();
@@ -151,9 +152,9 @@ export function NoticeBoard() {
             if (error) throw error;
             toast.success("Aviso excluído com sucesso!");
             fetchNotices();
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            toast.error("Erro ao excluir aviso.");
+            toast.error(`Erro ao excluir aviso: ${error.message || JSON.stringify(error)}`);
         }
     };
 
@@ -187,7 +188,7 @@ export function NoticeBoard() {
                         <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Arraste os avisos como quiser</p>
                     </div>
                 </div>
-                {isManager && (
+                {canManageNotices && (
                     <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
                         <DialogTrigger asChild>
                             <Button size="sm" className="gap-2 bg-slate-900 hover:bg-slate-800 text-white rounded-full px-6 h-11 shadow-xl transition-all hover:scale-105 active:scale-95">
@@ -301,7 +302,7 @@ export function NoticeBoard() {
                                         <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10 transition-transform group-hover:scale-110">
                                             <Pin className={`w-6 h-6 drop-shadow-md fill-current ${getPinColor(notice.priority)}`} />
                                         </div>
-                                        {(isAdmin || canAccessModule('rh')) && (
+                                        {canManageNotices && (
                                             <button
                                                 onClick={(e) => { e.stopPropagation(); handleDelete(notice.id); }}
                                                 className="absolute top-2 right-2 text-rose-500 hover:text-rose-700 bg-white/70 hover:bg-white rounded-full p-1.5 backdrop-blur-sm transition-colors shadow-sm z-20"

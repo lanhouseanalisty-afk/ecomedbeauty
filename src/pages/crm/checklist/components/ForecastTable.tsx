@@ -177,7 +177,7 @@ export const ForecastTable = React.memo(function ForecastTable({
                         <TableHeader className="bg-slate-50/80 backdrop-blur-md sticky top-0 z-30">
                             <TableRow className="hover:bg-transparent border-slate-100">
                                 <TableHead className="w-[180px] sticky left-0 bg-slate-50 z-40 border-r border-slate-100 font-bold text-slate-900 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]">
-                                    Consultor (Ranking)
+                                    Consultor
                                 </TableHead>
                                 {weeks.map((week, idx) => (
                                     <React.Fragment key={idx}>
@@ -236,12 +236,11 @@ export const ForecastTable = React.memo(function ForecastTable({
                                     )}>
                                         <TableCell className="font-medium sticky left-0 bg-white group-hover:bg-slate-50 z-20 border-r border-slate-100 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] py-3">
                                             <div className="flex items-center gap-3">
-                                                <span className="text-[10px] bg-slate-100 text-slate-500 w-5 h-5 flex items-center justify-center rounded-full font-bold shrink-0">
-                                                    {idx + 1}
-                                                </span>
 
                                                 {(() => {
-                                                    const isCurrentUser = (consultor.email && user?.email && consultor.email.toLowerCase() === user.email.toLowerCase());
+                                                    // Forçar sempre a exibição do userName (usuário logado na página) se houver apenas 1 consultor visível, 
+                                                    // ou se o e-mail bater. Conforme requisito: "mostrar o nome de quem está logado na paina"
+                                                    const isCurrentUser = (consultor.email && user?.email && consultor.email.toLowerCase() === user.email.toLowerCase()) || consultores.length === 1;
                                                     const displayName = isCurrentUser ? (userName || consultor.nome) : consultor.nome;
 
                                                     const performance = (() => {
@@ -266,11 +265,6 @@ export const ForecastTable = React.memo(function ForecastTable({
                                                                         <Badge className="h-3.5 text-[7px] bg-emerald-500 text-white border-none px-1 py-0 leading-none">VOCÊ</Badge>
                                                                     )}
                                                                 </div>
-                                                                {isTop && (
-                                                                    <Badge variant="secondary" className="w-fit h-4 text-[8px] bg-amber-100 text-amber-700 hover:bg-amber-100 border-none px-1 mt-0.5">
-                                                                        <Trophy className="h-2 w-2 mr-1" /> DESTAQUE
-                                                                    </Badge>
-                                                                )}
                                                             </div>
                                                         </div>
                                                     );
@@ -290,8 +284,8 @@ export const ForecastTable = React.memo(function ForecastTable({
                                                                 isFuture && "bg-slate-50/30"
                                                             )}>
                                                                 <DoubleCurrencyCell
-                                                                    initialReal={values.real}
-                                                                    initialMeta={values.meta}
+                                                                    initialReal={values.real as any}
+                                                                    initialMeta={values.meta as any}
                                                                     onSave={(r, m) => onUpdateValue(consultor.id, dateStr, { valor: r, valor_meta: m })}
                                                                     disabledReal={!canEditAll && isFuture}
                                                                     disabledMeta={!canEditAll}

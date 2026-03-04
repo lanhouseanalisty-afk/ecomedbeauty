@@ -1,7 +1,7 @@
 
 import { NoticeBoard } from '@/components/intranet/NoticeBoard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Target, TrendingUp, Users, FileText, Megaphone } from 'lucide-react';
+import { Target, TrendingUp, Users, FileText, Megaphone, Shield } from 'lucide-react';
 
 export default function IntranetPage() {
     return (
@@ -60,7 +60,10 @@ export default function IntranetPage() {
                         </CardHeader>
                         <CardContent>
                             <ul className="space-y-2 text-sm">
-                                <li><a href="#" className="text-blue-600 hover:underline">Manual de Processos</a></li>
+                                <li><a href="/crm/intranet/compliance" className="text-rose-600 font-semibold hover:underline flex items-center gap-2">
+                                    <Shield className="w-4 h-4" /> Compliance & Assistente IA
+                                </a></li>
+                                <li><a href="/crm/biblioteca" className="text-blue-600 hover:underline">Manual de Processos & Biblioteca</a></li>
                                 <li><a href="#" className="text-blue-600 hover:underline">Políticas de RH</a></li>
                                 <li><a href="#" className="text-blue-600 hover:underline">Solicitar Férias</a></li>
                                 <li><a href="#" className="text-blue-600 hover:underline">Abrir Ticket TI</a></li>

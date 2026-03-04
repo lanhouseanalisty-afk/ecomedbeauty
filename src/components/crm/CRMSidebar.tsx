@@ -129,6 +129,11 @@ const menuSections: MenuSection[] = [
         url: "/crm/colaboradores",
       },
       {
+        title: "Compliance & IA",
+        icon: Shield,
+        url: "/crm/intranet/compliance",
+      },
+      {
         title: "sidebar.menu.forecastSpreadsheet",
         icon: TicketCheck,
         url: "/crm/checklist/planilha-jean",
@@ -614,6 +619,6 @@ export function CRMSidebar() {
           </div>
         )}
       </SidebarFooter>
-    </Sidebar>
+    </Sidebar >
   );
 }

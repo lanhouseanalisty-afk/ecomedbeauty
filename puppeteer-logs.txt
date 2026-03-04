@@ -1,0 +1,6 @@
+BROWSER LOG: [2026-03-03T19:08:44.635Z] [INFO] [Analytics] Provider added: Console
+BROWSER LOG: [2026-03-03T19:08:44.688Z] [INFO] [Analytics] Provider added: LocalStorage (Dev)
+BROWSER LOG: 🌐 i18next is maintained with support from locize.com — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+BROWSER LOG: Error while trying to use the following icon from the Manifest: http://localhost:4173/pwa-192x192.png (Download error or resource isn't a valid image)
+BROWSER LOG: [AuthContext] Auth state change: INITIAL_SESSION
+CRASH DO BROWSER: Failed to load resource: the server responded with a status of 404 ()

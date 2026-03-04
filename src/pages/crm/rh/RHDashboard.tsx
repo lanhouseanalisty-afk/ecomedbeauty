@@ -497,7 +497,7 @@ export default function RHDashboard() {
                       <TableCell>
                         <div
                           className="flex items-center gap-3 cursor-pointer group"
-                          onClick={() => navigate(`/crm/rh/funcionario/${employee.id}`)}
+                          onClick={() => navigate(`/crm/rh/perfil/${employee.id}`)}
                         >
                           <Avatar className="h-9 w-9 transition-transform group-hover:scale-105">
                             <AvatarFallback className="bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
@@ -545,7 +545,7 @@ export default function RHDashboard() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => navigate(`/crm/rh/funcionario/${employee.id}`)}>
+                            <DropdownMenuItem onClick={() => navigate(`/crm/rh/perfil/${employee.id}`)}>
                               <Eye className="h-4 w-4 mr-2" />
                               Ver Perfil
                             </DropdownMenuItem>
