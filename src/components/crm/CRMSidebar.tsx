@@ -79,9 +79,7 @@ interface MenuSection {
   items: MenuItem[];
 }
 
-// ... (imports remain the same)
 
-// ... (MenuSection interface remains the same)
 
 const menuSections: MenuSection[] = [
   {
@@ -114,9 +112,9 @@ const menuSections: MenuSection[] = [
         url: "/crm/intranet",
       },
       {
-        title: "Comunicar TI",
-        icon: Headphones,
-        url: "/crm/intranet/chamados",
+        title: "Banco de Ideias",
+        icon: Lightbulb,
+        url: "/crm/intranet/ideias",
       },
       {
         title: "Biblioteca Interna",
@@ -124,9 +122,9 @@ const menuSections: MenuSection[] = [
         url: "/crm/biblioteca",
       },
       {
-        title: "Diretório de Colaboradores",
-        icon: Users,
-        url: "/crm/colaboradores",
+        title: "Comunicar TI",
+        icon: Headphones,
+        url: "/crm/intranet/chamados",
       },
       {
         title: "Compliance & IA",
@@ -134,10 +132,15 @@ const menuSections: MenuSection[] = [
         url: "/crm/intranet/compliance",
       },
       {
-        title: "sidebar.menu.forecastSpreadsheet",
-        icon: TicketCheck,
-        url: "/crm/checklist/planilha-jean",
-        permission: "intranet_forecast",
+        title: "Diretório de Colaboradores",
+        icon: Users,
+        url: "/crm/colaboradores",
+      },
+      {
+        title: "Gamificação",
+        icon: Trophy,
+        url: "/crm/intranet/gamificacao",
+        permission: "comercial_gamification",
       },
       {
         title: "Loja Corporativa",
@@ -145,15 +148,17 @@ const menuSections: MenuSection[] = [
         url: "/crm/intranet/loja",
       },
       {
-        title: "Banco de Ideias",
-        icon: Lightbulb,
-        url: "/crm/intranet/ideias",
+        title: "Precificação",
+        icon: DollarSign,
+        url: "/crm/intranet/precificacao",
+        permission: "comercial_pricing",
       },
-      //   title: "Solicitação de Insumos",
-      //   icon: Package,
-      //   url: "/crm/marketing/solicitacoes",
-      //   permission: "marketing_requests"
-      // },
+      {
+        title: "sidebar.menu.forecastSpreadsheet",
+        icon: TicketCheck,
+        url: "/crm/checklist/planilha-jean",
+        permission: "intranet_forecast",
+      },
     ],
   },
   {
@@ -165,17 +170,17 @@ const menuSections: MenuSection[] = [
         url: "/crm/admin",
         module: "admin",
         subitems: [
-          { title: "Usuários", url: "/crm/admin/usuarios", permission: "admin_users" },
-          { title: "Integração SAP", url: "/crm/integracoes/sap", permission: "sap_monitor" },
-          { title: "Precificação", url: "/crm/admin/precificacao", permission: "admin_pricing" },
-          { title: "Controle de Processos", url: "/crm/admin/processos", permission: "admin_processes" },
-          { title: "Solicitação de Insumos", url: "/crm/admin/insumos", permission: "admin_supplies" },
-          { title: "Controle de NFE", url: "/crm/admin/nfe", permission: "admin_nfe" },
+          { title: "Analytics", url: "/crm/admin/analytics", permission: "admin_analytics" },
           { title: "Bonificações", url: "/crm/admin/bonificacoes", permission: "admin_bonuses" },
           { title: "Contratos", url: "/crm/admin/contratos", permission: "admin_contracts" },
-          { title: "Solicitações entre Setores", url: "/crm/admin/solicitacoes-setores", permission: "admin_intersector" },
-          { title: "Analytics", url: "/crm/admin/analytics", permission: "admin_analytics" },
+          { title: "Controle de NFE", url: "/crm/admin/nfe", permission: "admin_nfe" },
+          { title: "Controle de Processos", url: "/crm/admin/processos", permission: "admin_processes" },
+          { title: "Integração SAP", url: "/crm/integracoes/sap", permission: "sap_monitor" },
           { title: "Permissões", url: "/crm/admin/permissoes", permission: "admin_permissions" },
+          { title: "Precificação", url: "/crm/admin/precificacao", permission: "admin_pricing" },
+          { title: "Solicitação de Insumos", url: "/crm/admin/insumos", permission: "admin_supplies" },
+          { title: "Solicitações entre Setores", url: "/crm/admin/solicitacoes-setores", permission: "admin_intersector" },
+          { title: "Usuários", url: "/crm/admin/usuarios", permission: "admin_users" },
         ],
       },
       {
@@ -186,11 +191,11 @@ const menuSections: MenuSection[] = [
         subitems: [
           { title: "Dashboard", url: "/crm/cientifica" },
           { title: "Apresentações", url: "/crm/cientifica/apresentacoes", permission: "cientifica_presentations" },
+          { title: "Bonificações", url: "/crm/cientifica/bonificacoes", permission: "cientifica_bonuses" },
+          { title: "Contratos", url: "/crm/cientifica/contratos", permission: "cientifica_contracts" },
+          { title: "Controle de NFE", url: "/crm/cientifica/nfe", permission: "cientifica_nfe" },
           { title: "Controle de Processos", url: "/crm/cientifica/processos", permission: "cientifica_processes" },
           { title: "Solicitação de Insumos", url: "/crm/cientifica/insumos", permission: "cientifica_supplies" },
-          { title: "Controle de NFE", url: "/crm/cientifica/nfe", permission: "cientifica_nfe" },
-          { title: "Contratos", url: "/crm/cientifica/contratos", permission: "cientifica_contracts" },
-          { title: "Bonificações", url: "/crm/cientifica/bonificacoes", permission: "cientifica_bonuses" },
           { title: "Solicitações entre Setores", url: "/crm/cientifica/solicitacoes-setores", permission: "cientifica_intersector" },
         ],
       },
@@ -201,51 +206,6 @@ const menuSections: MenuSection[] = [
         module: "comercial",
         subitems: [
           { title: "Leads", url: "/crm/comercial" },
-          { title: "Gamificação", url: "/crm/comercial/gamificacao", permission: "comercial_gamification" },
-          // Inside Sales Group
-          {
-            title: "Inside Sales",
-            url: "/crm/comercial/inside-sales",
-            subitems: [
-              { title: "Dashboard", url: "/crm/comercial/inside-sales" },
-              { title: "Bonificações", url: "/crm/comercial/inside-sales/bonificacoes", permission: "comercial_bonuses" },
-              { title: "Contratos", url: "/crm/comercial/inside-sales/contratos" },
-              { title: "Solicitação de Insumos", url: "/crm/comercial/inside-sales/insumos" }
-            ]
-          },
-          // Franchises Group
-          {
-            title: "Franquias",
-            url: "/crm/comercial/franquias",
-            subitems: [
-              { title: "Dashboard", url: "/crm/comercial/franquias" },
-              { title: "Bonificações", url: "/crm/comercial/franquias/bonificacoes", permission: "comercial_bonuses" },
-              { title: "Contratos", url: "/crm/comercial/franquias/contratos" },
-              { title: "Solicitação de Insumos", url: "/crm/comercial/franquias/insumos" }
-            ]
-          },
-          // Regions Group (Simplified for now or nested?)
-          // Let's nest them to be consistent
-          {
-            title: "Sudeste",
-            url: "/crm/comercial/sudeste",
-            subitems: [
-              { title: "Dashboard", url: "/crm/comercial/sudeste" },
-              { title: "Bonificações", url: "/crm/comercial/sudeste/bonificacoes", permission: "comercial_bonuses" },
-              { title: "Contratos", url: "/crm/comercial/sudeste/contratos" },
-              { title: "Solicitação de Insumos", url: "/crm/comercial/sudeste/insumos" }
-            ]
-          },
-          {
-            title: "Sul",
-            url: "/crm/comercial/sul",
-            subitems: [
-              { title: "Dashboard", url: "/crm/comercial/sul" },
-              { title: "Bonificações", url: "/crm/comercial/sul/bonificacoes", permission: "comercial_bonuses" },
-              { title: "Contratos", url: "/crm/comercial/sul/contratos" },
-              { title: "Solicitação de Insumos", url: "/crm/comercial/sul/insumos" }
-            ]
-          },
           {
             title: "Centro-Oeste",
             url: "/crm/comercial/centro",
@@ -253,7 +213,36 @@ const menuSections: MenuSection[] = [
               { title: "Dashboard", url: "/crm/comercial/centro" },
               { title: "Bonificações", url: "/crm/comercial/centro/bonificacoes", permission: "comercial_bonuses" },
               { title: "Contratos", url: "/crm/comercial/centro/contratos" },
-              { title: "Solicitação de Insumos", url: "/crm/comercial/centro/insumos" }
+              { title: "Controle de Processos", url: "/crm/comercial/centro/processos", permission: "comercial_processes" },
+              { title: "Controle de NFE", url: "/crm/comercial/centro/nfe", permission: "comercial_nfe" },
+              { title: "Solicitação de Insumos", url: "/crm/comercial/centro/insumos" },
+              { title: "Solicitações entre Setores", url: "/crm/comercial/centro/solicitacoes-setores", permission: "comercial_intersector" },
+            ]
+          },
+          {
+            title: "Franquias",
+            url: "/crm/comercial/franquias",
+            subitems: [
+              { title: "Dashboard", url: "/crm/comercial/franquias" },
+              { title: "Bonificações", url: "/crm/comercial/franquias/bonificacoes", permission: "comercial_bonuses" },
+              { title: "Contratos", url: "/crm/comercial/franquias/contratos" },
+              { title: "Controle de Processos", url: "/crm/comercial/franquias/processos", permission: "comercial_processes" },
+              { title: "Controle de NFE", url: "/crm/comercial/franquias/nfe", permission: "comercial_nfe" },
+              { title: "Solicitação de Insumos", url: "/crm/comercial/franquias/insumos" },
+              { title: "Solicitações entre Setores", url: "/crm/comercial/franquias/solicitacoes-setores", permission: "comercial_intersector" },
+            ]
+          },
+          {
+            title: "Inside Sales",
+            url: "/crm/comercial/inside-sales",
+            subitems: [
+              { title: "Dashboard", url: "/crm/comercial/inside-sales" },
+              { title: "Bonificações", url: "/crm/comercial/inside-sales/bonificacoes", permission: "comercial_bonuses" },
+              { title: "Contratos", url: "/crm/comercial/inside-sales/contratos" },
+              { title: "Controle de Processos", url: "/crm/comercial/inside-sales/processos", permission: "comercial_processes" },
+              { title: "Controle de NFE", url: "/crm/comercial/inside-sales/nfe", permission: "comercial_nfe" },
+              { title: "Solicitação de Insumos", url: "/crm/comercial/inside-sales/insumos" },
+              { title: "Solicitações entre Setores", url: "/crm/comercial/inside-sales/solicitacoes-setores", permission: "comercial_intersector" },
             ]
           },
           {
@@ -263,13 +252,38 @@ const menuSections: MenuSection[] = [
               { title: "Dashboard", url: "/crm/comercial/norte" },
               { title: "Bonificações", url: "/crm/comercial/norte/bonificacoes", permission: "comercial_bonuses" },
               { title: "Contratos", url: "/crm/comercial/norte/contratos" },
-              { title: "Solicitação de Insumos", url: "/crm/comercial/norte/insumos" }
+              { title: "Controle de Processos", url: "/crm/comercial/norte/processos", permission: "comercial_processes" },
+              { title: "Controle de NFE", url: "/crm/comercial/norte/nfe", permission: "comercial_nfe" },
+              { title: "Solicitação de Insumos", url: "/crm/comercial/norte/insumos" },
+              { title: "Solicitações entre Setores", url: "/crm/comercial/norte/solicitacoes-setores", permission: "comercial_intersector" },
             ]
           },
-          { title: "Solicitações entre Setores", url: "/crm/comercial/solicitacoes-setores", permission: "comercial_intersector" },
-          { title: "Controle de Processos", url: "/crm/comercial/processos", permission: "comercial_processes" },
-          { title: "Controle de NFE", url: "/crm/comercial/nfe", permission: "comercial_nfe" },
-          { title: "Precificação", url: "/crm/comercial/precificacao", permission: "comercial_pricing" },
+          {
+            title: "Sudeste",
+            url: "/crm/comercial/sudeste",
+            subitems: [
+              { title: "Dashboard", url: "/crm/comercial/sudeste" },
+              { title: "Bonificações", url: "/crm/comercial/sudeste/bonificacoes", permission: "comercial_bonuses" },
+              { title: "Contratos", url: "/crm/comercial/sudeste/contratos" },
+              { title: "Controle de Processos", url: "/crm/comercial/sudeste/processos", permission: "comercial_processes" },
+              { title: "Controle de NFE", url: "/crm/comercial/sudeste/nfe", permission: "comercial_nfe" },
+              { title: "Solicitação de Insumos", url: "/crm/comercial/sudeste/insumos" },
+              { title: "Solicitações entre Setores", url: "/crm/comercial/sudeste/solicitacoes-setores", permission: "comercial_intersector" },
+            ]
+          },
+          {
+            title: "Sul",
+            url: "/crm/comercial/sul",
+            subitems: [
+              { title: "Dashboard", url: "/crm/comercial/sul" },
+              { title: "Bonificações", url: "/crm/comercial/sul/bonificacoes", permission: "comercial_bonuses" },
+              { title: "Contratos", url: "/crm/comercial/sul/contratos" },
+              { title: "Controle de Processos", url: "/crm/comercial/sul/processos", permission: "comercial_processes" },
+              { title: "Controle de NFE", url: "/crm/comercial/sul/nfe", permission: "comercial_nfe" },
+              { title: "Solicitação de Insumos", url: "/crm/comercial/sul/insumos" },
+              { title: "Solicitações entre Setores", url: "/crm/comercial/sul/solicitacoes-setores", permission: "comercial_intersector" },
+            ]
+          },
         ],
       },
       {
@@ -279,13 +293,13 @@ const menuSections: MenuSection[] = [
         module: "compras",
         subitems: [
           { title: "Dashboard", url: "/crm/compras" },
-          { title: "Veículos", url: "/crm/compras/veiculos", permission: "purchasing_vehicles" },
+          { title: "Bonificações", url: "/crm/compras/bonificacoes", permission: "compras_bonuses" },
+          { title: "Contratos", url: "/crm/compras/contratos", permission: "compras_contracts" },
+          { title: "Controle de NFE", url: "/crm/compras/nfe", permission: "compras_nfe" },
           { title: "Controle de Processos", url: "/crm/compras/processos", permission: "compras_processes" },
           { title: "Solicitação de Insumos", url: "/crm/compras/insumos", permission: "compras_supplies" },
-          { title: "Controle de NFE", url: "/crm/compras/nfe", permission: "compras_nfe" },
-          { title: "Contratos", url: "/crm/compras/contratos", permission: "compras_contracts" },
-          { title: "Bonificações", url: "/crm/compras/bonificacoes", permission: "compras_bonuses" },
           { title: "Solicitações entre Setores", url: "/crm/compras/solicitacoes-setores", permission: "compras_intersector" },
+          { title: "Veículos", url: "/crm/compras/veiculos", permission: "purchasing_vehicles" },
         ]
       },
       {
@@ -295,18 +309,18 @@ const menuSections: MenuSection[] = [
         module: "ecommerce",
         subitems: [
           { title: "Dashboard", url: "/crm/ecommerce" },
-          { title: "Produtos", url: "/crm/ecommerce/produtos", permission: "ecommerce_products" },
-          { title: "Pedidos", url: "/crm/ecommerce/pedidos", permission: "ecommerce_orders" },
-          { title: "Categorias", url: "/crm/ecommerce/categorias", permission: "ecommerce_products" },
-          { title: "Cupons", url: "/crm/ecommerce/cupons", permission: "ecommerce_coupons" },
-          { title: "CMS", url: "/crm/ecommerce/cms", permission: "ecommerce_cms" },
-          { title: "Precificação", url: "/crm/ecommerce/precificacao", permission: "ecommerce_pricing" },
-          { title: "Clientes", url: "/crm/ecommerce/clientes", permission: "ecommerce_customers" },
-          { title: "Controle de Processos", url: "/crm/ecommerce/processos", permission: "ecommerce_processes" },
-          { title: "Solicitação de Insumos", url: "/crm/ecommerce/insumos", permission: "ecommerce_supplies" },
-          { title: "Controle de NFE", url: "/crm/ecommerce/nfe", permission: "ecommerce_nfe" },
-          { title: "Contratos", url: "/crm/ecommerce/contratos", permission: "ecommerce_contracts" },
           { title: "Bonificações", url: "/crm/ecommerce/bonificacoes", permission: "ecommerce_bonuses" },
+          { title: "Categorias", url: "/crm/ecommerce/categorias", permission: "ecommerce_products" },
+          { title: "Clientes", url: "/crm/ecommerce/clientes", permission: "ecommerce_customers" },
+          { title: "CMS", url: "/crm/ecommerce/cms", permission: "ecommerce_cms" },
+          { title: "Contratos", url: "/crm/ecommerce/contratos", permission: "ecommerce_contracts" },
+          { title: "Controle de NFE", url: "/crm/ecommerce/nfe", permission: "ecommerce_nfe" },
+          { title: "Controle de Processos", url: "/crm/ecommerce/processos", permission: "ecommerce_processes" },
+          { title: "Cupons", url: "/crm/ecommerce/cupons", permission: "ecommerce_coupons" },
+          { title: "Pedidos", url: "/crm/ecommerce/pedidos", permission: "ecommerce_orders" },
+          { title: "Precificação", url: "/crm/ecommerce/precificacao", permission: "ecommerce_pricing" },
+          { title: "Produtos", url: "/crm/ecommerce/produtos", permission: "ecommerce_products" },
+          { title: "Solicitação de Insumos", url: "/crm/ecommerce/insumos", permission: "ecommerce_supplies" },
           { title: "Solicitações entre Setores", url: "/crm/ecommerce/solicitacoes-setores", permission: "ecommerce_intersector" },
         ],
       },
@@ -317,12 +331,12 @@ const menuSections: MenuSection[] = [
         module: "financeiro",
         subitems: [
           { title: "Dashboard", url: "/crm/financeiro" },
-          { title: "Precificação", url: "/crm/financeiro/precificacao", permission: "finance_pricing" },
-          { title: "Controle de Processos", url: "/crm/financeiro/processos", permission: "finance_processes" },
-          { title: "Solicitação de Insumos", url: "/crm/financeiro/insumos", permission: "finance_supplies" },
-          { title: "Controle de NFE", url: "/crm/financeiro/nfe", permission: "finance_nfe" },
-          { title: "Contratos", url: "/crm/financeiro/contratos", permission: "finance_contracts" },
           { title: "Bonificações", url: "/crm/financeiro/bonificacoes", permission: "finance_bonuses" },
+          { title: "Contratos", url: "/crm/financeiro/contratos", permission: "finance_contracts" },
+          { title: "Controle de NFE", url: "/crm/financeiro/nfe", permission: "finance_nfe" },
+          { title: "Controle de Processos", url: "/crm/financeiro/processos", permission: "finance_processes" },
+          { title: "Precificação", url: "/crm/financeiro/precificacao", permission: "finance_pricing" },
+          { title: "Solicitação de Insumos", url: "/crm/financeiro/insumos", permission: "finance_supplies" },
           { title: "Solicitações entre Setores", url: "/crm/financeiro/solicitacoes-setores", permission: "finance_intersector" },
         ],
       },
@@ -333,12 +347,12 @@ const menuSections: MenuSection[] = [
         module: "juridico",
         subitems: [
           { title: "Dashboard", url: "/crm/juridico" },
-          { title: "Modelos de Contrato", url: "/crm/juridico/modelos", permission: "legal_compliance" },
-          { title: "Controle de Processos", url: "/crm/juridico/processos", permission: "juridico_processes" },
-          { title: "Solicitação de Insumos", url: "/crm/juridico/insumos", permission: "juridico_supplies" },
-          { title: "Controle de NFE", url: "/crm/juridico/nfe", permission: "juridico_nfe" },
-          { title: "Contratos", url: "/crm/juridico/contratos", permission: "legal_contracts" },
           { title: "Bonificações", url: "/crm/juridico/bonificacoes", permission: "juridico_bonuses" },
+          { title: "Contratos", url: "/crm/juridico/contratos", permission: "legal_contracts" },
+          { title: "Controle de NFE", url: "/crm/juridico/nfe", permission: "juridico_nfe" },
+          { title: "Controle de Processos", url: "/crm/juridico/processos", permission: "juridico_processes" },
+          { title: "Modelos de Contrato", url: "/crm/juridico/modelos", permission: "legal_compliance" },
+          { title: "Solicitação de Insumos", url: "/crm/juridico/insumos", permission: "juridico_supplies" },
           { title: "Solicitações entre Setores", url: "/crm/juridico/solicitacoes-setores", permission: "juridico_intersector" },
         ]
       },
@@ -349,13 +363,13 @@ const menuSections: MenuSection[] = [
         module: "logistica",
         subitems: [
           { title: "Dashboard", url: "/crm/logistica" },
-          { title: "Pedidos de Insumos", url: "/crm/logistica/pedidos", permission: "logistics_orders" },
-          { title: "Estoque", url: "/crm/logistica/estoque", permission: "logistics_inventory" },
-          { title: "Controle de Processos", url: "/crm/logistica/processos", permission: "logistics_processes" },
-          { title: "Solicitação de Insumos", url: "/crm/logistica/insumos", permission: "logistics_supplies" },
-          { title: "Controle de NFE", url: "/crm/logistica/nfe", permission: "logistics_nfe" },
-          { title: "Contratos", url: "/crm/logistica/contratos", permission: "logistics_contracts" },
           { title: "Bonificações", url: "/crm/logistica/bonificacoes", permission: "logistics_bonuses" },
+          { title: "Contratos", url: "/crm/logistica/contratos", permission: "logistics_contracts" },
+          { title: "Controle de NFE", url: "/crm/logistica/nfe", permission: "logistics_nfe" },
+          { title: "Controle de Processos", url: "/crm/logistica/processos", permission: "logistics_processes" },
+          { title: "Estoque", url: "/crm/logistica/estoque", permission: "logistics_inventory" },
+          { title: "Pedidos de Insumos", url: "/crm/logistica/pedidos", permission: "logistics_orders" },
+          { title: "Solicitação de Insumos", url: "/crm/logistica/insumos", permission: "logistics_supplies" },
           { title: "Solicitações entre Setores", url: "/crm/logistica/solicitacoes-setores", permission: "logistics_intersector" },
         ],
       },
@@ -381,13 +395,13 @@ const menuSections: MenuSection[] = [
         module: "marketing",
         subitems: [
           { title: "Dashboard", url: "/crm/marketing" },
-          { title: "Campanhas", url: "/crm/marketing/campanhas", permission: "marketing_campaigns" },
-          { title: "Gerenciar Solicitações", url: "/crm/marketing/gerenciar", permission: "marketing_requests" },
-          { title: "Controle de Processos", url: "/crm/marketing/processos", permission: "marketing_processes" },
-          { title: "Solicitação de Insumos", url: "/crm/marketing/insumos", permission: "marketing_supplies" },
-          { title: "Controle de NFE", url: "/crm/marketing/nfe", permission: "marketing_nfe" },
           { title: "Bonificações", url: "/crm/marketing/bonificacoes", permission: "marketing_bonuses" },
+          { title: "Campanhas", url: "/crm/marketing/campanhas", permission: "marketing_campaigns" },
           { title: "Contratos", url: "/crm/marketing/contratos", permission: "marketing_contracts" },
+          { title: "Controle de NFE", url: "/crm/marketing/nfe", permission: "marketing_nfe" },
+          { title: "Controle de Processos", url: "/crm/marketing/processos", permission: "marketing_processes" },
+          { title: "Gerenciar Solicitações", url: "/crm/marketing/gerenciar", permission: "marketing_requests" },
+          { title: "Solicitação de Insumos", url: "/crm/marketing/insumos", permission: "marketing_supplies" },
           { title: "Solicitações entre Setores", url: "/crm/marketing/solicitacoes-setores", permission: "marketing_intersector" },
         ],
       },
@@ -398,13 +412,13 @@ const menuSections: MenuSection[] = [
         module: "rh",
         subitems: [
           { title: "Dashboard", url: "/crm/rh" },
-          { title: "Usuários", url: "/crm/rh/usuarios", permission: "admin_users" },
-          { title: "Controle de Processos", url: "/crm/rh/processos", permission: "hr_processes" },
-          { title: "Solicitação de Insumos", url: "/crm/rh/insumos", permission: "hr_supplies" },
-          { title: "Controle de NFE", url: "/crm/rh/nfe", permission: "hr_nfe" },
           { title: "Bonificações", url: "/crm/rh/bonificacoes", permission: "rh_bonuses" },
           { title: "Contratos", url: "/crm/rh/contratos", permission: "hr_contracts" },
+          { title: "Controle de NFE", url: "/crm/rh/nfe", permission: "hr_nfe" },
+          { title: "Controle de Processos", url: "/crm/rh/processos", permission: "hr_processes" },
+          { title: "Solicitação de Insumos", url: "/crm/rh/insumos", permission: "hr_supplies" },
           { title: "Solicitações entre Setores", url: "/crm/rh/solicitacoes-setores", permission: "hr_intersector" },
+          { title: "Usuários", url: "/crm/rh/usuarios", permission: "admin_users" },
         ],
       },
       {
@@ -414,14 +428,14 @@ const menuSections: MenuSection[] = [
         module: "tech",
         subitems: [
           { title: "Dashboard", url: "/crm/tech" },
-          { title: "Chamados", url: "/crm/tech/tickets", permission: "tech_tickets" },
           { title: "Base de Conhecimento", url: "/crm/tech/kb", permission: "tech_kb" },
-          { title: "Controle de Processos", url: "/crm/tech/processos", permission: "tech_processes" },
-          { title: "Solicitação de Insumos", url: "/crm/tech/insumos", permission: "tech_supplies" },
-          { title: "Controle de NFE", url: "/crm/tech/nfe", permission: "tech_nfe" },
-          { title: "Inventário de Ativos", url: "/crm/tech/inventario", permission: "tech_assets" },
-          { title: "Contratos", url: "/crm/tech/contratos", permission: "tech_contracts" },
           { title: "Bonificações", url: "/crm/tech/bonificacoes", permission: "tech_bonuses" },
+          { title: "Chamados", url: "/crm/tech/tickets", permission: "tech_tickets" },
+          { title: "Contratos", url: "/crm/tech/contratos", permission: "tech_contracts" },
+          { title: "Controle de NFE", url: "/crm/tech/nfe", permission: "tech_nfe" },
+          { title: "Controle de Processos", url: "/crm/tech/processos", permission: "tech_processes" },
+          { title: "Inventário de Ativos", url: "/crm/tech/inventario", permission: "tech_assets" },
+          { title: "Solicitação de Insumos", url: "/crm/tech/insumos", permission: "tech_supplies" },
           { title: "Solicitações entre Setores", url: "/crm/tech/solicitacoes-setores", permission: "tech_intersector" },
         ],
       },

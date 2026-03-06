@@ -17,6 +17,12 @@ const departmentNames: Record<string, string> = {
     marketing: "Marketing",
     rh: "RH",
     tech: "Tech Digital",
+    com_inside: "Inside Sales",
+    com_franchises: "Franquias",
+    com_sudeste: "Sudeste",
+    com_sul: "Sul",
+    com_centro: "Centro-Oeste",
+    com_norte: "Norte/Nordeste",
 };
 
 export default function SectorRequestsWrapper({ department }: SectorRequestsWrapperProps) {

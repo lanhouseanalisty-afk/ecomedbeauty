@@ -105,7 +105,7 @@ const AdminBonusPage = lazy(() => import("./pages/crm/admin/AdminBonusPage"));
 const InsumoSolicitationPage = lazy(() => import("./pages/crm/shared/InsumoSolicitationPage"));
 const PowerBIPage = lazy(() => import("./pages/crm/PowerBIPage"));
 const RankingDashboardPage = lazy(() => import("./pages/crm/RankingDashboardPage"));
-const GamificationPage = lazy(() => import("./pages/crm/comercial/GamificationPage"));
+const GamificationPage = lazy(() => import("./pages/crm/GamificationPage"));
 
 const SystemSettingsPage = lazy(() => import("./pages/admin/SystemSettingsPage"));
 
@@ -185,6 +185,8 @@ const App = () => {
                             <Route path="intranet/chamados" element={<ProtectedRoute requireEmployee><ComunicarTIPage /></ProtectedRoute>} />
                             <Route path="intranet/loja" element={<ProtectedRoute requireEmployee><CorporateStorePage /></ProtectedRoute>} />
                             <Route path="intranet/ideias" element={<ProtectedRoute requireEmployee><IdeaBankPage /></ProtectedRoute>} />
+                            <Route path="intranet/gamificacao" element={<ProtectedRoute requiredPermission="comercial_gamification"><GamificationPage /></ProtectedRoute>} />
+                            <Route path="intranet/precificacao" element={<ProtectedRoute requiredPermission="comercial_pricing"><PricingPage /></ProtectedRoute>} />
                             <Route path="power-bi" element={<PowerBIPage />} />
                             <Route path="ranking" element={<ProtectedRoute requiredPermission="access_crm_ranking"><RankingDashboardPage /></ProtectedRoute>} />
                             <Route path="rh/meu-perfil" element={<EmployeeProfilePage />} />
@@ -247,7 +249,6 @@ const App = () => {
                             {/* Comercial */}
                             <Route element={<ProtectedRoute requiredModule="comercial" requireEmployee />}>
                               <Route path="comercial" element={<ComercialDashboard />} />
-                              <Route path="comercial/gamificacao" element={<ProtectedRoute requiredPermission="comercial_gamification"><GamificationPage /></ProtectedRoute>} />
                               <Route path="comercial/franquias" element={<ProtectedRoute requiredPermission="comercial_franchises"><FranquiasPage /></ProtectedRoute>} />
                               <Route path="comercial/operacoes" element={<SectorHROperationsPage departmentSlug="comercial" departmentName="Comercial" />} /><Route path="comercial/admissao" element={<Navigate to="/crm/comercial/operacoes" replace />} />
                               <Route path="comercial/contratos" element={<ProtectedRoute requiredPermission="comercial_contracts"><SectorContractDashboard sector="comercial" /></ProtectedRoute>} />
@@ -265,20 +266,41 @@ const App = () => {
                               <Route path="comercial/norte/contratos" element={<ProtectedRoute requiredPermission="comercial_contracts"><SectorContractDashboard sector="com_norte" /></ProtectedRoute>} />
                               <Route path="comercial/norte/contrato/:id" element={<ProtectedRoute requiredPermission="comercial_contracts"><ContractViewer /></ProtectedRoute>} />
 
-                              <Route path="comercial/processos" element={<ProtectedRoute requiredPermission="comercial_processes"><ProcessControlPage /></ProtectedRoute>} />
-                              <Route path="comercial/precificacao" element={<ProtectedRoute requiredPermission="comercial_pricing"><PricingPage /></ProtectedRoute>} />
                               <Route path="comercial/insumos" element={<ProtectedRoute requiredPermission="comercial_supplies"><InsumoSolicitationPage sector="comercial" sectorLabel="Comercial" /></ProtectedRoute>} />
+                              <Route path="comercial/processos" element={<ProtectedRoute requiredPermission="comercial_processes"><ProcessControlPage sector="comercial" sectorLabel="Comercial" /></ProtectedRoute>} />
 
-                              {/* Subcomercial Insumos */}
+                              {/* Subcomercial Insumos & Processos */}
                               <Route path="comercial/inside-sales/insumos" element={<ProtectedRoute requiredPermission="comercial_supplies"><InsumoSolicitationPage sector="com_inside" sectorLabel="Inside Sales" /></ProtectedRoute>} />
+                              <Route path="comercial/inside-sales/processos" element={<ProtectedRoute requiredPermission="comercial_processes"><ProcessControlPage sector="com_inside" sectorLabel="Inside Sales" /></ProtectedRoute>} />
+                              <Route path="comercial/inside-sales/nfe" element={<ProtectedRoute requiredPermission="comercial_nfe"><NFEPage sector="com_inside" sectorLabel="Inside Sales" /></ProtectedRoute>} />
+                              <Route path="comercial/inside-sales/solicitacoes-setores" element={<ProtectedRoute requiredPermission="comercial_intersector"><SectorRequestsWrapper department="com_inside" /></ProtectedRoute>} />
+
                               <Route path="comercial/franquias/insumos" element={<ProtectedRoute requiredPermission="comercial_supplies"><InsumoSolicitationPage sector="com_franchises" sectorLabel="Franquias" /></ProtectedRoute>} />
+                              <Route path="comercial/franquias/processos" element={<ProtectedRoute requiredPermission="comercial_processes"><ProcessControlPage sector="com_franchises" sectorLabel="Franquias" /></ProtectedRoute>} />
+                              <Route path="comercial/franquias/nfe" element={<ProtectedRoute requiredPermission="comercial_nfe"><NFEPage sector="com_franchises" sectorLabel="Franquias" /></ProtectedRoute>} />
+                              <Route path="comercial/franquias/solicitacoes-setores" element={<ProtectedRoute requiredPermission="comercial_intersector"><SectorRequestsWrapper department="com_franchises" /></ProtectedRoute>} />
+
                               <Route path="comercial/sudeste/insumos" element={<ProtectedRoute requiredPermission="comercial_supplies"><InsumoSolicitationPage sector="com_sudeste" sectorLabel="Sudeste" /></ProtectedRoute>} />
+                              <Route path="comercial/sudeste/processos" element={<ProtectedRoute requiredPermission="comercial_processes"><ProcessControlPage sector="com_sudeste" sectorLabel="Sudeste" /></ProtectedRoute>} />
+                              <Route path="comercial/sudeste/nfe" element={<ProtectedRoute requiredPermission="comercial_nfe"><NFEPage sector="com_sudeste" sectorLabel="Sudeste" /></ProtectedRoute>} />
+                              <Route path="comercial/sudeste/solicitacoes-setores" element={<ProtectedRoute requiredPermission="comercial_intersector"><SectorRequestsWrapper department="com_sudeste" /></ProtectedRoute>} />
+
                               <Route path="comercial/sul/insumos" element={<ProtectedRoute requiredPermission="comercial_supplies"><InsumoSolicitationPage sector="com_sul" sectorLabel="Sul" /></ProtectedRoute>} />
+                              <Route path="comercial/sul/processos" element={<ProtectedRoute requiredPermission="comercial_processes"><ProcessControlPage sector="com_sul" sectorLabel="Sul" /></ProtectedRoute>} />
+                              <Route path="comercial/sul/nfe" element={<ProtectedRoute requiredPermission="comercial_nfe"><NFEPage sector="com_sul" sectorLabel="Sul" /></ProtectedRoute>} />
+                              <Route path="comercial/sul/solicitacoes-setores" element={<ProtectedRoute requiredPermission="comercial_intersector"><SectorRequestsWrapper department="com_sul" /></ProtectedRoute>} />
+
                               <Route path="comercial/centro/insumos" element={<ProtectedRoute requiredPermission="comercial_supplies"><InsumoSolicitationPage sector="com_centro" sectorLabel="Centro-Oeste" /></ProtectedRoute>} />
+                              <Route path="comercial/centro/processos" element={<ProtectedRoute requiredPermission="comercial_processes"><ProcessControlPage sector="com_centro" sectorLabel="Centro-Oeste" /></ProtectedRoute>} />
+                              <Route path="comercial/centro/nfe" element={<ProtectedRoute requiredPermission="comercial_nfe"><NFEPage sector="com_centro" sectorLabel="Centro-Oeste" /></ProtectedRoute>} />
+                              <Route path="comercial/centro/solicitacoes-setores" element={<ProtectedRoute requiredPermission="comercial_intersector"><SectorRequestsWrapper department="com_centro" /></ProtectedRoute>} />
+
                               <Route path="comercial/norte/insumos" element={<ProtectedRoute requiredPermission="comercial_supplies"><InsumoSolicitationPage sector="com_norte" sectorLabel="Norte/Nordeste" /></ProtectedRoute>} />
+                              <Route path="comercial/norte/processos" element={<ProtectedRoute requiredPermission="comercial_processes"><ProcessControlPage sector="com_norte" sectorLabel="Norte/Nordeste" /></ProtectedRoute>} />
+                              <Route path="comercial/norte/nfe" element={<ProtectedRoute requiredPermission="comercial_nfe"><NFEPage sector="com_norte" sectorLabel="Norte/Nordeste" /></ProtectedRoute>} />
+                              <Route path="comercial/norte/solicitacoes-setores" element={<ProtectedRoute requiredPermission="comercial_intersector"><SectorRequestsWrapper department="com_norte" /></ProtectedRoute>} />
 
                               <Route path="comercial/nfe" element={<ProtectedRoute requiredPermission="comercial_nfe"><NFEPage sector="comercial" sectorLabel="Comercial" /></ProtectedRoute>} />
-                              <Route path="comercial/solicitacoes-setores" element={<ProtectedRoute requiredPermission="comercial_intersector"><SectorRequestsWrapper department="comercial" /></ProtectedRoute>} />
 
                               <Route path="comercial/:subdepartment" element={<ComercialSubDepartmentPage />} />
                             </Route>
