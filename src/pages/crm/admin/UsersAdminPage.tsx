@@ -10,7 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Search, Users, Shield, Edit, Loader2, UserCog, ChevronRight } from 'lucide-react';
+import { Search, Users, Shield, Edit, Loader2, UserCog, ChevronRight, Trash2 } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
@@ -287,6 +288,8 @@ export default function UsersAdminPage() {
     const [editingRole, setEditingRole] = useState<string>('user');
     const [editingPermissions, setEditingPermissions] = useState<string[]>([]);
     const [saving, setSaving] = useState(false);
+    const [employeeToDelete, setEmployeeToDelete] = useState<Employee | null>(null);
+    const [deleting, setDeleting] = useState(false);
 
     const [departments, setDepartments] = useState<{ id: string, name: string }[]>([]);
     const [positions, setPositions] = useState<{ id: string, title: string, department_id: string }[]>([]);
@@ -535,6 +538,40 @@ export default function UsersAdminPage() {
         }
     };
 
+    const handleDeleteUser = async () => {
+        if (!employeeToDelete) return;
+        setDeleting(true);
+        try {
+            // 1. Remove user_roles if exists
+            if (employeeToDelete.user_id) {
+                await supabase.from('user_roles').delete().eq('user_id', employeeToDelete.user_id);
+            }
+
+            // 2. Remove employee record
+            const { error: empDeleteError } = await supabase
+                .from('employees')
+                .delete()
+                .eq('id', employeeToDelete.id);
+
+            if (empDeleteError) throw empDeleteError;
+
+            // 3. If has auth account, deactivate via edge function
+            if (employeeToDelete.user_id) {
+                await supabase.functions.invoke('admin-delete-user', {
+                    body: { userId: employeeToDelete.user_id }
+                });
+            }
+
+            toast.success(`Usuário ${employeeToDelete.name} removido com sucesso.`);
+            setEmployeeToDelete(null);
+            fetchData();
+        } catch (error: any) {
+            toast.error('Erro ao remover usuário: ' + error.message);
+        } finally {
+            setDeleting(false);
+        }
+    };
+
     const togglePermission = (permission: string) => {
         setEditingPermissions(prev =>
             prev.includes(permission)
@@ -624,10 +661,22 @@ export default function UsersAdminPage() {
                                         <TableCell>{emp.department}</TableCell>
                                         <TableCell>{getRoleBadge(emp)}</TableCell>
                                         <TableCell className="text-center">
-                                            <Button variant="outline" size="sm" onClick={() => handleEditUser(emp)}>
-                                                <Edit className="w-4 h-4 mr-1" />
-                                                Editar
-                                            </Button>
+                                            <div className="flex items-center justify-center gap-2">
+                                                <Button variant="outline" size="sm" onClick={() => handleEditUser(emp)}>
+                                                    <Edit className="w-4 h-4 mr-1" />
+                                                    Editar
+                                                </Button>
+                                                {isAdminPath && (
+                                                    <Button
+                                                        variant="destructive"
+                                                        size="sm"
+                                                        onClick={() => setEmployeeToDelete(emp)}
+                                                    >
+                                                        <Trash2 className="w-4 h-4 mr-1" />
+                                                        Remover
+                                                    </Button>
+                                                )}
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 ))}
@@ -800,6 +849,34 @@ export default function UsersAdminPage() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            {/* Delete Confirmation Dialog */}
+            <AlertDialog open={!!employeeToDelete} onOpenChange={(open) => !open && setEmployeeToDelete(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="flex items-center gap-2 text-destructive">
+                            <Trash2 className="w-5 h-5" />
+                            Remover Usuário
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Tem certeza que deseja remover <strong>{employeeToDelete?.name}</strong>?<br />
+                            Esta ação irá excluir o registro do colaborador e revogar o acesso ao sistema.
+                            <span className="block mt-2 font-semibold text-destructive">Esta ação não pode ser desfeita.</span>
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={deleting}>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={handleDeleteUser}
+                            disabled={deleting}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                            {deleting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Trash2 className="w-4 h-4 mr-2" />}
+                            {deleting ? 'Removendo...' : 'Sim, Remover'}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }
