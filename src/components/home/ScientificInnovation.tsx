@@ -2,6 +2,8 @@ import { Microscope, Beaker, Dna, ShieldCheck, Zap, Thermometer } from "lucide-r
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useCMS } from "@/contexts/CMSContext";
+import { CMSText } from "@/components/cms/CMSText";
 
 const innovations = [
     {
@@ -53,16 +55,14 @@ export function ScientificInnovation() {
                 <div className="flex flex-col items-center text-center mb-20 space-y-4">
                     <div className="inline-flex items-center gap-2 rounded-full bg-[#2B0F54]/5 px-4 py-2 border border-[#2B0F54]/10">
                         <Microscope className="h-4 w-4 text-[#2B0F54]" />
-                        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#2B0F54]">
-                            Inovação Laboratorial
-                        </span>
+                        <CMSText path="home.innovation.badge" className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#2B0F54]" />
                     </div>
                     <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold text-[#2B0F54]">
-                        A Ciência por Trás da <br />
-                        <span className="text-[#ECB546]">Excelência</span>
+                        <CMSText path="home.innovation.titleStart" /> <br />
+                        <span className="text-[#ECB546]"><CMSText path="home.innovation.titleEnd" /></span>
                     </h2>
                     <p className="max-w-2xl text-slate-500 text-lg">
-                        Não criamos apenas produtos; desenvolvemos protocolos científicos de alta performance para profissionais que buscam resultados previsíveis e seguros.
+                        <CMSText path="home.innovation.description" multiline />
                     </p>
                 </div>
 
@@ -109,7 +109,7 @@ export function ScientificInnovation() {
                 <div className="mt-20 flex justify-center">
                     <Button asChild className="h-14 px-10 rounded-2xl bg-[#2B0F54] text-white hover:bg-[#1a0933] shadow-lg shadow-[#2B0F54]/10 gap-3 group">
                         <Link to="/produtos">
-                            Explorar Portfólio Técnico
+                            <CMSText path="home.innovation.buttonText" />
                             <Zap className="h-4 w-4 group-hover:animate-pulse" />
                         </Link>
                     </Button>

@@ -15,7 +15,8 @@ import {
   UserPlus,
   MapPin,
   Mail,
-  Phone
+  Phone,
+  Coffee
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { LimpezaRequestDialog } from "@/components/crm/limpeza/LimpezaRequestDialog";
 import {
   Avatar,
   AvatarFallback,
@@ -86,6 +88,7 @@ export default function CientificaDashboard() {
             <UserPlus className="h-4 w-4" />
             Admissão & Demissão
           </Button>
+          <LimpezaRequestDialog />
           <Button onClick={() => navigate("/crm/cientifica/apresentacoes")}>
             <Plus className="mr-2 h-4 w-4" />
             Gerenciar Biblioteca

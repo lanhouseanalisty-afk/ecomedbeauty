@@ -14,8 +14,10 @@ import {
   BarChart3,
   FileText,
   Package,
-  AlertCircle
+  AlertCircle,
+  Coffee
 } from "lucide-react";
+import { LimpezaRequestDialog } from "@/components/crm/limpeza/LimpezaRequestDialog";
 import { useMarketingRequest } from "@/hooks/useMarketingRequest";
 import { useEffect, useState } from "react";
 
@@ -88,6 +90,7 @@ export default function MarketingDashboard() {
         </div>
         <div className="flex gap-2 items-center">
           <Badge variant="outline" className="h-9 px-4 text-sm hidden md:flex">Gestora: Viviane Toledo</Badge>
+          <LimpezaRequestDialog />
           <QuickStats stats={quickStats} />
         </div>
       </div>

@@ -4,14 +4,20 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
 
-export function ReportsDashboard() {
+export function ReportsDashboard({ sector }: { sector?: string }) {
     const [statusData, setStatusData] = useState<any[]>([]);
     const [sectorData, setSectorData] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const processData = async () => {
-            const { data } = await supabase.from('sector_requests').select('*');
+            let query = supabase.from('sector_requests').select('*');
+
+            if (sector) {
+                query = query.eq('target_sector', sector);
+            }
+
+            const { data } = await query;
             if (!data) return;
 
             // 1. Status Distribution

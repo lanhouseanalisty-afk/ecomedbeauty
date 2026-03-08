@@ -29,7 +29,7 @@ const COLUMN_CONFIG = [
     { id: 'cancelled', title: 'Cancelado', color: 'bg-rose-500', postit: 'bg-[#FEE2E2]', pin: 'bg-slate-800' }
 ];
 
-export function KanbanBoard() {
+export function KanbanBoard({ sector: propSector }: { sector?: string }) {
     const [tasks, setTasks] = useState<Task[]>([]);
     const [isFullScreen, setIsFullScreen] = useState(false);
     const navigate = useNavigate();
@@ -37,12 +37,14 @@ export function KanbanBoard() {
     const rotations = ['rotate-1', '-rotate-1', 'rotate-2', '-rotate-2'];
 
     // Get user's primary sector (first non-admin role)
-    const userSector = roles.find(role =>
+    const roleSector = roles.find(role =>
         role !== 'admin' &&
         role !== 'manager' &&
         role !== 'editor' &&
         role !== 'viewer'
     );
+
+    const userSector = propSector || roleSector;
 
     useEffect(() => {
         const fetchTasks = async () => {

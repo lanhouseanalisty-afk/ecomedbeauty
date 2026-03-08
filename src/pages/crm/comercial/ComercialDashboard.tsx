@@ -19,7 +19,8 @@ import {
   MapPin,
   FileText,
   ShieldAlert,
-  UserPlus
+  UserPlus,
+  Coffee
 } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -60,7 +61,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { LimpezaRequestDialog } from "@/components/crm/limpeza/LimpezaRequestDialog";
+
 import { useLeads, useOpportunities } from "@/hooks/useCRM";
 import { LeadSearchDialog } from "@/components/crm/comercial/LeadSearchDialog";
 import { LeadDetailsDialog } from "@/components/crm/comercial/LeadDetailsDialog";
@@ -201,6 +203,8 @@ export default function ComercialDashboard() {
             <UserPlus className="h-4 w-4" />
             Admissão & Demissão
           </Button>
+
+          <LimpezaRequestDialog />
 
           <Button variant="outline" onClick={() => setIsSearchDialogOpen(true)} className="shadow-sm hover:shadow-md transition-all">
             <Globe className="mr-2 h-4 w-4 text-blue-500" />

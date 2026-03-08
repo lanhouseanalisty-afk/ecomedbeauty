@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Mail, ArrowRight, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
+import { CMSText } from "@/components/cms/CMSText";
 
 export function NewsletterSection() {
   const [email, setEmail] = useState("");
@@ -35,15 +36,15 @@ export function NewsletterSection() {
         <div className="mx-auto max-w-3xl text-center">
           <div className="inline-flex items-center gap-2 rounded-full bg-white/5 px-4 py-2 border border-white/10 mb-10">
             <Mail className="h-4 w-4 text-[#ECB546]" />
-            <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/60">Clinical Updates</span>
+            <CMSText path="home.newsletter.badge" className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/60" />
           </div>
 
           <h2 className="font-serif text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
-            Faça parte da nossa <br />
-            <span className="text-[#ECB546]">Comunidade Científica</span>
+            <CMSText path="home.newsletter.titleStart" /> <br />
+            <span className="text-[#ECB546]"><CMSText path="home.newsletter.titleEnd" /></span>
           </h2>
           <p className="text-gray-300 text-lg leading-relaxed max-w-2xl mx-auto mb-12">
-            Receba com exclusividade laudos técnicos, lançamentos de ativos e convites para workshops presenciais na Academy MedBeauty.
+            <CMSText path="home.newsletter.description" multiline />
           </p>
 
           {isSubmitted ? (
@@ -79,7 +80,7 @@ export function NewsletterSection() {
                     "Processando..."
                   ) : (
                     <>
-                      Assinar News
+                      <CMSText path="home.newsletter.buttonText" />
                       <ArrowRight className="h-5 w-5" />
                     </>
                   )}

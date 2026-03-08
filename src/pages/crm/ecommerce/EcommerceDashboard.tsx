@@ -11,7 +11,8 @@ import {
   Layout,
   FileText,
   UserPlus,
-  Search
+  Search,
+  Coffee
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { LimpezaRequestDialog } from "@/components/crm/limpeza/LimpezaRequestDialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useOrders } from "@/hooks/useEcommerce";
 import { Link } from "react-router-dom";
@@ -150,6 +152,7 @@ export default function EcommerceDashboard() {
             <UserPlus className="h-4 w-4" />
             Admissão & Demissão
           </Button>
+          <LimpezaRequestDialog />
         </div>
       </div>
 
@@ -157,37 +160,7 @@ export default function EcommerceDashboard() {
         <TabsList>
           <TabsTrigger value="overview">Visão Geral</TabsTrigger>
           <TabsTrigger value="editor">Editor da Loja</TabsTrigger>
-          <TabsTrigger value="contracts">Contratos</TabsTrigger>
         </TabsList>
-
-        <TabsContent value="contracts" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Gestão de Contratos</CardTitle>
-              <CardDescription>Gerencie as solicitações e contratos do departamento de E-commerce</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <Button
-                  onClick={() => window.location.href = "/crm/juridico/contratos/novo?sector=ecommerce"}
-                  className="h-24 flex flex-col gap-2 bg-primary/5 hover:bg-primary/10 border-primary/20 text-primary"
-                  variant="outline"
-                >
-                  <FileText className="h-4 w-4" />
-                  <span>Solicitar Novo Contrato</span>
-                </Button>
-                <Button
-                  onClick={() => window.location.href = "/crm/ecommerce/contratos"}
-                  className="h-24 flex flex-col gap-2"
-                  variant="outline"
-                >
-                  <Search className="h-4 w-4" />
-                  <span>Ver Todos os Contratos do Setor</span>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
 
 
         <TabsContent value="overview" className="space-y-6">

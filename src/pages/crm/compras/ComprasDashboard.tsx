@@ -1,8 +1,9 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, Package, TrendingUp, DollarSign, Users, FileText, UserPlus, Search } from "lucide-react";
+import { ShoppingCart, Package, TrendingUp, DollarSign, Users, FileText, UserPlus, Search, Coffee } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { LimpezaRequestDialog } from "@/components/crm/limpeza/LimpezaRequestDialog";
 
 export default function ComprasDashboard() {
     const stats = [
@@ -51,6 +52,7 @@ export default function ComprasDashboard() {
                         <UserPlus className="h-4 w-4" />
                         Admissão & Demissão
                     </Button>
+                    <LimpezaRequestDialog />
                 </div>
             </div>
 

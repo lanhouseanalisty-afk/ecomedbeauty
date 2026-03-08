@@ -15,7 +15,8 @@ import {
   Search,
   FileText,
   UserPlus,
-  Send
+  Send,
+  Coffee
 } from "lucide-react";
 import { useMarketingRequest } from "@/hooks/useMarketingRequest";
 import { useEffect } from "react";
@@ -30,6 +31,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { LimpezaRequestDialog } from "@/components/crm/limpeza/LimpezaRequestDialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -130,6 +132,7 @@ export default function LogisticaDashboard() {
             <UserPlus className="h-4 w-4" />
             Admissão & Demissão
           </Button>
+          <LimpezaRequestDialog />
           <DataExport
             data={filteredShipments}
             filename="envios"

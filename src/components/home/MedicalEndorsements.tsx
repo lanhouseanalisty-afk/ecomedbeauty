@@ -1,5 +1,7 @@
 import { Quote, Star, ShieldCheck, Award, GraduationCap } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useCMS } from "@/contexts/CMSContext";
+import { CMSText } from "@/components/cms/CMSText";
 
 const endorsements = [
     {
@@ -40,18 +42,16 @@ export function MedicalEndorsements() {
                     <div className="space-y-8">
                         <div className="inline-flex items-center gap-2 rounded-full bg-white/5 px-4 py-2 border border-white/10 backdrop-blur-md">
                             <ShieldCheck className="h-4 w-4 text-[#ECB546]" />
-                            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/80">
-                                Respaldo Profissional
-                            </span>
+                            <CMSText path="home.endorsements.badge" className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/80" />
                         </div>
 
                         <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight">
-                            Reconhecido pela <br />
-                            <span className="text-[#ECB546]">Elite Médica</span>
+                            <CMSText path="home.endorsements.titleStart" /> <br />
+                            <span className="text-[#ECB546]"><CMSText path="home.endorsements.titleEnd" /></span>
                         </h2>
 
                         <p className="text-white/60 text-lg max-w-lg leading-relaxed">
-                            Nossos produtos são a escolha número um dos principais especialistas do Brasil e do mundo, passando por rigorosos testes clínicos antes de chegarem à sua clínica.
+                            <CMSText path="home.endorsements.description" multiline />
                         </p>
 
                         <div className="grid grid-cols-2 gap-6 pt-6">

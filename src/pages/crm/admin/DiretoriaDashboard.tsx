@@ -11,7 +11,8 @@ import {
   TrendingUp,
   BarChart,
   PieChart,
-  Target
+  Target,
+  Coffee
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { LimpezaRequestDialog } from "@/components/crm/limpeza/LimpezaRequestDialog";
 
 const strategicGoals = [
   { id: 1, name: "Expansão de Mercado", status: "on_track", progress: 75, owner: "Comercial" },
@@ -68,6 +70,7 @@ export default function DiretoriaDashboard() {
         </div>
         <div className="flex gap-2 items-center">
           <Badge variant="outline" className="h-9 px-4 text-sm hidden md:flex">Gestor: Pedro Miguel</Badge>
+          <LimpezaRequestDialog />
           <Button>
             <BarChart className="mr-2 h-4 w-4" />
             Relatório Executivo

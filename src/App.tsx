@@ -79,7 +79,6 @@ const EcommerceProdutosPage = lazy(() => import("./pages/crm/ecommerce/Ecommerce
 const EcommerceCategoriasPage = lazy(() => import("./pages/crm/ecommerce/EcommerceCategoriasPage"));
 const EcommercePedidosPage = lazy(() => import("./pages/crm/ecommerce/EcommercePedidosPage"));
 const EcommerceCuponsPage = lazy(() => import("./pages/crm/ecommerce/EcommerceCuponsPage"));
-const EcommerceCMSPage = lazy(() => import("./pages/crm/ecommerce/EcommerceCMSPage"));
 const EcommerceCustomersPage = lazy(() => import("./pages/crm/ecommerce/EcommerceCustomersPage"));
 const SectorHROperationsPage = lazy(() => import("./pages/crm/SectorHROperationsPage"));
 const DepartmentAdmissaoPage = lazy(() => import("./components/crm/DepartmentAdmissaoPage"));
@@ -112,6 +111,7 @@ const SystemSettingsPage = lazy(() => import("./pages/admin/SystemSettingsPage")
 const AnalyticsDashboard = lazy(() => import("./pages/admin/AnalyticsDashboard"));
 
 const AdminPermissionsPage = lazy(() => import("./pages/crm/admin/AdminPermissionsPage"));
+const AdminGamificationPage = lazy(() => import("./pages/crm/admin/AdminGamificationPage"));
 const ScientificPresentationsPage = lazy(() => import("./pages/crm/scientific/ScientificPresentationsPage"));
 const SectorRequestsWrapper = lazy(() => import("./pages/crm/SectorRequestsWrapper"));
 
@@ -136,6 +136,8 @@ const LoadingFallback = () => (
 );
 
 const queryClient = new QueryClient();
+
+const LimpezaAgendaPage = lazy(() => import('./pages/crm/limpeza/LimpezaAgendaPage'));
 
 const App = () => {
   return (
@@ -227,6 +229,7 @@ const App = () => {
                               <Route path="admin/solicitacoes-setores" element={<ProtectedRoute requiredPermission="admin_intersector"><SectorRequestsWrapper department="admin" /></ProtectedRoute>} />
                               <Route path="admin/processos" element={<ProtectedRoute requiredPermission="admin_processes"><ProcessControlPage /></ProtectedRoute>} />
                               <Route path="admin/precificacao" element={<ProtectedRoute requiredPermission="admin_pricing"><PricingPage /></ProtectedRoute>} />
+                              <Route path="admin/gamificacao" element={<ProtectedRoute requiredPermission="admin_gamification"><AdminGamificationPage /></ProtectedRoute>} />
                               <Route path="admin/insumos" element={<ProtectedRoute requiredPermission="admin_supplies"><InsumoSolicitationPage sector="admin" sectorLabel="Administração" /></ProtectedRoute>} />
                             </Route>
 
@@ -324,7 +327,6 @@ const App = () => {
                             <Route path="ecommerce/produtos" element={<ProtectedRoute requiredPermission="ecommerce_products" requireEmployee><EcommerceProdutosPage /></ProtectedRoute>} />
                             <Route path="ecommerce/categorias" element={<ProtectedRoute requiredPermission="ecommerce_products" requireEmployee><EcommerceCategoriasPage /></ProtectedRoute>} />
                             <Route path="ecommerce/clientes" element={<ProtectedRoute requiredPermission="ecommerce_customers" requireEmployee><EcommerceCustomersPage /></ProtectedRoute>} />
-                            <Route path="ecommerce/cms" element={<ProtectedRoute requiredPermission="ecommerce_cms" requireEmployee><EcommerceCMSPage /></ProtectedRoute>} />
                             <Route path="ecommerce/cupons" element={<ProtectedRoute requiredPermission="ecommerce_coupons" requireEmployee><EcommerceCuponsPage /></ProtectedRoute>} />
                             <Route path="ecommerce/operacoes" element={<SectorHROperationsPage departmentSlug="ecommerce" departmentName="E-commerce" />} /><Route path="ecommerce/admissao" element={<Navigate to="/crm/ecommerce/operacoes" replace />} />
                             <Route path="ecommerce/precificacao" element={<ProtectedRoute requiredPermission="ecommerce_pricing"><PricingPage /></ProtectedRoute>} />
@@ -427,6 +429,7 @@ const App = () => {
                               <Route path="rh" element={<RHDashboard />} />
                               <Route path="rh/usuarios" element={<ProtectedRoute requiredPermission="admin_users" requireEmployee><UsersAdminPage /></ProtectedRoute>} />
                               <Route path="rh/operacoes" element={<ProtectedRoute requiredPermission="hr_employees" requireEmployee><HROperationsPage /></ProtectedRoute>} />
+                              <Route path="rh/agenda-limpeza" element={<ProtectedRoute requiredPermission="hr_employees"><LimpezaAgendaPage /></ProtectedRoute>} />
                               <Route path="rh/solicitacoes-setores" element={<ProtectedRoute requiredPermission="hr_intersector"><SectorRequestsWrapper department="rh" /></ProtectedRoute>} />
                               <Route path="rh/nfe" element={<ProtectedRoute requiredPermission="hr_nfe"><NFEPage sector="rh" sectorLabel="RH" /></ProtectedRoute>} />
                               <Route path="rh/processos" element={<ProtectedRoute requiredPermission="hr_processes"><ProcessControlPage /></ProtectedRoute>} />
@@ -460,6 +463,13 @@ const App = () => {
                             {/* Compras */}
                             <Route element={<ProtectedRoute requiredModule="compras" requireEmployee />}>
                               <Route path="compras/nfe" element={<ProtectedRoute requiredPermission="compras_nfe"><NFEPage sector="compras" sectorLabel="Compras" /></ProtectedRoute>} />
+                            </Route>
+
+                            {/* Limpeza & Copa */}
+                            <Route element={<ProtectedRoute requiredModule="limpeza" requireEmployee />}>
+                              <Route path="limpeza" element={<Navigate to="/crm/limpeza/agenda" replace />} />
+                              <Route path="limpeza/agenda" element={<ProtectedRoute requiredPermission="manage_limpeza"><LimpezaAgendaPage /></ProtectedRoute>} />
+                              <Route path="limpeza/solicitacoes-setores" element={<ProtectedRoute requiredPermission="limpeza_intersector"><SectorRequestsWrapper department="limpeza" /></ProtectedRoute>} />
                             </Route>
 
                             {/* Final CRM Layout cleanup */}

@@ -43,6 +43,7 @@ export function useUserRole() {
       'compras': 'manage_purchasing',
       'manutencao': 'manage_maintenance',
       'intranet': 'access_intranet',
+      'limpeza': 'manage_limpeza',
     };
 
     const mainPermission = permissionMap[module];
@@ -76,6 +77,7 @@ export function useUserRole() {
       'maintenance_': 'manage_maintenance',
       'sap_': 'manage_sap',
       'analytics_': 'view_analytics',
+      'limpeza_': 'manage_limpeza',
     };
 
     const parentKey = Object.keys(parentMap).find(key => permission.startsWith(key));

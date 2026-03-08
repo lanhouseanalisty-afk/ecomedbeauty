@@ -23,6 +23,7 @@ const departmentNames: Record<string, string> = {
     com_sul: "Sul",
     com_centro: "Centro-Oeste",
     com_norte: "Norte/Nordeste",
+    limpeza: "Limpeza & Copa",
 };
 
 export default function SectorRequestsWrapper({ department }: SectorRequestsWrapperProps) {

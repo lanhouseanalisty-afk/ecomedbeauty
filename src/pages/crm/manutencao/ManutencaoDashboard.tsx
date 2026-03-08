@@ -2,9 +2,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-    Wrench, AlertTriangle, CheckCircle, Clock, Users, TrendingUp, FileText, UserPlus, Search
+    Wrench, AlertTriangle, CheckCircle, Clock, Users, TrendingUp, FileText, UserPlus, Search, Coffee
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { LimpezaRequestDialog } from "@/components/crm/limpeza/LimpezaRequestDialog";
 
 export default function ManutencaoDashboard() {
     const stats = [
@@ -57,6 +58,7 @@ export default function ManutencaoDashboard() {
                         <UserPlus className="h-4 w-4" />
                         Admissão & Demissão
                     </Button>
+                    <LimpezaRequestDialog />
                 </div>
             </div>
 

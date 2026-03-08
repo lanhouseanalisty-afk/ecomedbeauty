@@ -6,9 +6,11 @@ import {
   MapPin,
   Briefcase,
   Globe,
-  UserCircle
+  UserCircle,
+  Coffee
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { LimpezaRequestDialog } from "@/components/crm/limpeza/LimpezaRequestDialog";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -43,13 +45,18 @@ export default function JuridicoDashboard() {
   return (
     <div className="space-y-8 animate-fade-in-up p-6">
       {/* Header Section */}
-      <div className="flex flex-col gap-2">
-        <h1 className="font-serif text-4xl font-bold tracking-tight text-primary">
-          Nossa Equipe Jurídica
-        </h1>
-        <p className="text-muted-foreground text-lg max-w-2xl">
-          Conheça os profissionais dedicados a garantir a segurança, conformidade e o sucesso legal das operações da MedBeauty.
-        </p>
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-col gap-2">
+          <h1 className="font-serif text-4xl font-bold tracking-tight text-primary">
+            Nossa Equipe Jurídica
+          </h1>
+          <p className="text-muted-foreground text-lg max-w-2xl">
+            Conheça os profissionais dedicados a garantir a segurança, conformidade e o sucesso legal das operações da MedBeauty.
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <LimpezaRequestDialog />
+        </div>
       </div>
 
       {/* Team Grid */}

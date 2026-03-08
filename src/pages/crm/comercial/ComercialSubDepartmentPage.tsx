@@ -8,6 +8,7 @@ import { useDepartmentMembers } from "@/hooks/useDepartmentMembers";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SectorRequestsPage } from "../components/SectorRequestsPage";
 import SectorHROperationsPage from "../SectorHROperationsPage";
+import LimpezaAgendaPage from "../limpeza/LimpezaAgendaPage";
 
 const subDepartmentData: Record<string, {
     name: string;
@@ -134,7 +135,7 @@ export default function ComercialSubDepartmentPage() {
             <Tabs defaultValue="overview" className="space-y-4">
                 <TabsList>
                     <TabsTrigger value="overview">Visão Geral</TabsTrigger>
-                    <TabsTrigger value="requests">Solicitações</TabsTrigger>
+                    <TabsTrigger value="limpeza">Limpeza & Copa</TabsTrigger>
                     <TabsTrigger value="people">Gestão de Pessoas</TabsTrigger>
                 </TabsList>
 
@@ -240,8 +241,8 @@ export default function ComercialSubDepartmentPage() {
                     </div>
                 </TabsContent>
 
-                <TabsContent value="requests">
-                    <SectorRequestsPage currentSector={data.code} sectorName={`${data.name}`} />
+                <TabsContent value="limpeza">
+                    <LimpezaAgendaPage />
                 </TabsContent>
 
                 <TabsContent value="people">

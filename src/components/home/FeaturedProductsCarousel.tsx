@@ -1,4 +1,5 @@
 import * as React from "react"
+import { CMSText } from "@/components/cms/CMSText"
 import Autoplay from "embla-carousel-autoplay"
 import { Card, CardContent } from "@/components/ui/card"
 import {
@@ -58,12 +59,14 @@ export function FeaturedProductsCarousel() {
     return (
         <section className="py-20 bg-gradient-to-br from-[#fdfbf7] via-[#f4f1f9] to-[#efeaf6]">
             <div className="max-w-7xl mx-auto px-4">
-                <h2 className="text-3xl md:text-4xl font-serif font-bold text-center text-[#2b0f54] mb-4">
-                    Coleção em Destaque
-                </h2>
-                <p className="text-center text-[#5a4b66] mb-12 max-w-2xl mx-auto">
-                    Descubra os produtos mais amados pelos profissionais de estética.
-                </p>
+                <CMSText
+                    path="home.featured.title"
+                    className="text-3xl md:text-4xl font-serif font-bold text-center text-[#2b0f54] mb-4"
+                />
+                <CMSText
+                    path="home.featured.subtitle"
+                    className="text-center text-[#5a4b66] mb-12 max-w-2xl mx-auto block"
+                />
 
                 <Carousel
                     plugins={plugins}

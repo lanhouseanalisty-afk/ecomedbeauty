@@ -1,6 +1,6 @@
 import { useParams, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { Minus, Plus, ShoppingCart, Truck, Shield, RotateCcw, Heart, Loader2 } from "lucide-react";
+import { Minus, Plus, ShoppingCart, Truck, Shield, RotateCcw, Heart, Loader2, Microscope, Beaker, ArrowRight } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useProduct, useProducts } from "@/hooks/useProducts";
 import { useCart } from "@/contexts/CartContext";

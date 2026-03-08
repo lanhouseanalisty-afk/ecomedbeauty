@@ -1,46 +1,113 @@
 import { useState, useRef, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { BarChart3, ExternalLink, AlertTriangle, Maximize2, Minimize2, LayoutPanelLeft, Play, Pause } from "lucide-react";
+import { BarChart3, ExternalLink, AlertTriangle, Maximize2, Minimize2, LayoutPanelLeft, Play, Pause, Settings2, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
 
 export default function PowerBIPage() {
     const [isFocusMode, setIsFocusMode] = useState(false);
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentPageIndex, setCurrentPageIndex] = useState(0);
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [slideshowSettings, setSlideshowSettings] = useState(() => {
+        const saved = localStorage.getItem("powerbi_slideshow_settings");
+        if (saved) {
+            try {
+                return JSON.parse(saved);
+            } catch (e) {
+                console.error("Error parsing saved settings", e);
+            }
+        }
+        return {
+            interval: 15,
+            urls: [
+                "https://app.powerbi.com/groups/me/apps/3ed42947-b2f1-45ec-8092-5906b498ebd1/reports/4f2054f0-9a9d-44df-9145-6c0f4136b7fb/9b0546b182b88a740e60?ctid=f558b0e4-c400-4992-b98a-3e1cecae578d",
+                "https://app.powerbi.com/groups/me/apps/3ed42947-b2f1-45ec-8092-5906b498ebd1/reports/4f2054f0-9a9d-44df-9145-6c0f4136b7fb/6c871c04786c2830a930?ctid=f558b0e4-c400-4992-b98a-3e1cecae578d",
+                "https://app.powerbi.com/groups/me/apps/3ed42947-b2f1-45ec-8092-5906b498ebd1/reports/4f2054f0-9a9d-44df-9145-6c0f4136b7fb/d7f2da378ade2279c0d5?ctid=f558b0e4-c400-4992-b98a-3e1cecae578d",
+                "https://app.powerbi.com/groups/me/apps/3ed42947-b2f1-45ec-8092-5906b498ebd1/reports/4f2054f0-9a9d-44df-9145-6c0f4136b7fb/ffa6cd9a90273b0e2755?ctid=f558b0e4-c400-4992-b98a-3e1cecae578d"
+            ]
+        };
+    });
+
+    const [tempInterval, setTempInterval] = useState(slideshowSettings.interval.toString());
+    const [tempUrls, setTempUrls] = useState(slideshowSettings.urls.join("\n"));
+
+    const formatEmbedUrl = (url: string) => {
+        const trimmedUrl = url.trim();
+        if (!trimmedUrl) return "";
+        if (trimmedUrl.includes("reportEmbed")) return trimmedUrl;
+
+        try {
+            // Check if it's a valid URL first
+            const urlObj = new URL(trimmedUrl);
+            const pathParts = urlObj.pathname.split("/");
+            const reportIdIndex = pathParts.indexOf("reports") + 1;
+
+            if (reportIdIndex > 0 && reportIdIndex < pathParts.length) {
+                const reportId = pathParts[reportIdIndex];
+                // The pageName might be the next part, but it could also be part of the query string or not present
+                let pageName = pathParts[reportIdIndex + 1];
+                if (pageName && pageName.includes("?")) { // If it contains a query string, it's not just the page name
+                    pageName = pageName.split("?")[0];
+                } else if (pageName && pageName.length > 0 && !pageName.includes("?")) {
+                    // This is likely the page ID
+                } else {
+                    pageName = null; // No explicit page name in path
+                }
+
+                const ctid = urlObj.searchParams.get("ctid");
+
+                if (reportId && ctid) {
+                    let embed = `https://app.powerbi.com/reportEmbed?reportId=${reportId}&ctid=${ctid}&autoAuth=true&filterPaneEnabled=false&navContentPaneEnabled=false`;
+                    if (pageName) {
+                        embed += `&pageName=${pageName}`;
+                    }
+                    return embed;
+                }
+            }
+        } catch (e) {
+            console.warn("Could not parse Power BI URL for embedding, using original:", trimmedUrl);
+        }
+        return trimmedUrl;
+    };
+
     const containerRef = useRef<HTMLDivElement>(null);
 
-    // List of typical report section IDs. 
-    // Note: These need to match the actual report structure to work correctly.
-    // Lista de IDs das abas (clique em cada aba no Power BI e pegue o código no fim da URL)
-    const reportPages = [
-        "9b0546b182b88a740e60", // RANKING (Confirmado)
-        "6c871c04786c2830a930", // FATURAMENTO (Confirmado)
-        "d7f2da378ade2279c0d5", // POSITIVAÇÃO (Confirmado)
-        "ffa6cd9a90273b0e2755"  // TKT. MÉDIO (Confirmado)
-    ];
+    const handleSaveSettings = () => {
+        const urls = tempUrls.split("\n").map(u => u.trim()).filter(u => u !== "");
+        const interval = parseInt(tempInterval) || 15;
 
-    const originalUrl = "https://app.powerbi.com/groups/me/apps/3ed42947-b2f1-45ec-8092-5906b498ebd1/reports/4f2054f0-9a9d-44df-9145-6c0f4136b7fb/9b0546b182b88a740e60?ctid=f558b0e4-c400-4992-b98a-3e1cecae578d&experience=power-bi";
+        const newSettings = { interval, urls };
+        setSlideshowSettings(newSettings);
+        localStorage.setItem("powerbi_slideshow_settings", JSON.stringify(newSettings));
+        setIsSettingsOpen(false);
+        setCurrentPageIndex(0); // Reset to first page after settings change
+        toast.success("Configurações salvas com sucesso!");
+    };
 
-    // Power BI reports require specific "reportEmbed" URL to work inside iframes
-    // filterPaneEnabled=false hides the side filters, navContentPaneEnabled=false hides the bottom tabs
-    // pageName is appended to cycle through different tabs
-    const baseUrl = "https://app.powerbi.com/reportEmbed?reportId=4f2054f0-9a9d-44df-9145-6c0f4136b7fb&ctid=f558b0e4-c400-4992-b98a-3e1cecae578d&autoAuth=true&filterPaneEnabled=false&navContentPaneEnabled=false";
-    const embedUrl = `${baseUrl}&pageName=${reportPages[currentPageIndex]}`;
+    const embedUrls = slideshowSettings.urls.map(formatEmbedUrl).filter(u => u !== "");
+    const currentEmbedUrl = embedUrls[currentPageIndex] || "";
+
+    const originalUrl = slideshowSettings.urls[0] || "https://app.powerbi.com";
 
     useEffect(() => {
-        let interval: NodeJS.Timeout;
+        let intervalId: NodeJS.Timeout;
 
-        if (isPlaying) {
-            interval = setInterval(() => {
-                setCurrentPageIndex((prev) => (prev + 1) % reportPages.length);
-            }, 15000); // 15 seconds
+        if (isPlaying && embedUrls.length > 1) {
+            intervalId = setInterval(() => {
+                setCurrentPageIndex((prev) => (prev + 1) % embedUrls.length);
+            }, slideshowSettings.interval * 1000); // Use interval from settings
         }
 
         return () => {
-            if (interval) clearInterval(interval);
+            if (intervalId) clearInterval(intervalId);
         };
-    }, [isPlaying, reportPages.length]);
+    }, [isPlaying, embedUrls.length, slideshowSettings.interval]); // Depend on slideshowSettings.interval
 
     const toggleFullscreen = () => {
         if (!containerRef.current) return;
@@ -104,14 +171,69 @@ export default function PowerBIPage() {
                         </Button>
 
                         <Button
-                            variant="default"
+                            variant="secondary"
                             size="sm"
                             className="gap-2 shadow-sm"
                             onClick={toggleFullscreen}
                         >
                             <LayoutPanelLeft className="h-4 w-4" />
-                            Tela Cheia
+                            <span className="hidden sm:inline">Tela Cheia</span>
                         </Button>
+
+                        <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+                            <DialogTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="gap-2 shadow-sm border-primary/20"
+                                >
+                                    <Settings2 className="h-4 w-4" />
+                                    <span className="hidden sm:inline">Configurações</span>
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent className="sm:max-w-[500px]">
+                                <DialogHeader>
+                                    <DialogTitle className="flex items-center gap-2">
+                                        <Settings2 className="h-5 w-5 text-primary" />
+                                        Configurações do Slideshow
+                                    </DialogTitle>
+                                </DialogHeader>
+                                <div className="grid gap-4 py-4">
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="interval">Tempo de Transição (segundos)</Label>
+                                        <Input
+                                            id="interval"
+                                            type="number"
+                                            value={tempInterval}
+                                            onChange={(e) => setTempInterval(e.target.value)}
+                                            min="5"
+                                        />
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="urls">URLs do Power BI (uma por linha)</Label>
+                                        <Textarea
+                                            id="urls"
+                                            value={tempUrls}
+                                            onChange={(e) => setTempUrls(e.target.value)}
+                                            placeholder="Cole aqui as URLs do navegador..."
+                                            className="min-h-[200px] text-xs font-mono"
+                                        />
+                                        <p className="text-[10px] text-muted-foreground">
+                                            Dica: Você pode copiar a URL direto do navegador ao visualizar o relatório.
+                                        </p>
+                                    </div>
+                                </div>
+                                <DialogFooter>
+                                    <Button variant="outline" onClick={() => setIsSettingsOpen(false)}>
+                                        Cancelar
+                                    </Button>
+                                    <Button onClick={handleSaveSettings} className="gap-2">
+                                        <Save className="h-4 w-4" />
+                                        Salvar Alterações
+                                    </Button>
+                                </DialogFooter>
+                            </DialogContent>
+                        </Dialog>
 
                         <div className="bg-white p-2 rounded-lg border shadow-sm flex items-center gap-2 text-sm text-muted-foreground ml-2">
                             <BarChart3 className="h-4 w-4 text-primary" />
@@ -135,7 +257,7 @@ export default function PowerBIPage() {
                     </div>
                     {isPlaying && (
                         <div className="text-[10px] text-amber-700 bg-amber-100/50 p-2 rounded border border-amber-200 mt-1">
-                            <strong>Dica para o Slideshow:</strong> Se as páginas não estiverem mudando, verifique se os IDs das abas (ex: ReportSection1) estão corretos no código.
+                            <strong>Slideshow Ativo:</strong> Alternando entre {embedUrls.length} páginas a cada {slideshowSettings.interval} segundos.
                         </div>
                     )}
                 </div>
@@ -192,7 +314,7 @@ export default function PowerBIPage() {
                         <iframe
                             title="Power BI Report"
                             className="w-full h-full border-0"
-                            src={embedUrl}
+                            src={currentEmbedUrl}
                             allowFullScreen={true}
                             allow="fullscreen"
                         />

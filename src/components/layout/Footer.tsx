@@ -1,7 +1,18 @@
 import { Link } from "react-router-dom";
 import { Mail, Phone, MapPin, Instagram, Facebook, Linkedin, Youtube, ArrowRight } from "lucide-react";
+import { useCMS } from "@/contexts/CMSContext";
+import { CMSText } from "@/components/cms/CMSText";
 
 export function Footer() {
+  const { isEditing } = useCMS();
+
+  const handleLinkClick = (e: React.MouseEvent) => {
+    if (isEditing) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  };
+
   return (
     <footer className="bg-[#2b0f54] text-white pt-16 pb-8 relative overflow-hidden">
       {/* Background Pattern/Overlay */}
@@ -14,16 +25,16 @@ export function Footer() {
           <div className="space-y-6">
             <div className="mb-6">
               {/* Recreating logo in white for footer */}
-              <Link to="/" className="group cursor-pointer flex items-center">
+              <Link to="/" onClick={handleLinkClick} className="group cursor-pointer flex items-center">
                 <span className="font-sans text-3xl font-medium tracking-wide text-white uppercase flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#ECB546] self-baseline mt-2"></span>
-                  MEDBEAUTY
+                  <CMSText path="brand.name" />
                   <span className="w-1.5 h-1.5 rounded-full bg-[#ECB546] self-start mb-2"></span>
                 </span>
               </Link>
             </div>
             <p className="text-gray-300 leading-relaxed text-sm">
-              A Medbeauty é especializada em soluções estéticas de alta performance, desenvolvidas com tecnologia e foco em resultados naturais e seguros.
+              <CMSText path="brand.description" multiline />
             </p>
             <div className="flex gap-4 pt-2">
               {[
@@ -38,6 +49,7 @@ export function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="bg-white/10 hover:bg-[#ECB546] hover:text-[#2b0f54] p-2 rounded-full transition-all duration-300"
+                  onClick={handleLinkClick} // Apply to external links as well for consistency in editing mode
                 >
                   <social.icon className="h-5 w-5" />
                 </a>
@@ -56,7 +68,7 @@ export function Footer() {
                 { label: "Área do Aluno", path: "/area-do-aluno" },
               ].map((item, idx) => (
                 <li key={idx}>
-                  <Link to={item.path} className="text-gray-300 hover:text-[#ECB546] transition-colors flex items-center gap-2 group">
+                  <Link to={item.path} onClick={handleLinkClick} className="text-gray-300 hover:text-[#ECB546] transition-colors flex items-center gap-2 group">
                     <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity text-[#ECB546]" />
                     {item.label}
                   </Link>

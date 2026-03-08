@@ -7,7 +7,9 @@ import {
     Search,
     History,
     FileSpreadsheet,
-    AlertTriangle
+    AlertTriangle,
+    Upload,
+    Loader2
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -68,6 +70,7 @@ export default function AdminBonusPage() {
     const [newItemStock, setNewItemStock] = useState("0");
     const [newItemImage, setNewItemImage] = useState("");
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
 
     // Fetch Items
     const { data: items, isLoading } = useQuery({
@@ -109,7 +112,10 @@ export default function AdminBonusPage() {
                 image_url: newItemImage || null,
                 active: true
             });
-            if (error) throw error;
+            if (error) {
+                console.error("Supabase insert error:", error);
+                throw error;
+            }
         },
         onSuccess: () => {
             toast.success("Item criado com sucesso!");
@@ -120,7 +126,10 @@ export default function AdminBonusPage() {
             setNewItemStock("0");
             setNewItemImage("");
         },
-        onError: () => toast.error("Erro ao criar item.")
+        onError: (error: any) => {
+            console.error("Mutation error:", error);
+            toast.error("Erro ao criar item. Verifique o console.");
+        }
     });
 
     // Update Stock / Toggle Active
@@ -142,6 +151,40 @@ export default function AdminBonusPage() {
         },
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['bonus_items_admin'] })
     });
+
+    const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        try {
+            if (!event.target.files || event.target.files.length === 0) {
+                return;
+            }
+            const file = event.target.files[0];
+            setIsUploading(true);
+
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Math.random()}-${Date.now()}.${fileExt}`;
+            const filePath = `bonus-items/${fileName}`;
+
+            const { error: uploadError, data } = await supabase.storage
+                .from('images') // Assumindo o bucket padrão 'images'
+                .upload(filePath, file);
+
+            if (uploadError) {
+                throw uploadError;
+            }
+
+            const { data: { publicUrl } } = supabase.storage
+                .from('images')
+                .getPublicUrl(filePath);
+
+            setNewItemImage(publicUrl);
+            toast.success("Imagem carregada com sucesso!");
+        } catch (error: any) {
+            console.error("Error uploading image:", error);
+            toast.error("Erro ao carregar a imagem: " + error.message);
+        } finally {
+            setIsUploading(false);
+        }
+    };
 
     const exportToExcel = () => {
         if (!items) return;
@@ -195,8 +238,25 @@ export default function AdminBonusPage() {
                                     <Input id="desc" value={newItemDesc} onChange={(e) => setNewItemDesc(e.target.value)} placeholder="Breve descrição" />
                                 </div>
                                 <div className="grid gap-2">
-                                    <Label htmlFor="image">URL da Imagem</Label>
-                                    <Input id="image" value={newItemImage} onChange={(e) => setNewItemImage(e.target.value)} placeholder="https://..." />
+                                    <Label htmlFor="image">Imagem do Item</Label>
+                                    <div className="flex items-center gap-4">
+                                        <div className="relative flex-1">
+                                            <Input
+                                                id="image"
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={handleImageUpload}
+                                                disabled={isUploading}
+                                                className="cursor-pointer"
+                                            />
+                                        </div>
+                                        {isUploading && <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />}
+                                    </div>
+                                    {newItemImage && (
+                                        <div className="mt-2 text-sm text-green-600 font-medium">
+                                            ✓ Imagem pronta para salvar
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="grid gap-2">
                                     <Label htmlFor="stock">Estoque Inicial</Label>

@@ -210,6 +210,14 @@ const PERMISSION_GROUPS: PermissionGroup[] = [
         ]
     },
     {
+        id: 'limpeza',
+        label: 'Limpeza & Copa',
+        mainPermission: 'manage_limpeza',
+        subPermissions: [
+            { value: 'limpeza_intersector', label: 'Solicitações entre Setores' }
+        ]
+    },
+    {
         id: 'manutencao',
         label: 'Gerenciar Manutenção',
         mainPermission: 'manage_maintenance',
@@ -538,6 +546,56 @@ export default function UsersAdminPage() {
         }
     };
 
+    const handleDisableAccess = async () => {
+        if (!selectedEmployee || !selectedEmployee.user_id) return;
+
+        // This confirms with the admin
+        if (!confirm(`Tem certeza que deseja revogar o acesso de ${selectedEmployee.name}? O usuário não poderá acessar o sistema.`)) return;
+
+        setSaving(true);
+        try {
+            // Remove user roles
+            const { error: rolesErr } = await supabase
+                .from('user_roles')
+                .delete()
+                .eq('user_id', selectedEmployee.user_id);
+
+            if (rolesErr) throw rolesErr;
+
+            // Remove user from auth (delete the user identity)
+            await supabase.functions.invoke('admin-delete-user', {
+                body: { userId: selectedEmployee.user_id }
+            });
+
+            // Make the employee a "no-account" employee again
+            const { error: updateErr } = await supabase
+                .from('employees')
+                .update({ user_id: null })
+                .eq('id', selectedEmployee.id);
+
+            if (updateErr) throw updateErr;
+
+            toast.success(`Acesso revogado para ${selectedEmployee.name}.`);
+
+            // Update local state
+            const updatedEmployee = { ...selectedEmployee, user_id: null };
+            setSelectedEmployee(updatedEmployee);
+            setEmployees(prev => prev.map(emp =>
+                emp.id === selectedEmployee.id ? updatedEmployee : emp
+            ));
+
+            // Clean up old roles
+            userRoles.delete(selectedEmployee.user_id);
+            setUserRoles(new Map(userRoles));
+
+        } catch (error: any) {
+            console.error('[UsersAdminPage] handleDisableAccess full error:', error);
+            toast.error(`Erro ao revogar acesso: ${error.message}`);
+        } finally {
+            setSaving(false);
+        }
+    };
+
     const handleDeleteUser = async () => {
         if (!employeeToDelete) return;
         setDeleting(true);
@@ -605,7 +663,7 @@ export default function UsersAdminPage() {
     };
 
     return (
-        <div className="space-y-6 animate-in fade-in duration-500">
+        <div className="space-y-6 animate-in fade-in duration-500 notranslate" translate="no">
             <div className="flex items-center gap-3">
                 <div className="p-3 bg-rose-gold/10 rounded-lg">
                     <UserCog className="w-8 h-8 text-rose-gold" />
@@ -833,6 +891,23 @@ export default function UsersAdminPage() {
                                 </div>
                                 <span className={saving ? 'ml-6' : ''}>Ativar Acesso Agora</span>
                             </Button>
+                        </div>
+
+                        {/* Section to Revoke Access */}
+                        <div className="p-4 bg-red-50 border border-red-200 rounded-lg" style={{ display: selectedEmployee?.user_id ? 'block' : 'none' }}>
+                            <p className="text-sm text-red-800 font-bold mb-2">Acesso Ativo</p>
+                            <Button
+                                className="w-full relative flex items-center justify-center bg-red-100 text-red-700 hover:bg-red-200"
+                                variant="outline"
+                                onClick={handleDisableAccess}
+                                disabled={saving}
+                            >
+                                <div className={`absolute left-4 transition-opacity ${saving ? 'opacity-100' : 'opacity-0'}`}>
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                </div>
+                                <span className={saving ? 'ml-6' : ''}>Revogar Acesso ao Sistema</span>
+                            </Button>
+                            <p className="text-[11px] text-red-600/80 mt-2 leading-tight">Revogar o acesso remove as permissões de login, mas mantém o cadastro do colaborador na base de dados.</p>
                         </div>
                     </div>
 

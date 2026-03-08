@@ -17,7 +17,9 @@ import {
     Clock,
     Trash,
     ClipboardCheck,
-    Users as UsersIcon
+    Users as UsersIcon,
+    Trophy,
+    Medal
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -30,6 +32,7 @@ import { Separator } from "@/components/ui/separator";
 import { useEmployeeProfile } from "@/hooks/useEmployeeProfile";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserGamification, useUserBadges } from "@/hooks/useGamification";
 import { getInitials } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -43,6 +46,8 @@ export default function EmployeeProfilePage() {
     // Note: in valid app usage, id should be present.
     const { employee, assets, posts, leaves, visits, isLoading, createPost, deletePost, toggleLike, addComment, recordVisit } = useEmployeeProfile(id || "");
     const { user, roles } = useAuth();
+    const { data: gamificationStats } = useUserGamification(id || employee?.user_id);
+    const { data: badges } = useUserBadges(id || employee?.user_id);
     const [newPostContent, setNewPostContent] = useState("");
     const [pendingAdmission, setPendingAdmission] = useState<any>(null);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -272,6 +277,66 @@ export default function EmployeeProfilePage() {
                         </CardContent>
                     </Card>
 
+                    {/* Gamification Card */}
+                    <Card className="border-none shadow-xl bg-gradient-to-br from-[#8347EB]/90 to-purple-600 text-white overflow-hidden hover:shadow-2xl transition-all duration-500 relative group">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 blur-[40px] -z-10" />
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-lg flex items-center justify-between">
+                                <span>Gamônia</span>
+                                <Trophy className="h-5 w-5 text-amber-300" />
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="flex items-center gap-4">
+                                <div className="w-16 h-16 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20">
+                                    <span className="text-3xl font-black">{gamificationStats?.level || 1}</span>
+                                </div>
+                                <div className="flex-1">
+                                    <p className="text-xs font-bold uppercase tracking-wider text-white/70">Nível Atual</p>
+                                    <p className="text-sm font-medium">{gamificationStats?.xp?.toLocaleString() || 0} XP Total</p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <div className="flex justify-between text-[10px] font-bold uppercase text-white/70">
+                                    <span>Progresso do Nível</span>
+                                    <span>{Math.floor(((gamificationStats?.xp || 0) / (Math.pow(gamificationStats?.level || 1, 2) * 100 + 500)) * 100)}%</span>
+                                </div>
+                                <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden border border-white/5">
+                                    <div
+                                        className="h-full bg-white shadow-[0_0_10px_rgba(255,255,255,0.5)]"
+                                        style={{ width: `${Math.min(((gamificationStats?.xp || 0) / (Math.pow(gamificationStats?.level || 1, 2) * 100 + 500)) * 100, 100)}%` }}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="pt-2">
+                                <p className="text-xs font-bold uppercase tracking-wider text-white/70 mb-3">Últimas Medalhas</p>
+                                <div className="flex gap-2">
+                                    {badges && badges.length > 0 ? (
+                                        badges.slice(0, 4).map((badge, idx) => (
+                                            <TooltipProvider key={idx}>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center hover:scale-110 transition-transform cursor-help">
+                                                            <Medal className="h-5 w-5 text-amber-300" />
+                                                        </div>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p className="text-xs font-bold">{badge.badge?.name}</p>
+                                                        <p className="text-[10px]">{badge.badge?.description}</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
+                                        ))
+                                    ) : (
+                                        <p className="text-[10px] italic text-white/50">Nenhuma medalha ainda.</p>
+                                    )}
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
                     <Card className="border-none shadow-xl bg-white/80 backdrop-blur-md overflow-hidden hover:shadow-2xl transition-all duration-500">
                         <CardHeader className="bg-gradient-to-br from-primary/5 to-transparent border-b border-primary/10">
                             <CardTitle className="text-lg flex items-center justify-between">
@@ -297,81 +362,83 @@ export default function EmployeeProfilePage() {
                             )}
                         </CardContent>
                     </Card>
-                </div>
+                </div >
 
                 {/* Main Feed */}
-                <div className="lg:col-span-8 space-y-6">
+                < div className="lg:col-span-8 space-y-6" >
 
                     {/* Create Post - Only for owner */}
-                    {isOwner && (
-                        <Card>
-                            <CardContent className="p-4 space-y-4">
-                                <div className="flex gap-4">
-                                    <Avatar>
-                                        <AvatarFallback>{getInitials("Eu")}</AvatarFallback>
-                                    </Avatar>
-                                    <div className="flex-1 space-y-3">
-                                        <Textarea
-                                            placeholder={`Escreva algo no seu perfil...`}
-                                            className="resize-none min-h-[80px]"
-                                            value={newPostContent}
-                                            onChange={e => setNewPostContent(e.target.value)}
-                                        />
+                    {
+                        isOwner && (
+                            <Card>
+                                <CardContent className="p-4 space-y-4">
+                                    <div className="flex gap-4">
+                                        <Avatar>
+                                            <AvatarFallback>{getInitials("Eu")}</AvatarFallback>
+                                        </Avatar>
+                                        <div className="flex-1 space-y-3">
+                                            <Textarea
+                                                placeholder={`Escreva algo no seu perfil...`}
+                                                className="resize-none min-h-[80px]"
+                                                value={newPostContent}
+                                                onChange={e => setNewPostContent(e.target.value)}
+                                            />
 
-                                        {imagePreview && (
-                                            <div className="relative w-full max-h-[300px] overflow-hidden rounded-lg border">
-                                                <img src={imagePreview} className="w-full h-full object-cover" alt="Preview" />
-                                                <Button
-                                                    variant="destructive"
-                                                    size="icon"
-                                                    className="absolute top-2 right-2 h-7 w-7 rounded-full shadow-lg"
-                                                    onClick={() => {
-                                                        setSelectedFile(null);
-                                                        setImagePreview(null);
-                                                    }}
-                                                >
-                                                    <Trash className="h-4 w-4" />
-                                                </Button>
-                                            </div>
-                                        )}
+                                            {imagePreview && (
+                                                <div className="relative w-full max-h-[300px] overflow-hidden rounded-lg border">
+                                                    <img src={imagePreview} className="w-full h-full object-cover" alt="Preview" />
+                                                    <Button
+                                                        variant="destructive"
+                                                        size="icon"
+                                                        className="absolute top-2 right-2 h-7 w-7 rounded-full shadow-lg"
+                                                        onClick={() => {
+                                                            setSelectedFile(null);
+                                                            setImagePreview(null);
+                                                        }}
+                                                    >
+                                                        <Trash className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <div className="flex gap-2">
-                                        <input
-                                            type="file"
-                                            id="post-media"
-                                            className="hidden"
-                                            accept="image/*,video/*"
-                                            onChange={handleFileSelect}
-                                        />
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            className="text-muted-foreground hover:text-primary hover:bg-primary/5"
-                                            onClick={() => document.getElementById('post-media')?.click()}
-                                        >
-                                            <Camera className="h-4 w-4 mr-2" />
-                                            Foto/Vídeo
+                                    <div className="flex justify-between items-center">
+                                        <div className="flex gap-2">
+                                            <input
+                                                type="file"
+                                                id="post-media"
+                                                className="hidden"
+                                                accept="image/*,video/*"
+                                                onChange={handleFileSelect}
+                                            />
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="text-muted-foreground hover:text-primary hover:bg-primary/5"
+                                                onClick={() => document.getElementById('post-media')?.click()}
+                                            >
+                                                <Camera className="h-4 w-4 mr-2" />
+                                                Foto/Vídeo
+                                            </Button>
+                                        </div>
+                                        <Button size="sm" onClick={handlePostSubmit} disabled={createPost.isPending || isUploading || (!newPostContent.trim() && !selectedFile)}>
+                                            {isUploading ? (
+                                                <div className="flex items-center gap-2">
+                                                    <Clock className="h-4 w-4 animate-spin" />
+                                                    Carregando...
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <Send className="h-4 w-4 mr-2" />
+                                                    Publicar
+                                                </>
+                                            )}
                                         </Button>
                                     </div>
-                                    <Button size="sm" onClick={handlePostSubmit} disabled={createPost.isPending || isUploading || (!newPostContent.trim() && !selectedFile)}>
-                                        {isUploading ? (
-                                            <div className="flex items-center gap-2">
-                                                <Clock className="h-4 w-4 animate-spin" />
-                                                Carregando...
-                                            </div>
-                                        ) : (
-                                            <>
-                                                <Send className="h-4 w-4 mr-2" />
-                                                Publicar
-                                            </>
-                                        )}
-                                    </Button>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    )}
+                                </CardContent>
+                            </Card>
+                        )
+                    }
 
                     <Tabs defaultValue="feed">
                         <TabsList className="w-full justify-start">
@@ -636,9 +703,9 @@ export default function EmployeeProfilePage() {
                             </div>
                         </TabsContent>
                     </Tabs>
-                </div>
+                </div >
 
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }

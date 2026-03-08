@@ -26,7 +26,9 @@ import {
   Calculator,
   Lightbulb,
   BarChart3,
-  Trophy
+  Trophy,
+  Coffee,
+  CalendarDays
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { NavLink, useLocation } from "react-router-dom";
@@ -175,9 +177,9 @@ const menuSections: MenuSection[] = [
           { title: "Contratos", url: "/crm/admin/contratos", permission: "admin_contracts" },
           { title: "Controle de NFE", url: "/crm/admin/nfe", permission: "admin_nfe" },
           { title: "Controle de Processos", url: "/crm/admin/processos", permission: "admin_processes" },
+          { title: "Gamificação", url: "/crm/admin/gamificacao", permission: "admin_gamification" },
           { title: "Integração SAP", url: "/crm/integracoes/sap", permission: "sap_monitor" },
           { title: "Permissões", url: "/crm/admin/permissoes", permission: "admin_permissions" },
-          { title: "Precificação", url: "/crm/admin/precificacao", permission: "admin_pricing" },
           { title: "Solicitação de Insumos", url: "/crm/admin/insumos", permission: "admin_supplies" },
           { title: "Solicitações entre Setores", url: "/crm/admin/solicitacoes-setores", permission: "admin_intersector" },
           { title: "Usuários", url: "/crm/admin/usuarios", permission: "admin_users" },
@@ -312,13 +314,11 @@ const menuSections: MenuSection[] = [
           { title: "Bonificações", url: "/crm/ecommerce/bonificacoes", permission: "ecommerce_bonuses" },
           { title: "Categorias", url: "/crm/ecommerce/categorias", permission: "ecommerce_products" },
           { title: "Clientes", url: "/crm/ecommerce/clientes", permission: "ecommerce_customers" },
-          { title: "CMS", url: "/crm/ecommerce/cms", permission: "ecommerce_cms" },
           { title: "Contratos", url: "/crm/ecommerce/contratos", permission: "ecommerce_contracts" },
           { title: "Controle de NFE", url: "/crm/ecommerce/nfe", permission: "ecommerce_nfe" },
           { title: "Controle de Processos", url: "/crm/ecommerce/processos", permission: "ecommerce_processes" },
           { title: "Cupons", url: "/crm/ecommerce/cupons", permission: "ecommerce_coupons" },
           { title: "Pedidos", url: "/crm/ecommerce/pedidos", permission: "ecommerce_orders" },
-          { title: "Precificação", url: "/crm/ecommerce/precificacao", permission: "ecommerce_pricing" },
           { title: "Produtos", url: "/crm/ecommerce/produtos", permission: "ecommerce_products" },
           { title: "Solicitação de Insumos", url: "/crm/ecommerce/insumos", permission: "ecommerce_supplies" },
           { title: "Solicitações entre Setores", url: "/crm/ecommerce/solicitacoes-setores", permission: "ecommerce_intersector" },
@@ -335,7 +335,6 @@ const menuSections: MenuSection[] = [
           { title: "Contratos", url: "/crm/financeiro/contratos", permission: "finance_contracts" },
           { title: "Controle de NFE", url: "/crm/financeiro/nfe", permission: "finance_nfe" },
           { title: "Controle de Processos", url: "/crm/financeiro/processos", permission: "finance_processes" },
-          { title: "Precificação", url: "/crm/financeiro/precificacao", permission: "finance_pricing" },
           { title: "Solicitação de Insumos", url: "/crm/financeiro/insumos", permission: "finance_supplies" },
           { title: "Solicitações entre Setores", url: "/crm/financeiro/solicitacoes-setores", permission: "finance_intersector" },
         ],
@@ -412,6 +411,7 @@ const menuSections: MenuSection[] = [
         module: "rh",
         subitems: [
           { title: "Dashboard", url: "/crm/rh" },
+          { title: "Agenda (Limpeza)", url: "/crm/rh/agenda-limpeza", permission: "hr_employees" },
           { title: "Bonificações", url: "/crm/rh/bonificacoes", permission: "rh_bonuses" },
           { title: "Contratos", url: "/crm/rh/contratos", permission: "hr_contracts" },
           { title: "Controle de NFE", url: "/crm/rh/nfe", permission: "hr_nfe" },
@@ -437,6 +437,16 @@ const menuSections: MenuSection[] = [
           { title: "Inventário de Ativos", url: "/crm/tech/inventario", permission: "tech_assets" },
           { title: "Solicitação de Insumos", url: "/crm/tech/insumos", permission: "tech_supplies" },
           { title: "Solicitações entre Setores", url: "/crm/tech/solicitacoes-setores", permission: "tech_intersector" },
+        ],
+      },
+      {
+        title: "Departamento de Limpeza & Copa",
+        icon: Coffee,
+        url: "/crm/limpeza",
+        module: "limpeza",
+        subitems: [
+          { title: "Agenda de Reuniões", url: "/crm/limpeza/agenda", permission: "manage_limpeza" },
+          { title: "Solicitações entre Setores", url: "/crm/limpeza/solicitacoes-setores", permission: "limpeza_intersector" },
         ],
       },
     ],
@@ -544,9 +554,9 @@ export function CRMSidebar() {
                               isParentActive(item) && "bg-sidebar-accent text-sidebar-accent-foreground"
                             )}
                           >
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-3 text-slate-900 dark:text-slate-100">
                               <item.icon className="h-5 w-5" />
-                              {!collapsed && <span className={cn(section.title === "sidebar.sections.departments" && "font-bold")}>{t(item.title)}</span>}
+                              {!collapsed && <span className="font-bold text-[14px]">{t(item.title)}</span>}
                             </div>
                             {!collapsed && (
                               <ChevronDown className="h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-180" />
@@ -575,7 +585,7 @@ export function CRMSidebar() {
                                                 isActive={isActive(subSubItem.url || "")}
                                                 className="h-auto whitespace-normal py-1.5"
                                               >
-                                                <NavLink to={subSubItem.url || "#"}>
+                                                <NavLink to={subSubItem.url || "#"} className="font-normal text-[13px] text-muted-foreground hover:text-foreground w-full">
                                                   {t(subSubItem.title)}
                                                 </NavLink>
                                               </SidebarMenuSubButton>
@@ -590,7 +600,7 @@ export function CRMSidebar() {
                                       isActive={isActive(subitem.url || "")}
                                       className="h-auto whitespace-normal py-1.5"
                                     >
-                                      <NavLink to={subitem.url || "#"}>
+                                      <NavLink to={subitem.url || "#"} className="font-normal text-[13px] text-muted-foreground hover:text-foreground w-full">
                                         {t(subitem.title)}
                                       </NavLink>
                                     </SidebarMenuSubButton>
@@ -606,9 +616,9 @@ export function CRMSidebar() {
                         asChild
                         isActive={isActive(item.url)}
                       >
-                        <NavLink to={item.url} className="flex items-center gap-3">
+                        <NavLink to={item.url} className="flex items-center gap-3 text-slate-900 dark:text-slate-100">
                           <item.icon className="h-5 w-5" />
-                          {!collapsed && <span className={cn(section.title === "sidebar.sections.departments" && "font-bold")}>{t(item.title)}</span>}
+                          {!collapsed && <span className="font-bold text-[14px]">{t(item.title)}</span>}
                         </NavLink>
                       </SidebarMenuButton>
                     )}

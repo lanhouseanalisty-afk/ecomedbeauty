@@ -277,7 +277,7 @@ export function NoticeBoard() {
                         <p className="text-2xl font-black text-slate-500 uppercase tracking-tighter">O mural está limpo</p>
                     </div>
                 ) : (
-                    <div className="w-full h-[700px] p-8">
+                    <div className="w-full h-[850px] p-8">
                         <AnimatePresence>
                             {notices.map((notice) => {
                                 const pos = itemPositions[notice.id] || { x: 0, y: 0, rotate: 0 };

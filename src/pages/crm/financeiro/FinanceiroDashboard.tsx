@@ -17,7 +17,8 @@ import {
   Download,
   FileText,
   ShieldAlert,
-  UserPlus
+  UserPlus,
+  Coffee
 } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,6 +34,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { LimpezaRequestDialog } from "@/components/crm/limpeza/LimpezaRequestDialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -206,6 +208,8 @@ export default function FinanceiroDashboard() {
             <UserPlus className="h-4 w-4" />
             Admissão & Demissão
           </Button>
+
+          <LimpezaRequestDialog />
 
           <DataExport data={filteredInvoices} filename="faturas" columns={exportColumns} />
 
