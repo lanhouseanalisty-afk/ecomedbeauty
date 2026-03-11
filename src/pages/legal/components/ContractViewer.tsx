@@ -133,7 +133,8 @@ export default function ContractViewer() {
     const isLegalView = (
         location.pathname.includes('/juridico') ||
         location.pathname.includes('/legal/') ||
-        location.pathname.includes('/crm/contrato')
+        location.pathname.includes('/crm/contrato') ||
+        (location.pathname.includes('/contrato/') && isLegal)
     ) && isLegal;
 
     // Helper to render the Overview Dashboard (IA, Info, etc.)

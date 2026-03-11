@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Users,
   Plus,
@@ -69,6 +70,7 @@ import { LeadDetailsDialog } from "@/components/crm/comercial/LeadDetailsDialog"
 import { cn } from "@/lib/utils";
 
 export default function ComercialDashboard() {
+  const navigate = useNavigate();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSearchDialogOpen, setIsSearchDialogOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<any>(null);
@@ -399,7 +401,7 @@ export default function ComercialDashboard() {
                 <CardContent className="px-0 space-y-4">
                   <div className="grid gap-4 md:grid-cols-2">
                     <Button
-                      onClick={() => window.location.href = "/crm/juridico/contratos/novo?sector=comercial"}
+                      onClick={() => navigate("/crm/intranet/contratos/novo?sector=comercial")}
                       className="h-24 flex flex-col gap-2 bg-primary/5 hover:bg-primary/10 border-primary/20 text-primary"
                       variant="outline"
                     >

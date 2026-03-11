@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Package,
   Truck,
@@ -49,6 +50,7 @@ import { EmptyState } from "@/components/crm/shared/EmptyState";
 
 
 export default function LogisticaDashboard() {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("all");
   const { shipments, isLoading, updateShipment } = useShipments();
@@ -203,7 +205,7 @@ export default function LogisticaDashboard() {
             <CardContent className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
                 <Button
-                  onClick={() => window.location.href = "/crm/juridico/contratos/novo?sector=logistica"}
+                  onClick={() => navigate("/crm/intranet/contratos/novo?sector=logistica")}
                   className="h-24 flex flex-col gap-2 bg-primary/5 hover:bg-primary/10 border-primary/20 text-primary"
                   variant="outline"
                 >

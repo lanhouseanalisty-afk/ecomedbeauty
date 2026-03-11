@@ -399,7 +399,7 @@ const menuSections: MenuSection[] = [
           { title: "Contratos", url: "/crm/marketing/contratos", permission: "marketing_contracts" },
           { title: "Controle de NFE", url: "/crm/marketing/nfe", permission: "marketing_nfe" },
           { title: "Controle de Processos", url: "/crm/marketing/processos", permission: "marketing_processes" },
-          { title: "Gerenciar Solicitações", url: "/crm/marketing/gerenciar", permission: "marketing_requests" },
+          { title: "Gerador de Mídia", url: "/crm/marketing/gerador-midia" },
           { title: "Solicitação de Insumos", url: "/crm/marketing/insumos", permission: "marketing_supplies" },
           { title: "Solicitações entre Setores", url: "/crm/marketing/solicitacoes-setores", permission: "marketing_intersector" },
         ],

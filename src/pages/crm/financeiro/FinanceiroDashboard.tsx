@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   DollarSign,
   Plus,
@@ -70,6 +71,7 @@ import { toast } from "sonner";
 
 
 export default function FinanceiroDashboard() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -473,7 +475,7 @@ export default function FinanceiroDashboard() {
                   </p>
                   <div className="flex gap-4">
                     <Button
-                      onClick={() => window.location.href = "/crm/juridico/contratos/novo?sector=financeiro"}
+                      onClick={() => navigate("/crm/intranet/contratos/novo?sector=financeiro")}
                       className="gap-2"
                     >
                       <Plus className="h-4 w-4" />

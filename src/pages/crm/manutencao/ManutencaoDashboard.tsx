@@ -4,10 +4,12 @@ import { Button } from "@/components/ui/button";
 import {
     Wrench, AlertTriangle, CheckCircle, Clock, Users, TrendingUp, FileText, UserPlus, Search, Coffee
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LimpezaRequestDialog } from "@/components/crm/limpeza/LimpezaRequestDialog";
 
 export default function ManutencaoDashboard() {
+    const navigate = useNavigate();
     const stats = [
         {
             title: "Chamados Abertos",
@@ -97,7 +99,7 @@ export default function ManutencaoDashboard() {
                         <CardContent className="space-y-4">
                             <div className="grid gap-4 md:grid-cols-2">
                                 <Button
-                                    onClick={() => window.location.href = "/crm/juridico/contratos/novo?sector=manutencao"}
+                                    onClick={() => navigate(`/crm/intranet/contratos/novo?sector=manutencao`)}
                                     className="h-24 flex flex-col gap-2 bg-primary/5 hover:bg-primary/10 border-primary/20 text-primary"
                                     variant="outline"
                                 >

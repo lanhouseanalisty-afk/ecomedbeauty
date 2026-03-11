@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { ArrowLeft, FileCheck, Sparkles, Upload, FileText, AlertCircle, Check } from "lucide-react";
+import { ArrowLeft, FileCheck, Sparkles, Upload, FileText, AlertCircle, Check, UploadCloud } from "lucide-react";
 import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -316,7 +316,7 @@ export default function LegalContractCreatePage() {
                                             Selecionado
                                         </div>
                                     ) : (
-                                        <FileUp className="h-5 w-5 text-slate-400" />
+                                        <UploadCloud className="h-5 w-5 text-slate-400" />
                                     )}
                                 </div>
                             </CardContent>

@@ -53,6 +53,7 @@ const MarketingAdmissaoPage = lazy(() => import("./pages/crm/marketing/Marketing
 const MarketingCampaignsPage = lazy(() => import("./pages/crm/marketing/MarketingCampaignsPage"));
 const MarketingRequestsListPage = lazy(() => import("./pages/crm/marketing/MarketingRequestsListPage"));
 const MarketingRequestsManagementPage = lazy(() => import("@/pages/crm/marketing/MarketingRequestsManagementPage"));
+const MediaGeneratorPage = lazy(() => import("./pages/crm/marketing/MediaGeneratorPage"));
 const ComercialDashboard = lazy(() => import("./pages/crm/comercial/ComercialDashboard"));
 const ComercialAdmissaoPage = lazy(() => import("./pages/crm/comercial/ComercialAdmissaoPage"));
 const ComercialSubDepartmentPage = lazy(() => import("./pages/crm/comercial/ComercialSubDepartmentPage"));
@@ -415,6 +416,7 @@ const App = () => {
                               <Route path="marketing/campanhas" element={<ProtectedRoute requiredPermission="marketing_campaigns" requireEmployee><MarketingCampaignsPage /></ProtectedRoute>} />
                               <Route path="marketing/solicitacoes" element={<ProtectedRoute requiredPermission="marketing_requests" requireEmployee><InsumoSolicitationPage sector="marketing" sectorLabel="Marketing" /></ProtectedRoute>} />
                               <Route path="marketing/gerenciar" element={<ProtectedRoute requiredPermission="marketing_requests" requireEmployee><MarketingRequestsManagementPage /></ProtectedRoute>} />
+                              <Route path="marketing/gerador-midia" element={<MediaGeneratorPage />} />
                               <Route path="marketing/bonificacoes" element={<ProtectedRoute requiredPermission="marketing_bonuses"><BonusManagementPage sectorId="marketing" sectorName="Marketing" /></ProtectedRoute>} />
                               <Route path="marketing/contratos" element={<ProtectedRoute requiredPermission="marketing_contracts"><SectorContractDashboard sector="marketing" /></ProtectedRoute>} />
                               <Route path="marketing/contrato/:id" element={<ProtectedRoute requiredPermission="marketing_contracts"><ContractViewer /></ProtectedRoute>} />

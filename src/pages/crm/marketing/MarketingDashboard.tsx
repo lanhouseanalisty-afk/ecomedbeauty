@@ -15,7 +15,8 @@ import {
   FileText,
   Package,
   AlertCircle,
-  Coffee
+  Coffee,
+  UserPlus
 } from "lucide-react";
 import { LimpezaRequestDialog } from "@/components/crm/limpeza/LimpezaRequestDialog";
 import { useMarketingRequest } from "@/hooks/useMarketingRequest";
@@ -90,6 +91,10 @@ export default function MarketingDashboard() {
         </div>
         <div className="flex gap-2 items-center">
           <Badge variant="outline" className="h-9 px-4 text-sm hidden md:flex">Gestora: Viviane Toledo</Badge>
+          <Button onClick={() => navigate("/crm/marketing/operacoes")} variant="outline" className="gap-2 border-orange-200 hover:border-orange-300 bg-orange-50/30 text-orange-700 h-9 transition-all">
+            <UserPlus className="h-4 w-4" />
+            Admissão & Demissão
+          </Button>
           <LimpezaRequestDialog />
           <QuickStats stats={quickStats} />
         </div>
@@ -147,7 +152,7 @@ export default function MarketingDashboard() {
             <CardContent className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
                 <Button
-                  onClick={() => navigate("/crm/juridico/contratos/novo?sector=marketing")}
+                  onClick={() => navigate("/crm/intranet/contratos/novo?sector=marketing")}
                   className="h-24 flex flex-col gap-2 bg-primary/5 hover:bg-primary/10 border-primary/20 text-primary"
                   variant="outline"
                 >
