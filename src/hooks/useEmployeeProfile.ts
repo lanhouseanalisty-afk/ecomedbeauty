@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useEffect } from 'react';
+import { toast } from 'sonner';
 
 export function useEmployeeProfile(employeeId: string) {
     const queryClient = useQueryClient();
@@ -141,6 +142,25 @@ export function useEmployeeProfile(employeeId: string) {
             return data || [];
         },
         enabled: !!actualEmployeeId
+    });
+
+    const { data: tickets, isLoading: isLoadingTickets } = useQuery({
+        queryKey: ['employee-tickets', employee?.user_id],
+        queryFn: async () => {
+            if (!employee?.user_id) return [];
+            const { data, error } = await supabase
+                .from('tickets')
+                .select(`
+                    *,
+                    category:ticket_categories(name)
+                `)
+                .eq('requester_id', employee.user_id)
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            return data || [];
+        },
+        enabled: !!employee?.user_id
     });
 
     const recordVisit = useMutation({
@@ -344,7 +364,8 @@ export function useEmployeeProfile(employeeId: string) {
         posts,
         leaves,
         visits,
-        isLoading: isLoadingEmployee || isLoadingAssets || isLoadingPosts || isLoadingLeaves || isLoadingVisits,
+        tickets,
+        isLoading: isLoadingEmployee || isLoadingAssets || isLoadingPosts || isLoadingLeaves || isLoadingVisits || isLoadingTickets,
         createPost,
         deletePost,
         toggleLike,

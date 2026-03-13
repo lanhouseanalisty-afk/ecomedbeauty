@@ -80,8 +80,27 @@ export function useTickets() {
         await supabase.from('ticket_messages').insert({
           ticket_id: id,
           content: "Sistema: Seu chamado foi marcado como Resolvido pelo TI. Por favor, valide a solução. Caso não haja interação em 3 dias, o chamado será fechado automaticamente.",
-          user_id: (await supabase.auth.getUser()).data.user?.id // Send as system or current user
+          user_id: (await supabase.auth.getUser()).data.user?.id
         });
+      }
+
+      // 3. Create notification for requester if status changed to resolved or closed
+      if (status === 'resolved' || status === 'closed') {
+        const { data: ticketData } = await supabase
+          .from('tickets')
+          .select('title, requester_id, ticket_number')
+          .eq('id', id)
+          .single();
+
+        if (ticketData) {
+          await supabase.from('notifications').insert({
+            user_id: ticketData.requester_id,
+            title: `Chamado ${status === 'resolved' ? 'Resolvido' : 'Fechado'}`,
+            description: `Seu chamado #${ticketData.ticket_number || id.slice(0, 8)} - "${ticketData.title}" foi ${status === 'resolved' ? 'marcado como resolvido' : 'fechado'}.`,
+            type: 'ticket',
+            link: '/crm/tech/comunicar-ti'
+          });
+        }
       }
 
       return updated;
@@ -172,16 +191,41 @@ export function useTicketMessages(ticketId: string | null) {
 export function useSendMessage() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ ticket_id, content, user_id }: { ticket_id: string, content: string, user_id: string }) => {
+    mutationFn: async ({ ticket_id, content, user_id, is_internal }: { ticket_id: string, content: string, user_id: string, is_internal?: boolean }) => {
       const { error } = await supabase
         .from('ticket_messages')
         .insert({
           ticket_id,
           content,
-          user_id
+          user_id,
+          is_internal: !!is_internal
         });
 
       if (error) throw error;
+
+      // Create notification for the other party if not internal
+      if (!is_internal) {
+        const { data: ticket } = await supabase
+          .from('tickets')
+          .select('title, requester_id, assigned_to, ticket_number')
+          .eq('id', ticket_id)
+          .single();
+
+        if (ticket) {
+          const isRequester = user_id === ticket.requester_id;
+          const targetUserId = isRequester ? ticket.assigned_to : ticket.requester_id;
+
+          if (targetUserId && targetUserId !== user_id) {
+            await supabase.from('notifications').insert({
+              user_id: targetUserId,
+              title: "Nova mensagem no chamado",
+              description: `Nova resposta no chamado #${ticket.ticket_number || ticket_id.slice(0, 8)} - "${ticket.title}".`,
+              type: 'ticket',
+              link: isRequester ? '/crm/tech/operacoes' : '/crm/tech/comunicar-ti'
+            });
+          }
+        }
+      }
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['ticket_messages', variables.ticket_id] });

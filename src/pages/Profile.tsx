@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
-import { User, Mail, Phone, Save, Loader2, KeyRound } from "lucide-react";
+import { User, Mail, Phone, Save, Loader2, KeyRound, Ticket, Clock } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -33,6 +35,9 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [mustChangePassword, setMustChangePassword] = useState(false);
+  const [newPostContent, setNewPostContent] = useState("");
+  const [tickets, setTickets] = useState<any[]>([]);
+  const [loadingTickets, setLoadingTickets] = useState(false);
   const [formData, setFormData] = useState({
     full_name: "",
     phone: "",
@@ -75,8 +80,28 @@ export default function Profile() {
       }
     }
 
+    async function fetchTickets() {
+      if (!user) return;
+      setLoadingTickets(true);
+      try {
+        const { data, error } = await supabase
+          .from("tickets")
+          .select("*")
+          .eq("requester_id", user.id)
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+        setTickets(data || []);
+      } catch (error) {
+        console.error("Error fetching tickets:", error);
+      } finally {
+        setLoadingTickets(false);
+      }
+    }
+
     if (user) {
       fetchProfile();
+      fetchTickets();
     }
   }, [user, toast]);
 
@@ -233,6 +258,78 @@ export default function Profile() {
 
           {/* Order History */}
           {user && <OrderHistory userId={user.id} />}
+
+          {/* Support Tickets */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Ticket className="h-5 w-5" />
+                Meus Chamados de Suporte
+              </CardTitle>
+              <CardDescription>
+                Acompanhe o status dos seus pedidos de ajuda
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {loadingTickets ? (
+                <div className="flex justify-center py-4">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                </div>
+              ) : tickets.length > 0 ? (
+                <div className="space-y-4">
+                  {tickets.map((ticket) => (
+                    <div key={ticket.id} className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent/5 transition-colors">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-sm line-clamp-1">{ticket.title}</span>
+                          <Badge variant="outline" className="text-[10px] uppercase">
+                            #{ticket.ticket_number || ticket.id.slice(0, 8)}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <Clock className="h-3 w-3" />
+                          <span>{format(new Date(ticket.created_at), "dd/MM/yyyy HH:mm")}</span>
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end gap-2">
+                        <Badge className={`${ticket.status === 'open' ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' :
+                          ticket.status === 'in_progress' ? 'bg-purple-100 text-purple-700 hover:bg-purple-200' :
+                            ticket.status === 'resolved' ? 'bg-green-100 text-green-700 hover:bg-green-200' :
+                              ticket.status === 'closed' ? 'bg-gray-100 text-gray-700 hover:bg-gray-200' : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
+                          } border-none text-[10px]`}>
+                          {ticket.status === 'open' ? 'Aberto' :
+                            ticket.status === 'in_progress' ? 'Em Andamento' :
+                              ticket.status === 'resolved' ? 'Resolvido' :
+                                ticket.status === 'closed' ? 'Fechado' : 'Pendente'}
+                        </Badge>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 text-xs px-2 text-primary"
+                          onClick={() => navigate('/crm/tech/comunicar-ti')}
+                        >
+                          Ver Histórico
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-6 text-muted-foreground">
+                  <Ticket className="h-8 w-8 mx-auto mb-2 opacity-20" />
+                  <p className="text-sm">Você não possui chamados abertos.</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-4"
+                    onClick={() => navigate('/crm/tech/comunicar-ti')}
+                  >
+                    Abrir Chamado
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
     </>

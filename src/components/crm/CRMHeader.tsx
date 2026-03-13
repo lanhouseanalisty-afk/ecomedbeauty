@@ -84,9 +84,9 @@ export function CRMHeader() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => navigate("/perfil")}>
+            <DropdownMenuItem onClick={() => navigate("/crm/rh/meu-perfil")}>
               <User className="mr-2 h-4 w-4" />
-              Perfil
+              Meu Perfil
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleSignOut} className="text-destructive">

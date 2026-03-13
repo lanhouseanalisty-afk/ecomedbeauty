@@ -19,7 +19,8 @@ import {
     ClipboardCheck,
     Users as UsersIcon,
     Trophy,
-    Medal
+    Medal,
+    Ticket
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -44,7 +45,7 @@ export default function EmployeeProfilePage() {
     const navigate = useNavigate();
     const { id } = useParams<{ id: string }>();
     // Note: in valid app usage, id should be present.
-    const { employee, assets, posts, leaves, visits, isLoading, createPost, deletePost, toggleLike, addComment, recordVisit } = useEmployeeProfile(id || "");
+    const { employee, assets, posts, leaves, visits, tickets, isLoading, createPost, deletePost, toggleLike, addComment, recordVisit } = useEmployeeProfile(id || "");
     const { user, roles } = useAuth();
     const { data: gamificationStats } = useUserGamification(id || employee?.user_id);
     const { data: badges } = useUserBadges(id || employee?.user_id);
@@ -446,6 +447,7 @@ export default function EmployeeProfilePage() {
                             <TabsTrigger value="history">Histórico</TabsTrigger>
                             <TabsTrigger value="info">Informações</TabsTrigger>
                             <TabsTrigger value="vacations">Férias e Licenças</TabsTrigger>
+                            <TabsTrigger value="tickets">Chamados</TabsTrigger>
                         </TabsList>
 
                         <TabsContent value="feed" className="space-y-4 mt-4">
@@ -698,6 +700,75 @@ export default function EmployeeProfilePage() {
                                 ) : (
                                     <div className="col-span-2 py-10 text-center text-muted-foreground border-2 border-dashed rounded-xl">
                                         Nenhuma solicitação de férias ou licença encontrada.
+                                    </div>
+                                )}
+                            </div>
+                        </TabsContent>
+                        <TabsContent value="tickets">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+                                {tickets && tickets.length > 0 ? (
+                                    tickets.map((ticket: any) => (
+                                        <Card key={ticket.id} className="overflow-hidden border-none shadow-lg hover:shadow-xl transition-all duration-300 group">
+                                            <div className={`h-1 w-full ${ticket.status === 'open' ? 'bg-blue-500' :
+                                                ticket.status === 'in_progress' ? 'bg-purple-500' :
+                                                    ticket.status === 'resolved' ? 'bg-green-500' :
+                                                        ticket.status === 'closed' ? 'bg-gray-400' : 'bg-yellow-500'
+                                                }`} />
+                                            <CardContent className="p-4 space-y-4">
+                                                <div className="flex justify-between items-start pt-2">
+                                                    <Badge variant="outline" className="text-[10px] font-mono py-0 px-2">
+                                                        #{ticket.ticket_number || ticket.id.slice(0, 8)}
+                                                    </Badge>
+                                                    <Badge className={`${ticket.status === 'open' ? 'bg-blue-100 text-blue-700' :
+                                                        ticket.status === 'in_progress' ? 'bg-purple-100 text-purple-700' :
+                                                            ticket.status === 'resolved' ? 'bg-green-100 text-green-700' :
+                                                                ticket.status === 'closed' ? 'bg-gray-100 text-gray-700' : 'bg-yellow-100 text-yellow-700'
+                                                        } border-none text-[10px]`}>
+                                                        {ticket.status === 'open' ? 'Aberto' :
+                                                            ticket.status === 'in_progress' ? 'Em Andamento' :
+                                                                ticket.status === 'resolved' ? 'Resolvido' :
+                                                                    ticket.status === 'closed' ? 'Fechado' : 'Pendente'}
+                                                    </Badge>
+                                                </div>
+
+                                                <div className="space-y-1">
+                                                    <h3 className="font-bold text-sm line-clamp-1 group-hover:text-primary transition-colors">
+                                                        {ticket.title}
+                                                    </h3>
+                                                    <p className="text-xs text-muted-foreground line-clamp-2 min-h-[32px]">
+                                                        {ticket.description}
+                                                    </p>
+                                                </div>
+
+                                                <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                                                    <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                                                        <Clock className="h-3 w-3" />
+                                                        <span>{format(new Date(ticket.created_at), "dd/MM/yyyy HH:mm")}</span>
+                                                    </div>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="h-7 text-xs px-2 hover:bg-primary/5 text-primary"
+                                                        onClick={() => navigate(`/crm/tech/comunicar-ti`)}
+                                                    >
+                                                        Ver Detalhes
+                                                    </Button>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    ))
+                                ) : (
+                                    <div className="col-span-full py-16 text-center text-muted-foreground border-2 border-dashed rounded-xl bg-white/50">
+                                        <Ticket className="h-12 w-12 mx-auto mb-3 opacity-20" />
+                                        <p className="text-sm">Nenhum chamado aberto.</p>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="mt-4"
+                                            onClick={() => navigate('/crm/tech/comunicar-ti')}
+                                        >
+                                            Abrir Chamado
+                                        </Button>
                                     </div>
                                 )}
                             </div>
