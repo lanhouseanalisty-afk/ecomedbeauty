@@ -308,11 +308,11 @@ export function useAdmissionProcesses(department?: string, fetchAll?: boolean) {
         .from('admission_processes')
         .update({
           buddy_mentor: data.buddy_mentor,
-          // Mapear lista de equipamentos para campos booleanos
-          needs_laptop: equipamentos.includes('Notebook') || equipamentos.includes('Desktop'),
-          needs_monitor: equipamentos.includes('Monitor'),
-          needs_headset: equipamentos.includes('Headset'),
-          needs_keyboard: equipamentos.includes('Teclado'),
+          // Mapear lista de equipamentos para campos booleanos (Notebook=laptop, Desktop=monitor, Tablet=headset, Celular=keyboard)
+          needs_laptop: equipamentos.includes('Notebook'),
+          needs_monitor: equipamentos.includes('Desktop'),
+          needs_headset: equipamentos.includes('Tablet'),
+          needs_keyboard: equipamentos.includes('Celular'),
           needs_mouse: equipamentos.includes('Mouse'),
           needs_printer: data.necessita_impressora,
           needs_vehicle: data.necessita_veiculo,

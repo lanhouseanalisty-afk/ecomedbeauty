@@ -305,9 +305,9 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
           buddy_mentor: process.buddy_mentor || "",
           equipamentos_necessarios: [
             ...(process.needs_laptop ? ['Notebook'] : []),
-            ...(process.needs_monitor ? ['Monitor'] : []),
-            ...(process.needs_headset ? ['Headset'] : []),
-            ...(process.needs_keyboard ? ['Teclado'] : []),
+            ...(process.needs_monitor ? ['Desktop'] : []),
+            ...(process.needs_headset ? ['Tablet'] : []),
+            ...(process.needs_keyboard ? ['Celular'] : []),
             ...(process.needs_mouse ? ['Mouse'] : []),
           ],
           softwares_necessarios: process.software_list || [],
@@ -444,9 +444,16 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
       errors.push("Configuração de impressora deve ser marcada como concluída.");
     }
 
-    // Validação de Equipamentos (pelo menos um ativo vinculado se laptop for pedido)
-    if (process.needs_laptop && assignedAssetIds.length === 0) {
-      errors.push("Pelo menos um equipamento (Notebook/Desktop) deve ser vinculado.");
+    // Validação de Equipamentos (vincular a quantidade solicitada)
+    const requestedCount = [
+      process.needs_laptop,
+      process.needs_monitor,
+      process.needs_headset,
+      process.needs_keyboard
+    ].filter(Boolean).length;
+
+    if (requestedCount > 0 && assignedAssetIds.length < requestedCount) {
+      errors.push(`É necessário vincular todos os ${requestedCount} equipamentos solicitados pelo gestor.`);
     }
 
     if (errors.length > 0) {
