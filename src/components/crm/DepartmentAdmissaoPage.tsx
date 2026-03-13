@@ -278,6 +278,53 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
     fetchVehicles();
   }, [processes]);
 
+  // Populando formulários ao selecionar um processo
+  useEffect(() => {
+    if (selectedProcess && processes) {
+      const process = processes.find(p => p.id === selectedProcess);
+      if (process) {
+        // Mapear campos booleano string (Sim/null) para boolean
+        const toBool = (val: string | null) => val === 'Sim';
+
+        setItForm({
+          it_responsible: process.it_responsible || "",
+          user_ad_created: process.user_ad_created || false,
+          email_created: process.email_created || "",
+          microsoft_licenses: process.microsoft_licenses || [],
+          vpn_configured: toBool(process.vpn_configured),
+          software_list_installed: process.equipment_delivered || [], // Mapeado conforme necessidade
+          sap_user_created: toBool(process.sap_user_created),
+          salesforce_profile_created: toBool(process.salesforce_profile_created),
+          network_folders_released: toBool(process.network_folders_released),
+          printers_configured: toBool(process.printers_configured),
+          general_tests_done: toBool(process.general_tests_done),
+          it_observations: process.it_observations || "",
+        });
+
+        setManagerForm({
+          buddy_mentor: process.buddy_mentor || "",
+          equipamentos_necessarios: [
+            ...(process.needs_laptop ? ['Notebook'] : []),
+            ...(process.needs_monitor ? ['Monitor'] : []),
+            ...(process.needs_headset ? ['Headset'] : []),
+            ...(process.needs_keyboard ? ['Teclado'] : []),
+            ...(process.needs_mouse ? ['Mouse'] : []),
+          ],
+          softwares_necessarios: process.software_list || [],
+          acessos_necessarios: process.systems_list || [],
+          sharepoint_pasta: process.shared_folders?.[0] || "", // Mapeamento simplificado
+          outros_acessos: "",
+          necessita_impressora: process.needs_printer || false,
+          needs_vehicle: process.needs_vehicle || false,
+          manager_observations: process.manager_observations || "",
+        });
+
+        // Se houver um envelope ID mas status não for assinado, podemos avisar? 
+        // Já tratado em outros lugares.
+      }
+    }
+  }, [selectedProcess, processes]);
+
   const { assets, updateAsset, createAsset } = useTechAssets();
   const [assignedAssetIds, setAssignedAssetIds] = useState<string[]>([]);
   const [isTransfer, setIsTransfer] = useState(false);
@@ -357,6 +404,59 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
   };
 
   const handleITSubmit = async (processId: string) => {
+    const process = processes?.find(p => p.id === processId);
+    if (!process) return;
+
+    // VALIDATION: Garantir que o que o gestor pediu foi preenchido
+    const errors: string[] = [];
+
+    // 1. Responsável TI sempre obrigatório ao enviar
+    if (!itForm.it_responsible?.trim()) {
+      errors.push("O Responsável TI deve ser informado.");
+    }
+
+    const systems = process.systems_list || [];
+    if (systems.includes("AD") && !itForm.user_ad_created) {
+      errors.push("Conta AD deve ser marcada como criada.");
+    }
+    if (systems.includes("VPN") && !itForm.vpn_configured) {
+      errors.push("VPN deve ser marcada como configurada.");
+    }
+    if (systems.includes("Pastas de Rede / Sharepoint") && !itForm.network_folders_released) {
+      errors.push("Pastas de Rede devem ser marcadas como liberadas.");
+    }
+
+    const softwares = process.software_list || [];
+    if (softwares.includes("SAP B1") && !itForm.sap_user_created) {
+      errors.push("Usuário SAP B1 deve ser marcado como criado.");
+    }
+    if (softwares.includes("Salesforce") && !itForm.salesforce_profile_created) {
+      errors.push("Perfil Salesforce deve ser marcado como criado.");
+    }
+    if (softwares.includes("Microsoft 365") && itForm.microsoft_licenses.length === 0) {
+      errors.push("Pelo menos uma licença Microsoft 365 deve ser selecionada.");
+    }
+    if (softwares.includes("Microsoft 365") && !itForm.email_created?.trim()) {
+      errors.push("O E-mail corporativo deve ser informado.");
+    }
+
+    if (process.needs_printer && !itForm.printers_configured) {
+      errors.push("Configuração de impressora deve ser marcada como concluída.");
+    }
+
+    // Validação de Equipamentos (pelo menos um ativo vinculado se laptop for pedido)
+    if (process.needs_laptop && assignedAssetIds.length === 0) {
+      errors.push("Pelo menos um equipamento (Notebook/Desktop) deve ser vinculado.");
+    }
+
+    if (errors.length > 0) {
+      toast.error(errors[0], {
+        description: "Preencha todos os campos obrigatórios solicitados pelo Gestor.",
+        duration: 5000
+      });
+      return;
+    }
+
     try {
       await updateITStep.mutateAsync({
         id: processId,
@@ -1139,7 +1239,10 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
 
                         {/* 1. Responsável TI */}
                         <div>
-                          <Label htmlFor="it_responsible">1. Responsável TI</Label>
+                          <Label htmlFor="it_responsible" className="flex items-center">
+                            1. Responsável TI
+                            <Badge variant="outline" className="ml-2 text-[10px] bg-red-50 text-red-600 border-red-200 uppercase py-0 px-1 font-bold">Obrigatório</Badge>
+                          </Label>
                           <Input
                             id="it_responsible"
                             placeholder="Nome do técnico responsável"
@@ -1160,12 +1263,22 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                               setItForm(prev => ({ ...prev, user_ad_created: !!checked }))
                             }
                           />
-                          <Label htmlFor="user_ad_created">2. Conta AD criada?</Label>
+                          <Label htmlFor="user_ad_created" className="flex items-center">
+                            2. Conta AD criada?
+                            {(process.systems_list || []).includes("AD") && (
+                              <Badge variant="outline" className="ml-2 text-[10px] bg-blue-50 text-blue-600 border-blue-200 uppercase py-0 px-1 font-bold">Solicitado pelo Gestor</Badge>
+                            )}
+                          </Label>
                         </div>
 
                         {/* 3. E-mail corporativo criado? */}
                         <div>
-                          <Label htmlFor="email_created">3. E-mail corporativo criado?</Label>
+                          <Label htmlFor="email_created" className="flex items-center">
+                            3. E-mail corporativo criado?
+                            {(process.software_list || []).includes("Microsoft 365") && (
+                              <Badge variant="outline" className="ml-2 text-[10px] bg-blue-50 text-blue-600 border-blue-200 uppercase py-0 px-1 font-bold">Solicitado pelo Gestor</Badge>
+                            )}
+                          </Label>
                           <Input
                             id="email_created"
                             placeholder="exemplo@medbeauty.com.br"
@@ -1179,7 +1292,12 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
 
                         {/* 4. Licença Microsoft 365 aplicada? */}
                         <div>
-                          <Label className="text-base font-medium">4. Licenças Microsoft 365 aplicadas</Label>
+                          <Label className="text-base font-medium flex items-center">
+                            4. Licenças Microsoft 365 aplicadas
+                            {(process.software_list || []).includes("Microsoft 365") && (
+                              <Badge variant="outline" className="ml-2 text-[10px] bg-blue-50 text-blue-600 border-blue-200 uppercase py-0 px-1 font-bold">Solicitado pelo Gestor</Badge>
+                            )}
+                          </Label>
                           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-3">
                             {MICROSOFT_LICENSES_OPTIONS.map(item => (
                               <div key={item.value} className="flex items-center space-x-2 rounded-md border p-3">
@@ -1210,7 +1328,12 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                               setItForm(prev => ({ ...prev, vpn_configured: !!checked }))
                             }
                           />
-                          <Label htmlFor="vpn_configured">5. VPN configurada?</Label>
+                          <Label htmlFor="vpn_configured" className="flex items-center">
+                            5. VPN configurada?
+                            {(process.systems_list || []).includes("VPN") && (
+                              <Badge variant="outline" className="ml-2 text-[10px] bg-blue-50 text-blue-600 border-blue-200 uppercase py-0 px-1 font-bold">Solicitado pelo Gestor</Badge>
+                            )}
+                          </Label>
                         </div>
 
                         {/* 6. Softwares instalados? */}
@@ -1246,7 +1369,12 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                               setItForm(prev => ({ ...prev, sap_user_created: !!checked }))
                             }
                           />
-                          <Label htmlFor="sap_user_created">7. Usuário SAP B1 criado?</Label>
+                          <Label htmlFor="sap_user_created" className="flex items-center">
+                            7. Usuário SAP B1 criado?
+                            {(process.software_list || []).includes("SAP B1") && (
+                              <Badge variant="outline" className="ml-2 text-[10px] bg-blue-50 text-blue-600 border-blue-200 uppercase py-0 px-1 font-bold">Solicitado pelo Gestor</Badge>
+                            )}
+                          </Label>
                         </div>
 
                         {/* 8. Perfil Salesforce criado? */}
@@ -1258,7 +1386,12 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                               setItForm(prev => ({ ...prev, salesforce_profile_created: !!checked }))
                             }
                           />
-                          <Label htmlFor="salesforce_profile_created">8. Perfil Salesforce criado?</Label>
+                          <Label htmlFor="salesforce_profile_created" className="flex items-center">
+                            8. Perfil Salesforce criado?
+                            {(process.software_list || []).includes("Salesforce") && (
+                              <Badge variant="outline" className="ml-2 text-[10px] bg-blue-50 text-blue-600 border-blue-200 uppercase py-0 px-1 font-bold">Solicitado pelo Gestor</Badge>
+                            )}
+                          </Label>
                         </div>
 
                         {/* 9. Pastas de rede liberadas? */}
@@ -1270,7 +1403,12 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                               setItForm(prev => ({ ...prev, network_folders_released: !!checked }))
                             }
                           />
-                          <Label htmlFor="network_folders_released">9. Pastas de rede liberadas?</Label>
+                          <Label htmlFor="network_folders_released" className="flex items-center">
+                            9. Pastas de rede liberadas?
+                            {(process.systems_list || []).includes("Pastas de Rede / Sharepoint") && (
+                              <Badge variant="outline" className="ml-2 text-[10px] bg-blue-50 text-blue-600 border-blue-200 uppercase py-0 px-1 font-bold">Solicitado pelo Gestor</Badge>
+                            )}
+                          </Label>
                         </div>
 
                         {/* 10. Impressoras configuradas? */}
@@ -1282,7 +1420,12 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                               setItForm(prev => ({ ...prev, printers_configured: !!checked }))
                             }
                           />
-                          <Label htmlFor="printers_configured">10. Impressoras configuradas?</Label>
+                          <Label htmlFor="printers_configured" className="flex items-center">
+                            10. Impressoras configuradas?
+                            {process.needs_printer && (
+                              <Badge variant="outline" className="ml-2 text-[10px] bg-blue-50 text-blue-600 border-blue-200 uppercase py-0 px-1 font-bold">Solicitado pelo Gestor</Badge>
+                            )}
+                          </Label>
                         </div>
 
                         {/* 11. Testes gerais realizados? */}
