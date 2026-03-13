@@ -37,7 +37,7 @@ export function CRMHeader() {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate("/auth");
+    navigate("/auth?role=employee");
   };
 
   return (

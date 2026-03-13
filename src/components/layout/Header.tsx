@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom"; // Added useLocation
+import { Link, useLocation, useNavigate } from "react-router-dom"; // Added useLocation and useNavigate
 import { cn } from "@/lib/utils";
 import { Search, ShoppingBag, Heart, User, Menu, X, LogOut, LayoutDashboard, Settings, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,7 @@ export function Header() {
   const { user, signOut, isEmployee } = useAuth();
   const { content, isEditing } = useCMS();
   const location = useLocation(); // Hook for active route
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -183,7 +184,15 @@ export function Header() {
                     <DropdownMenuSeparator className="bg-white/10" />
                     <DropdownMenuItem
                       className="cursor-pointer flex items-center gap-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 focus:bg-red-500/10"
-                      onClick={() => signOut()}
+                      onClick={async () => {
+                        const wasEmployee = isEmployee;
+                        await signOut();
+                        if (wasEmployee) {
+                          navigate("/auth?role=employee");
+                        } else {
+                          navigate("/auth");
+                        }
+                      }}
                     >
                       <LogOut className="h-4 w-4" />
                       <span>Sair</span>

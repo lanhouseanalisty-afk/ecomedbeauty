@@ -48,6 +48,14 @@ export default function Auth() {
     }
   }, [user, isEmployee, loading, navigate, roles, departmentModule]);
 
+  // Handle dynamic role change from search params
+  useEffect(() => {
+    const roleParam = searchParams.get('role');
+    if (roleParam === 'employee' || roleParam === 'customer') {
+      setLoginRole(roleParam as 'customer' | 'employee');
+    }
+  }, [searchParams]);
+
   const signInForm = useForm<SignInData>({
     resolver: zodResolver(signInSchema),
   });
