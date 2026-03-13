@@ -169,7 +169,7 @@ export function ForecastHeader({
                     </div>
                 </div>
 
-                <div className="flex gap-2 bg-white p-1 rounded-xl border shadow-sm items-center">
+                <div className="flex flex-wrap gap-2 bg-white p-1 rounded-xl border shadow-sm items-center">
                     <input type="file" ref={fileInputRef} onChange={handleImport} accept=".xlsx, .xls" className="hidden" />
                     {canEditAll && (
                         <Button variant="ghost" size="sm" onClick={() => fileInputRef.current?.click()} className="text-green-600 hover:text-green-700 hover:bg-green-50 gap-2">
@@ -214,9 +214,9 @@ export function ForecastHeader({
                     </div>
                     <CardContent className="pt-6">
                         <div className="space-y-1">
-                            <Label className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Meta Global do Mês</Label>
+                            <Label className="text-[9px] md:text-[10px] uppercase tracking-wider text-muted-foreground font-bold text-center md:text-left">Meta Global do Mês</Label>
                             <CurrencyInput
-                                className="text-2xl font-bold border-none p-0 focus-visible:ring-0 h-auto bg-transparent disabled:opacity-100"
+                                className="text-xl md:text-2xl font-bold border-none p-0 focus-visible:ring-0 h-auto bg-transparent disabled:opacity-100 text-center md:text-left"
                                 value={meta}
                                 onValueChange={setMeta}
                                 placeholder="Definir Meta"
@@ -232,9 +232,9 @@ export function ForecastHeader({
                     </div>
                     <CardContent className="pt-6">
                         <div className="space-y-1">
-                            <Label className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Realizado Acumulado</Label>
-                            <div className="text-2xl font-bold">{formatBRL(totalGeral)}</div>
-                            <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                            <Label className="text-[9px] md:text-[10px] uppercase tracking-wider text-muted-foreground font-bold text-center md:text-left">Realizado Acumulado</Label>
+                            <div className="text-xl md:text-2xl font-bold text-center md:text-left">{formatBRL(totalGeral)}</div>
+                            <div className="flex items-center justify-center md:justify-start gap-1 text-[9px] md:text-[10px] text-muted-foreground">
                                 <span className="font-bold text-blue-600">{atingimentoMeta.toFixed(1)}%</span> da meta atingida
                             </div>
                         </div>
@@ -250,9 +250,9 @@ export function ForecastHeader({
                     </div>
                     <CardContent className="pt-6">
                         <div className="space-y-1">
-                            <Label className="text-[10px] uppercase tracking-wider text-white/70 font-bold">Projeção Final</Label>
-                            <div className="text-2xl font-bold">{formatBRL(projection)}</div>
-                            <div className="text-[10px] text-white/60">Estimativa baseada no ritmo atual</div>
+                            <Label className="text-[9px] md:text-[10px] uppercase tracking-wider text-white/70 font-bold text-center md:text-left">Projeção Final</Label>
+                            <div className="text-xl md:text-2xl font-bold text-center md:text-left">{formatBRL(projection)}</div>
+                            <div className="text-[9px] md:text-[10px] text-white/60 text-center md:text-left">Estimativa baseada no ritmo atual</div>
                         </div>
                     </CardContent>
                 </Card>
@@ -260,9 +260,9 @@ export function ForecastHeader({
                 <Card className="border-none shadow-lg overflow-hidden relative group bg-amber-50/50 border border-amber-100">
                     <CardContent className="pt-6">
                         <div className="space-y-1">
-                            <Label className="text-[10px] uppercase tracking-wider text-amber-700 font-bold">Gap para Meta</Label>
-                            <div className="text-2xl font-bold text-amber-700">{formatBRL(diffMeta)}</div>
-                            <div className="text-[10px] text-amber-600/70">Restante para concluir o objetivo</div>
+                            <Label className="text-[9px] md:text-[10px] uppercase tracking-wider text-amber-700 font-bold text-center md:text-left">Gap para Meta</Label>
+                            <div className="text-xl md:text-2xl font-bold text-amber-700 text-center md:text-left">{formatBRL(diffMeta)}</div>
+                            <div className="text-[9px] md:text-[10px] text-amber-600/70 text-center md:text-left">Restante para concluir o objetivo</div>
                         </div>
                     </CardContent>
                 </Card>

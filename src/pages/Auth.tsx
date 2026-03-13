@@ -152,7 +152,7 @@ export default function Auth() {
         <title>{`${isSignUp ? "Criar Conta" : "Entrar"} | MedBeauty`}</title>
       </Helmet>
 
-      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-12">
+      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-8 md:py-12">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
             <Link to="/" className="inline-block">
@@ -184,7 +184,7 @@ export default function Auth() {
               </div>
             </div>
           </div>
-          <div className="rounded-xl border border-border bg-card p-6 shadow-card animate-fade-in-up">
+          <div className="rounded-xl border border-border bg-card p-5 md:p-6 shadow-card animate-fade-in-up">
             {loginRole === 'employee' && (
               <div className="mb-6 space-y-4">
                 <Button

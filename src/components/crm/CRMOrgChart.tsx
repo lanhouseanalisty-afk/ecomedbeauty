@@ -178,8 +178,8 @@ const TreeNode = ({ node, isRoot = false, isLast = false }: { node: any, isRoot?
             {/* Node Card */}
             <div
                 className={cn(
-                    "relative flex items-center p-3 mb-3 rounded-xl border transition-all duration-200 group",
-                    isRoot ? "bg-white border-primary/20 shadow-md p-4" : "bg-white border-slate-100 hover:border-primary/30 hover:shadow-sm"
+                    "relative flex items-center p-2 md:p-3 mb-2 md:mb-3 rounded-xl border transition-all duration-200 group",
+                    isRoot ? "bg-white border-primary/20 shadow-md p-3 md:p-4" : "bg-white border-slate-100 hover:border-primary/30 hover:shadow-sm"
                 )}
             >
                 {/* Arrow Toggle */}
@@ -194,11 +194,11 @@ const TreeNode = ({ node, isRoot = false, isLast = false }: { node: any, isRoot?
 
                 {/* Icon Box */}
                 <div className={cn(
-                    "flex-shrink-0 flex items-center justify-center rounded-lg mr-4",
-                    isRoot ? "h-14 w-14 bg-primary/10 text-primary" : "h-10 w-10",
+                    "flex-shrink-0 flex items-center justify-center rounded-lg mr-3 md:mr-4",
+                    isRoot ? "h-12 w-12 md:h-14 md:w-14 bg-primary/10 text-primary" : "h-9 w-9 md:h-10 md:w-10",
                     !isRoot && node.color ? node.color : "bg-slate-100 text-slate-500"
                 )}>
-                    <Icon className={cn(isRoot ? "h-7 w-7" : "h-5 w-5")} />
+                    <Icon className={cn(isRoot ? "h-6 w-6 md:h-7 md:w-7" : "h-4 w-4 md:h-5 md:w-5")} />
                 </div>
 
                 {/* Content */}
@@ -234,7 +234,7 @@ const TreeNode = ({ node, isRoot = false, isLast = false }: { node: any, isRoot?
 
             {/* Children Container */}
             {hasChildren && isOpen && (
-                <div className="ml-8 pl-4 border-l-2 border-slate-200/50 space-y-1 pb-2">
+                <div className="ml-4 md:ml-8 pl-3 md:pl-4 border-l-2 border-slate-200/50 space-y-1 pb-2">
                     {node.children.map((child: any, idx: number) => (
                         <TreeNode
                             key={idx}

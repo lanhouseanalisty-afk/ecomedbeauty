@@ -5,8 +5,8 @@ import { Target, TrendingUp, Users, FileText, Megaphone, Shield, Trophy, Coffee 
 
 export default function IntranetPage() {
     return (
-        <div className="container mx-auto p-6 space-y-6 animate-in fade-in">
-            <h1 className="text-3xl font-bold text-gray-800">Intranet Ecomedbeauty</h1>
+        <div className="container mx-auto p-3 md:p-6 space-y-4 md:space-y-6 animate-in fade-in">
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Intranet Ecomedbeauty</h1>
 
             <div className="space-y-6">
                 {/* Mural Interativo - Full Width */}

@@ -41,7 +41,7 @@ export function CRMHeader() {
   };
 
   return (
-    <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b border-border bg-card px-6">
+    <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b border-border bg-card px-4 md:px-6">
       <SidebarTrigger className="-ml-2" />
 
       <div className="flex flex-1 items-center gap-4">
@@ -53,8 +53,9 @@ export function CRMHeader() {
           className="relative max-w-md flex-1 text-left group"
         >
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-hover:text-primary transition-colors" />
-          <div className="flex items-center justify-between w-full h-10 pl-10 pr-3 rounded-md border border-input bg-background text-sm text-muted-foreground hover:bg-muted/50 transition-colors pointer-events-none">
-            <span>Busca Inteligente...</span>
+          <div className="flex items-center justify-between w-full h-9 md:h-10 pl-9 md:pl-10 pr-3 rounded-md border border-input bg-background text-sm text-muted-foreground hover:bg-muted/50 transition-colors pointer-events-none">
+            <span className="hidden xs:inline">Busca Inteligente...</span>
+            <span className="xs:hidden">Busca...</span>
             <kbd className="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
               <span className="text-xs">⌘</span>K
             </kbd>
