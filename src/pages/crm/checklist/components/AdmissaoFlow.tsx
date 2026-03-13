@@ -287,12 +287,14 @@ export function AdmissaoFlow({
     const handleDocusignSign = async () => {
         setIsSigning(true);
         try {
-            const { data, error } = await supabase.functions.invoke('docusign', {
+            const { data, error } = await supabase.functions.invoke('docusign-termo-responsabilidade', {
                 body: {
+                    processId: data?.id,
                     signerName: form.getValues("nome_completo") || user?.name || "Colaborador",
                     signerEmail: user?.email || "colaborador@example.com",
                     equipmentList: form.getValues("equipamentos_necessarios")?.join(", "),
-                    softwareList: form.getValues("softwares_necessarios")?.join(", ")
+                    softwareList: form.getValues("softwares_necessarios")?.join(", "),
+                    departmentName: form.getValues("setor_departamento")
                 }
             });
 

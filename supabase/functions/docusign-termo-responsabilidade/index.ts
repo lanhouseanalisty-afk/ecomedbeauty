@@ -24,11 +24,16 @@ Deno.serve(async (req) => {
 
     try {
         const body = await req.json();
-        const { processId, employeeName, employeeCpf, employeeEmail, departmentName, managerName, startDate, assetsList } = body;
+        const { processId, startDate, assetsList, departmentName, managerName } = body;
 
-        if (!processId || !employeeName || !employeeEmail) {
+        // Flexible naming support
+        const employeeName = body.employeeName || body.signerName;
+        const employeeEmail = body.employeeEmail || body.signerEmail;
+        const employeeCpf = body.employeeCpf || body.cpf;
+
+        if (!employeeName || !employeeEmail) {
             return new Response(
-                JSON.stringify({ error: "Missing required fields: processId, employeeName, employeeEmail" }),
+                JSON.stringify({ error: "Missing required fields: employeeName/signerName, employeeEmail/signerEmail" }),
                 { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
             );
         }
@@ -122,8 +127,35 @@ FILA4xy/X69dY0QaacRtU/bGdRpeJQq7TCo1C60fKp19+Yus0+Tf
         }
 
         const accessToken = tokenData.access_token;
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // 3. Construct HTML Document dynamically
+        // 3. Fetch Template if it exists
+        let htmlContent = "";
+        try {
+            const { data: templateData } = await supabase
+                .from('contract_templates')
+                .select('content')
+                .eq('name', 'Termo de Responsabilidade')
+                .eq('active', true)
+                .maybeSingle();
+
+            if (templateData?.content) {
+                console.log("Using template from contract_templates");
+                htmlContent = templateData.content;
+            }
+        } catch (err) {
+            console.error("Error fetching template:", err);
+        }
+
+        // 4. Substitution Helper
+        const replacePlaceholders = (text: string, data: any) => {
+            return text.replace(/{(\w+)}|{{(\w+)}}/g, (match, p1, p2) => {
+                const key = p1 || p2;
+                return data[key] !== undefined ? data[key] : match;
+            });
+        };
+
+        // 5. Construct assets table
         let assetsHtml = "<p>Nenhum equipamento vinculado.</p>";
         if (assetsList && assetsList.length > 0) {
             assetsHtml = `
@@ -147,52 +179,72 @@ FILA4xy/X69dY0QaacRtU/bGdRpeJQq7TCo1C60fKp19+Yus0+Tf
 
         const hoje = new Date().toLocaleDateString('pt-BR');
 
-        const htmlContent = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="utf-8">
-            <title>Termo de Responsabilidade</title>
-            <style>
-                body { font-family: Arial, sans-serif; line-height: 1.6; margin: 40px; color: #333; }
-                p { margin-bottom: 20px; text-align: justify; }
-                h1 { text-align: center; margin-bottom: 40px; font-size: 20px; text-transform: uppercase; }
-                .bold { font-weight: bold; }
-                .signature-box { margin-top: 80px; text-align: center; }
-            </style>
-        </head>
-        <body>
-            <h1>TERMO DE RESPONSABILIDADE E ENTREGA DE EQUIPAMENTOS</h1>
-            <p>Pelo presente instrumento, declaro que estou recebendo da <strong>EcomedBeauty</strong>, os equipamentos/materiais abaixo especificados para serem utilizados estritamente no desempenho das minhas atividades profissionais.</p>
-            
-            <p>
-                <strong>Nome do Colaborador:</strong> ${employeeName}<br>
-                <strong>CPF:</strong> ${employeeCpf || 'Não informado'}<br>
-                <strong>Setor:</strong> ${departmentName || 'Não informado'}<br>
-                <strong>Gestor:</strong> ${managerName || 'Não informado'}<br>
-                <strong>Data de Início:</strong> ${startDate || 'Não informada'}<br>
-            </p>
+        // 6. Final HTML Preparation
+        if (htmlContent) {
+            // Map our data to common placeholder names
+            const replacementData: any = {
+                NOME_COLABORADOR: employeeName,
+                CPF_COLABORADOR: employeeCpf || 'Não informado',
+                EQUIPAMENTO_COLABORADOR: assetsHtml,
+                DATA: hoje,
+                SETOR: departmentName || 'Não informado',
+                GESTOR: managerName || 'Não informado',
+                DATA_INICIO: startDate || 'Não informada'
+            };
+            htmlContent = replacePlaceholders(htmlContent, replacementData);
 
-            <p><strong>RELAÇÃO DE EQUIPAMENTOS ENTREGUES:</strong></p>
-            ${assetsHtml}
+            // Ensure basic HTML wrapper if it's missing (template might just be the body)
+            if (!htmlContent.includes('<html')) {
+                htmlContent = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>body{font-family:Arial,sans-serif;line-height:1.6;margin:40px;color:#333;}table{width:100%;border-collapse:collapse;margin:20px 0;}th,td{border:1px solid #ddd;padding:8px;text-align:left;}th{background-color:#f2f2f2;}</style></head><body>${htmlContent}</body></html>`;
+            }
+        } else {
+            // Fallback to legacy hardcoded template
+            htmlContent = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="utf-8">
+                <title>Termo de Responsabilidade</title>
+                <style>
+                    body { font-family: Arial, sans-serif; line-height: 1.6; margin: 40px; color: #333; }
+                    p { margin-bottom: 20px; text-align: justify; }
+                    h1 { text-align: center; margin-bottom: 40px; font-size: 20px; text-transform: uppercase; }
+                    .bold { font-weight: bold; }
+                    .signature-box { margin-top: 80px; text-align: center; }
+                </style>
+            </head>
+            <body>
+                <h1>TERMO DE RESPONSABILIDADE E ENTREGA DE EQUIPAMENTOS</h1>
+                <p>Pelo presente instrumento, declaro que estou recebendo da <strong>EcomedBeauty</strong>, os equipamentos/materiais abaixo especificados para serem utilizados estritamente no desempenho das minhas atividades profissionais.</p>
+                
+                <p>
+                    <strong>Nome do Colaborador:</strong> ${employeeName}<br>
+                    <strong>CPF:</strong> ${employeeCpf || 'Não informado'}<br>
+                    <strong>Setor:</strong> ${departmentName || 'Não informado'}<br>
+                    <strong>Gestor:</strong> ${managerName || 'Não informado'}<br>
+                    <strong>Data de Início:</strong> ${startDate || 'Não informada'}<br>
+                </p>
 
-            <p style="margin-top: 30px;">
-                <strong>TERMOS E CONDIÇÕES:</strong><br><br>
-                1. Assumo total responsabilidade pela guarda, conservação e uso adequado do(s) equipamento(s) acima descrito(s).<br>
-                2. Comprometo-me a não realizar alterações de hardware ou software não autorizadas pela área de Tecnologia da Informação (TI).<br>
-                3. Estou ciente de que deverei devolver os equipamentos de imediato e em perfeitas condições de funcionamento ao ser desligado da empresa ou sempre que me for solicitado.<br>
-                4. Em caso de dano ou extravio por dolo ou culpa (negligência, imprudência ou imperícia), autorizo desde já o desconto em folha de pagamento do valor correspondente ao reparo ou reposição, nos termos da legislação trabalhista vigente.
-            </p>
-            <p>São Paulo, ${hoje}.</p>
-            
-            <div class="signature-box">
-                <!-- Anchor text for DocuSign -->
-                <p>Assinado digitalmente por ${employeeName}:</p>
-                <div style="color:white; font-size:1px;">[SIGNATURE_ANCHOR_HERE]</div>
-            </div>
-        </body>
-        </html>
-        `;
+                <p><strong>RELAÇÃO DE EQUIPAMENTOS ENTREGUES:</strong></p>
+                ${assetsHtml}
+
+                <p style="margin-top: 30px;">
+                    <strong>TERMOS E CONDIÇÕES:</strong><br><br>
+                    1. Assumo total responsabilidade pela guarda, conservação e uso adequado do(s) equipamento(s) acima descrito(s).<br>
+                    2. Comprometo-me a não realizar alterações de hardware ou software não autorizadas pela área de Tecnologia da Informação (TI).<br>
+                    3. Estou ciente de que deverei devolver os equipamentos de imediato e em perfeitas condições de funcionamento ao ser desligado da empresa ou sempre que me for solicitado.<br>
+                    4. Em caso de dano ou extravio por dolo ou culpa (negligência, imprudência ou imperícia), autorizo desde já o desconto em folha de pagamento do valor correspondente ao reparo ou reposição, nos termos da legislação trabalhista vigente.
+                </p>
+                <p>São Paulo, ${hoje}.</p>
+                
+                <div class="signature-box">
+                    <p>Assinado digitalmente por ${employeeName}:</p>
+                    <div style="color:white; font-size:1px;">[SIGNATURE_ANCHOR_HERE]</div>
+                </div>
+            </body>
+            </html>
+            `;
+        }
 
         const documentBase64 = Buffer.from(htmlContent, 'utf-8').toString('base64');
 
@@ -261,10 +313,9 @@ FILA4xy/X69dY0QaacRtU/bGdRpeJQq7TCo1C60fKp19+Yus0+Tf
         const envelopeId = envelopeData.envelopeId;
 
         // 5. Save Docusign status to our DB
-        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+        // Use the correct table name 'admission_processes' (singular process)
         const { error: dbError } = await supabase
-            .from('admissions_processes')
+            .from('admission_processes')
             .update({
                 docusign_envelope_id: envelopeId,
                 docusign_status: "sent"
