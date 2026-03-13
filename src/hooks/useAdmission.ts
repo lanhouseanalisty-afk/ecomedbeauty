@@ -319,6 +319,7 @@ export function useAdmissionProcesses(department?: string, fetchAll?: boolean) {
           software_list: data.softwares_necessarios,
           systems_list: data.acessos_necessarios, // Acessos necessários
           manager_observations: data.manager_observations,
+          shared_folders: data.sharepoint_pasta ? [data.sharepoint_pasta] : [],
           current_step: nextStep,
           manager_completed_at: new Date().toISOString(),
           manager_completed_by: user?.user?.id,

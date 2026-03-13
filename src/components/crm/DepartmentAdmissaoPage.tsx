@@ -1117,6 +1117,14 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                               </div>
                             </div>
                           )}
+                          {process.shared_folders && process.shared_folders.length > 0 && (
+                            <div className="pt-1">
+                              <span className="text-muted-foreground">Pasta Solicitada:</span>
+                              <p className="font-mono text-[11px] bg-slate-100 dark:bg-slate-800 p-1.5 rounded mt-1 border border-slate-200 dark:border-slate-700">
+                                {process.shared_folders[0]}
+                              </p>
+                            </div>
+                          )}
                         </div>
 
                         {/* SELEÇÃO DE ATIVOS DO ESTOQUE (AUTOMACAO) */}
@@ -1413,7 +1421,14 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
                           <Label htmlFor="network_folders_released" className="flex items-center">
                             9. Pastas de rede liberadas?
                             {(process.systems_list || []).includes("Pastas de Rede / Sharepoint") && (
-                              <Badge variant="outline" className="ml-2 text-[10px] bg-blue-50 text-blue-600 border-blue-200 uppercase py-0 px-1 font-bold">Solicitado pelo Gestor</Badge>
+                              <>
+                                <Badge variant="outline" className="ml-2 text-[10px] bg-blue-50 text-blue-600 border-blue-200 uppercase py-0 px-1 font-bold">Solicitado pelo Gestor</Badge>
+                                {process.shared_folders && process.shared_folders.length > 0 && (
+                                  <span className="ml-2 text-[10px] text-muted-foreground italic font-medium">
+                                    (Pasta: {process.shared_folders[0]})
+                                  </span>
+                                )}
+                              </>
                             )}
                           </Label>
                         </div>
@@ -1760,6 +1775,6 @@ export default function DepartmentAdmissaoPage({ departmentSlug, departmentName 
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </div >
   );
 }
