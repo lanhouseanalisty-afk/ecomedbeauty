@@ -177,6 +177,32 @@ export default function Auth() {
             </div>
           </div>
           <div className="rounded-xl border border-border bg-card p-6 shadow-card animate-fade-in-up">
+            {loginRole === 'employee' && (
+              <div className="mb-6 space-y-4">
+                <Button
+                  variant="default"
+                  type="button"
+                  className="w-full gap-3 h-12 text-base bg-[#00a1f1] hover:bg-[#0081c1] text-white transition-all shadow-md hover:shadow-lg"
+                  onClick={handleADLogin}
+                  disabled={isLoading}
+                >
+                  <Building2 className="h-5 w-5" />
+                  Entrar com Microsoft 365 (AD)
+                </Button>
+
+                <div className="relative my-6">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-card px-2 text-muted-foreground font-medium">
+                      Ou usar e-mail e senha
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <form onSubmit={signInForm.handleSubmit(handleSignIn)} className="space-y-4">
               <div>
                 <Label htmlFor="email">E-mail {loginRole === 'employee' ? 'Corporativo' : ''}</Label>
@@ -223,7 +249,7 @@ export default function Auth() {
                 )}
               </div>
 
-              <Button type="submit" className="w-full gap-2" disabled={isLoading}>
+              <Button type="submit" variant={loginRole === 'employee' ? "outline" : "default"} className="w-full gap-2" disabled={isLoading}>
                 {isLoading ? "Entrando..." : "Entrar como " + (loginRole === 'employee' ? 'Colaborador' : 'Cliente')}
                 <LogIn className="h-4 w-4" />
               </Button>
@@ -254,25 +280,6 @@ export default function Auth() {
                 </button>
               </div>
 
-              {loginRole === 'employee' && (
-                <>
-                  <div className="relative my-4">
-                    <div className="absolute inset-0 flex items-center">
-                      <span className="w-full border-t" />
-                    </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-card px-2 text-muted-foreground">
-                        Ou corporativo
-                      </span>
-                    </div>
-                  </div>
-
-                  <Button variant="outline" type="button" className="w-full gap-2" onClick={handleADLogin} disabled={isLoading}>
-                    <Building2 className="h-4 w-4" />
-                    Entrar com AD (Microsoft 365)
-                  </Button>
-                </>
-              )}
               {loginRole === 'customer' && (
                 <div className="pt-4 border-t text-center space-y-3">
                   <p className="text-sm text-muted-foreground">Novo profissional na MedBeauty?</p>

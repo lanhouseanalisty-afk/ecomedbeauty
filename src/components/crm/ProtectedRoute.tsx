@@ -40,7 +40,7 @@ export function ProtectedRoute({
   // Redirect to auth if not logged in
   if (!user) {
     console.log('[ProtectedRoute] No user found, redirecting to auth');
-    return <Navigate to="/auth" state={{ from: location }} replace />;
+    return <Navigate to="/auth?role=employee" state={{ from: location }} replace />;
   }
 
   // Force password reset if flagged by admin
