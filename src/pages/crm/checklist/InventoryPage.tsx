@@ -364,6 +364,38 @@ export default function InventoryPage() {
                     return foundKey ? row[foundKey] : null;
                 };
 
+                const parseDate = (val: any) => {
+                    if (!val) return null;
+                    try {
+                        // Se for número (Data do Excel)
+                        if (typeof val === 'number') {
+                            const date = new Date((val - 25569) * 86400 * 1000);
+                            return date.toISOString().split('T')[0];
+                        }
+
+                        // Se for string
+                        const dateStr = String(val).trim();
+                        if (!dateStr) return null;
+
+                        // Tenta converter formato DD/MM/YYYY para YYYY-MM-DD
+                        if (dateStr.includes('/')) {
+                            const parts = dateStr.split('/');
+                            if (parts.length === 3) {
+                                let d = parts[0], m = parts[1], y = parts[2];
+                                if (d.length === 4) [y, m, d] = [d, m, y]; // YYYY/MM/DD
+                                const iso = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+                                if (!isNaN(new Date(iso).getTime())) return iso;
+                            }
+                        }
+
+                        const d = new Date(dateStr);
+                        if (!isNaN(d.getTime())) return d.toISOString().split('T')[0];
+                        return null;
+                    } catch (e) {
+                        return null;
+                    }
+                };
+
                 const assetsToImport = jsonData.map((row) => {
                     // Mapeamento Inteligente
                     const asset_tag = findValue(row, [
@@ -442,8 +474,8 @@ export default function InventoryPage() {
                         notes,
                         serial_number,
                         purchase_value: purchase_value ? parseFloat(String(purchase_value).replace(/[^0-9.,]/g, '').replace(',', '.')) : null,
-                        delivery_date: delivery_date ? new Date(delivery_date).toISOString().split('T')[0] : null,
-                        return_date: return_date ? new Date(return_date).toISOString().split('T')[0] : null
+                        delivery_date: parseDate(delivery_date),
+                        return_date: parseDate(return_date)
                     };
                 });
 
