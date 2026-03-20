@@ -623,14 +623,14 @@ export default function InventoryPage() {
     const filteredItems = assets.filter(a => {
         // Global Search
         const matchesSearch =
-            a.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            a.asset_tag.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            a.assigned_to_name?.toLowerCase().includes(searchTerm.toLowerCase());
+            (a.model || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (a.asset_tag || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (a.assigned_to_name || "").toLowerCase().includes(searchTerm.toLowerCase());
 
         // Column Filters
         const matchesFilters =
-            (!filters.asset_tag || a.asset_tag.toLowerCase().includes(filters.asset_tag.toLowerCase())) &&
-            (!filters.model || a.model.toLowerCase().includes(filters.model.toLowerCase())) &&
+            (!filters.asset_tag || (a.asset_tag || "").toLowerCase().includes(filters.asset_tag.toLowerCase())) &&
+            (!filters.model || (a.model || "").toLowerCase().includes(filters.model.toLowerCase())) &&
             (!filters.hostname || (a.hostname || '').toLowerCase().includes(filters.hostname.toLowerCase())) &&
             (!filters.assigned_to_name || (a.assigned_to_name || '').toLowerCase().includes(filters.assigned_to_name.toLowerCase())) &&
             (!filters.serial_number || (a.serial_number || '').toLowerCase().includes(filters.serial_number.toLowerCase())) &&
@@ -673,7 +673,7 @@ export default function InventoryPage() {
             if (field === 'status') {
                 return (a.assigned_to_name && a.assigned_to_name !== 'Disponível' && a.assigned_to_name !== '*' && a.assigned_to_name !== '**') ? 'in_use' : a.status;
             }
-            return a[field as keyof TechAsset] || "";
+            return String(a[field as keyof TechAsset] || "");
         }))).filter(Boolean).sort();
 
         return (
@@ -743,7 +743,7 @@ export default function InventoryPage() {
                                             <Check
                                                 className={cn(
                                                     "mr-2 h-4 w-4",
-                                                    filters[field]?.toLowerCase() === option.toLowerCase() ? "opacity-100" : "opacity-0"
+                                                    (filters[field] || "").toLowerCase() === (option || "").toLowerCase() ? "opacity-100" : "opacity-0"
                                                 )}
                                             />
                                             {field === 'status' ? (option === 'in_use' ? 'Em Uso' : option === 'available' ? 'Disponível' : option) : option}
