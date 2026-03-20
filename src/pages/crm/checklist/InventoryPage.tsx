@@ -414,10 +414,9 @@ export default function InventoryPage() {
                     const delivery_date = findValue(row, ['Entrega', 'Data de Entrega', 'Delivery', 'Delivery Date']);
                     const return_date = findValue(row, ['Devolução', 'Devolucao', 'Data de Devolução', 'Return Date', 'Return']);
 
-                    // Normalização de Status
-                    let rawStatus = findValue(row, ['Status', 'Situação', 'Situacao', 'Estado', 'Status do Ativo']) || 'available';
+                    // Normalização de Status e Regras de Negócio
                     let status = 'available';
-                    rawStatus = rawStatus.toString().toLowerCase();
+                    const rawStatus = String(findValue(row, ['Status', 'Situação', 'Situacao', 'Estado', 'Status do Ativo']) || '').toLowerCase();
 
                     if (rawStatus.includes('uso') || rawStatus.includes('use') || rawStatus.includes('atribuido')) {
                         status = 'in_use';
@@ -429,9 +428,10 @@ export default function InventoryPage() {
                         status = 'lost';
                     }
 
-                    // Regra de Negócio: Se tem usuário (e não é * ou **), o status é Em Uso
+                    // Se tem usuário (e não é * ou **), o status é Em Uso
                     if (assigned_to_name &&
                         assigned_to_name !== 'Disponível' &&
+                        assigned_to_name !== 'available' &&
                         assigned_to_name !== '*' &&
                         assigned_to_name !== '**') {
                         status = 'in_use';
@@ -439,56 +439,57 @@ export default function InventoryPage() {
 
                     // Normalização de Tipo
                     let rawType = findValue(row, ['Tipo', 'Categoria', 'Type', 'Device Type', 'Tipo de Equipamento']) || '';
-                    let device_type: string = activeSubTab;
+                    let final_device_type: string = activeSubTab;
 
                     if (rawType) {
-                        rawType = rawType.toString().toLowerCase();
-                        if (rawType.includes('celular') || rawType.includes('phone') || rawType.includes('mobile') || rawType.includes('smartphone')) {
-                            device_type = 'smartphone';
-                        } else if (rawType.includes('tablet') || rawType.includes('ipad')) {
-                            device_type = 'tablet';
-                        } else if (rawType.includes('monitor') || rawType.includes('tela')) {
-                            device_type = 'monitor';
-                        } else if (rawType.includes('chip') || rawType.includes('sim') || rawType.includes('linha')) {
-                            device_type = 'chip';
-                        } else if (rawType.includes('note') || rawType.includes('lap') || rawType.includes('computador')) {
-                            device_type = 'notebook';
+                        const lowType = rawType.toString().toLowerCase();
+                        if (lowType.includes('celular') || lowType.includes('phone') || lowType.includes('mobile') || lowType.includes('smartphone')) {
+                            final_device_type = 'smartphone';
+                        } else if (lowType.includes('tablet') || lowType.includes('ipad')) {
+                            final_device_type = 'tablet';
+                        } else if (lowType.includes('monitor') || lowType.includes('tela')) {
+                            final_device_type = 'monitor';
+                        } else if (lowType.includes('chip') || lowType.includes('sim') || lowType.includes('linha')) {
+                            final_device_type = 'chip';
+                        } else if (lowType.includes('note') || lowType.includes('lap') || lowType.includes('computador')) {
+                            final_device_type = 'notebook';
                         }
                     }
 
-                    // Regra de Ouro: Se hostname começa com LAP -> Sempre Notebook (independente da aba ou tipo na planilha)
-                    if (hostname.toUpperCase().startsWith('LAP')) {
-                        device_type = 'notebook';
+                    // Regra de Ouro: Se hostname começa com LAP -> Sempre Notebook
+                    if (hostname && hostname.toUpperCase().startsWith('LAP')) {
+                        final_device_type = 'notebook';
+                    }
+
+                    let finalPurchaseValue = null;
+                    const rawVal = findValue(row, ['Valor', 'Preço', 'Preco', 'Custo', 'Price', 'Value', 'Valor de Compra']);
+                    if (rawVal !== undefined && rawVal !== null) {
+                        const cleanVal = String(rawVal).replace(/\./g, '').replace(',', '.').replace(/[^\d.-]/g, '');
+                        finalPurchaseValue = parseFloat(cleanVal) || 0;
                     }
 
                     return {
                         asset_tag,
+                        serial_number,
                         model,
                         brand,
-                        hostname,
+                        device_type: final_device_type as any,
+                        status: status as any,
                         assigned_to_name,
                         location,
-                        status,
-                        device_type,
+                        hostname,
                         company,
-                        notes,
-                        serial_number,
-                        purchase_value: purchase_value ? parseFloat(String(purchase_value).replace(/[^0-9.,]/g, '').replace(',', '.')) : null,
+                        purchase_value: finalPurchaseValue,
                         delivery_date: parseDate(delivery_date),
-                        return_date: parseDate(return_date)
+                        return_date: parseDate(return_date),
+                        notes
                     };
                 });
 
-                // Deduplicação dentro do arquivo: evita erro de tentar atualizar a mesma linha duas vezes em uma transação
-                const uniqueAssets = Array.from(
-                    assetsToImport.reduce((map, asset) => {
-                        map.set(asset.asset_tag, asset);
-                        return map;
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    }, new Map<string, any>()).values()
-                );
+                // Remover duplicatas de asset_tag no próprio array importado
+                const uniqueAssets = Array.from(new Map(assetsToImport.map(item => [item.asset_tag, item])).values());
 
-                console.log(`Enviando ${uniqueAssets.length} registros únicos para o Supabase...`);
+                console.log(`Enviando ${uniqueAssets.length} registros para o Supabase. Exemplo:`, uniqueAssets[0]);
                 const { error } = await supabase
                     .from('tech_assets')
                     .upsert(uniqueAssets, { onConflict: 'asset_tag' });
