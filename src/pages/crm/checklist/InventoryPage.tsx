@@ -1132,154 +1132,157 @@ export default function InventoryPage() {
             </Card>
 
 
-            {/* Modal de Novo/Editar Ativo */}
             <Dialog open={isAssetModalOpen} onOpenChange={setIsAssetModalOpen}>
-                <DialogContent className="max-w-2xl bg-white dark:bg-card border-rose-gold/20">
-                    <DialogHeader>
-                        <DialogTitle className="text-2xl font-serif text-rose-gold-dark">
-                            {editingAsset?.id ? "Editar Equipamento" : "Novo Equipamento"}
-                        </DialogTitle>
-                    </DialogHeader>
+                <DialogContent className="max-w-2xl max-h-[95vh] overflow-hidden flex flex-col bg-white dark:bg-card border-rose-gold/20 p-0">
+                    <div className="p-6 pb-2">
+                        <DialogHeader>
+                            <DialogTitle className="text-2xl font-serif text-rose-gold-dark">
+                                {editingAsset?.id ? "Editar Equipamento" : "Novo Equipamento"}
+                            </DialogTitle>
+                        </DialogHeader>
+                    </div>
 
-                    <div className="grid grid-cols-2 gap-4 py-4">
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">Patrimônio / Asset Tag</label>
-                            <Input
-                                value={editingAsset?.asset_tag || ""}
-                                onChange={(e) => setEditingAsset({ ...editingAsset, asset_tag: e.target.value })}
-                                placeholder="MB-001"
-                                className="border-rose-gold/20"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">Numero de Série (SN)</label>
-                            <Input
-                                value={editingAsset?.serial_number || ""}
-                                onChange={(e) => setEditingAsset({ ...editingAsset, serial_number: e.target.value })}
-                                placeholder="XYZ123..."
-                                className="border-rose-gold/20"
-                            />
-                        </div>
+                    <div className="flex-1 overflow-y-auto p-6 pt-0">
+                        <div className="grid grid-cols-2 gap-4 py-4">
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">Patrimônio / Asset Tag</label>
+                                <Input
+                                    value={editingAsset?.asset_tag || ""}
+                                    onChange={(e) => setEditingAsset({ ...editingAsset, asset_tag: e.target.value })}
+                                    placeholder="MB-001"
+                                    className="border-rose-gold/20"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">Numero de Série (SN)</label>
+                                <Input
+                                    value={editingAsset?.serial_number || ""}
+                                    onChange={(e) => setEditingAsset({ ...editingAsset, serial_number: e.target.value })}
+                                    placeholder="XYZ123..."
+                                    className="border-rose-gold/20"
+                                />
+                            </div>
 
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">Marca</label>
-                            <Input
-                                value={editingAsset?.brand || ""}
-                                onChange={(e) => setEditingAsset({ ...editingAsset, brand: e.target.value })}
-                                placeholder="Dell, Apple..."
-                                className="border-rose-gold/20"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">Modelo</label>
-                            <Input
-                                value={editingAsset?.model || ""}
-                                onChange={(e) => setEditingAsset({ ...editingAsset, model: e.target.value })}
-                                placeholder="Latitude 3420..."
-                                className="border-rose-gold/20"
-                            />
-                        </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">Marca</label>
+                                <Input
+                                    value={editingAsset?.brand || ""}
+                                    onChange={(e) => setEditingAsset({ ...editingAsset, brand: e.target.value })}
+                                    placeholder="Dell, Apple..."
+                                    className="border-rose-gold/20"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">Modelo</label>
+                                <Input
+                                    value={editingAsset?.model || ""}
+                                    onChange={(e) => setEditingAsset({ ...editingAsset, model: e.target.value })}
+                                    placeholder="Latitude 3420..."
+                                    className="border-rose-gold/20"
+                                />
+                            </div>
 
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">Responsável</label>
-                            <Input
-                                value={editingAsset?.assigned_to_name || ""}
-                                onChange={(e) => setEditingAsset({ ...editingAsset, assigned_to_name: e.target.value })}
-                                placeholder="Nome do colaborador"
-                                className="border-rose-gold/20"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">Setor / Local</label>
-                            <Input
-                                value={editingAsset?.location || ""}
-                                onChange={(e) => setEditingAsset({ ...editingAsset, location: e.target.value })}
-                                placeholder="Marketing, TI..."
-                                className="border-rose-gold/20"
-                            />
-                        </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">Responsável</label>
+                                <Input
+                                    value={editingAsset?.assigned_to_name || ""}
+                                    onChange={(e) => setEditingAsset({ ...editingAsset, assigned_to_name: e.target.value })}
+                                    placeholder="Nome do colaborador"
+                                    className="border-rose-gold/20"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">Setor / Local</label>
+                                <Input
+                                    value={editingAsset?.location || ""}
+                                    onChange={(e) => setEditingAsset({ ...editingAsset, location: e.target.value })}
+                                    placeholder="Marketing, TI..."
+                                    className="border-rose-gold/20"
+                                />
+                            </div>
 
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">Hostname</label>
-                            <Input
-                                value={editingAsset?.hostname || ""}
-                                onChange={(e) => setEditingAsset({ ...editingAsset, hostname: e.target.value })}
-                                placeholder="LAP-MKT-01"
-                                className="border-rose-gold/20"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">Empresa</label>
-                            <Input
-                                value={editingAsset?.company || ""}
-                                onChange={(e) => setEditingAsset({ ...editingAsset, company: e.target.value })}
-                                placeholder="MedBeauty, ..."
-                                className="border-rose-gold/20"
-                            />
-                        </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">Hostname</label>
+                                <Input
+                                    value={editingAsset?.hostname || ""}
+                                    onChange={(e) => setEditingAsset({ ...editingAsset, hostname: e.target.value })}
+                                    placeholder="LAP-MKT-01"
+                                    className="border-rose-gold/20"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">Empresa</label>
+                                <Input
+                                    value={editingAsset?.company || ""}
+                                    onChange={(e) => setEditingAsset({ ...editingAsset, company: e.target.value })}
+                                    placeholder="MedBeauty, ..."
+                                    className="border-rose-gold/20"
+                                />
+                            </div>
 
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">Valor de Compra</label>
-                            <Input
-                                type="number"
-                                value={editingAsset?.purchase_value || ""}
-                                onChange={(e) => setEditingAsset({ ...editingAsset, purchase_value: parseFloat(e.target.value) })}
-                                placeholder="0.00"
-                                className="border-rose-gold/20"
-                            />
-                        </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">Valor de Compra</label>
+                                <Input
+                                    type="number"
+                                    value={editingAsset?.purchase_value || ""}
+                                    onChange={(e) => setEditingAsset({ ...editingAsset, purchase_value: parseFloat(e.target.value) })}
+                                    placeholder="0.00"
+                                    className="border-rose-gold/20"
+                                />
+                            </div>
 
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">Data de Entrega</label>
-                            <Input
-                                type="date"
-                                value={editingAsset?.delivery_date || ""}
-                                onChange={(e) => setEditingAsset({ ...editingAsset, delivery_date: e.target.value })}
-                                className="border-rose-gold/20"
-                            />
-                        </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">Data de Entrega</label>
+                                <Input
+                                    type="date"
+                                    value={editingAsset?.delivery_date || ""}
+                                    onChange={(e) => setEditingAsset({ ...editingAsset, delivery_date: e.target.value })}
+                                    className="border-rose-gold/20"
+                                />
+                            </div>
 
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">Data de Devolução</label>
-                            <Input
-                                type="date"
-                                value={editingAsset?.return_date || ""}
-                                onChange={(e) => setEditingAsset({ ...editingAsset, return_date: e.target.value })}
-                                className="border-rose-gold/20"
-                            />
-                        </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">Data de Devolução</label>
+                                <Input
+                                    type="date"
+                                    value={editingAsset?.return_date || ""}
+                                    onChange={(e) => setEditingAsset({ ...editingAsset, return_date: e.target.value })}
+                                    className="border-rose-gold/20"
+                                />
+                            </div>
 
-                        <div className="space-y-2 col-span-2">
-                            <label className="text-sm font-medium">Observações</label>
-                            <Input
-                                value={editingAsset?.notes || ""}
-                                onChange={(e) => setEditingAsset({ ...editingAsset, notes: e.target.value })}
-                                placeholder="..."
-                                className="border-rose-gold/20"
-                            />
-                        </div>
+                            <div className="space-y-2 col-span-2">
+                                <label className="text-sm font-medium">Observações</label>
+                                <Input
+                                    value={editingAsset?.notes || ""}
+                                    onChange={(e) => setEditingAsset({ ...editingAsset, notes: e.target.value })}
+                                    placeholder="..."
+                                    className="border-rose-gold/20"
+                                />
+                            </div>
 
-                        <div className="space-y-2 col-span-2">
-                            <label className="text-sm font-medium">Status</label>
-                            <Select
-                                value={editingAsset?.status || "available"}
-                                onValueChange={(val) => setEditingAsset({ ...editingAsset, status: val })}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="available">Disponível</SelectItem>
-                                    <SelectItem value="in_use">Em Uso</SelectItem>
-                                    <SelectItem value="maintenance">Manutenção</SelectItem>
-                                    <SelectItem value="broken">Defeito</SelectItem>
-                                    <SelectItem value="lost">Perdido/Roubado</SelectItem>
-                                </SelectContent>
-                            </Select>
+                            <div className="space-y-2 col-span-2">
+                                <label className="text-sm font-medium">Status</label>
+                                <Select
+                                    value={editingAsset?.status || "available"}
+                                    onValueChange={(val) => setEditingAsset({ ...editingAsset, status: val })}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="available">Disponível</SelectItem>
+                                        <SelectItem value="in_use">Em Uso</SelectItem>
+                                        <SelectItem value="maintenance">Manutenção</SelectItem>
+                                        <SelectItem value="broken">Defeito</SelectItem>
+                                        <SelectItem value="lost">Perdido/Roubado</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="flex justify-end gap-2 mt-4">
+                    <div className="p-6 pt-2 border-t mt-auto flex justify-end gap-2 bg-white dark:bg-card">
                         <Button variant="ghost" onClick={() => setIsAssetModalOpen(false)}>
                             {canEdit || isAdmin ? "Cancelar" : "Fechar"}
                         </Button>
