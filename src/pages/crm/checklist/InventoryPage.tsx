@@ -62,6 +62,9 @@ interface TechAsset {
     location?: string;
     company?: string;
     notes?: string;
+    purchase_value?: number;
+    delivery_date?: string;
+    return_date?: string;
 }
 
 const MOCK_ASSETS: TechAsset[] = [
@@ -86,7 +89,10 @@ export default function InventoryPage() {
         assigned_to_name: '',
         serial_number: '',
         location: '',
-        status: ''
+        status: '',
+        purchase_value: '',
+        delivery_date: '',
+        return_date: ''
     });
 
     // Data States
@@ -275,7 +281,10 @@ export default function InventoryPage() {
                     status: editingAsset.status,
                     device_type: editingAsset.device_type,
                     company: editingAsset.company,
-                    notes: editingAsset.notes
+                    notes: editingAsset.notes,
+                    purchase_value: editingAsset.purchase_value,
+                    delivery_date: editingAsset.delivery_date,
+                    return_date: editingAsset.return_date
                 }).eq('id', editingAsset.id);
                 if (error) throw error;
             } else {
@@ -296,7 +305,10 @@ export default function InventoryPage() {
                     status: editingAsset.status || "available",
                     device_type: activeSubTab,
                     company: editingAsset.company,
-                    notes: editingAsset.notes
+                    notes: editingAsset.notes,
+                    purchase_value: editingAsset.purchase_value,
+                    delivery_date: editingAsset.delivery_date,
+                    return_date: editingAsset.return_date
                 }]);
                 if (error) throw error;
             }
@@ -366,6 +378,9 @@ export default function InventoryPage() {
                     const company = findValue(row, ['Empresa', 'Company', 'Organization', 'Org']) || '';
                     const notes = findValue(row, ['Observações', 'Observacoes', 'Notes', 'Obs', 'Comentários', 'Comentarios']) || '';
                     const serial_number = findValue(row, ['Série', 'Serie', 'Serial', 'S/N', 'Serial Number']) || '';
+                    const purchase_value = findValue(row, ['Valor', 'Preço', 'Custo', 'Price', 'Value', 'Valor de Compra']);
+                    const delivery_date = findValue(row, ['Entrega', 'Data de Entrega', 'Delivery', 'Delivery Date']);
+                    const return_date = findValue(row, ['Devolução', 'Devolucao', 'Data de Devolução', 'Return Date', 'Return']);
 
                     // Normalização de Status
                     let rawStatus = findValue(row, ['Status', 'Situação', 'Situacao', 'Estado', 'Status do Ativo']) || 'available';
@@ -425,7 +440,10 @@ export default function InventoryPage() {
                         device_type,
                         company,
                         notes,
-                        serial_number
+                        serial_number,
+                        purchase_value: purchase_value ? parseFloat(String(purchase_value).replace(/[^0-9.,]/g, '').replace(',', '.')) : null,
+                        delivery_date: delivery_date ? new Date(delivery_date).toISOString().split('T')[0] : null,
+                        return_date: return_date ? new Date(return_date).toISOString().split('T')[0] : null
                     };
                 });
 
@@ -535,15 +553,13 @@ export default function InventoryPage() {
                 } else {
                     // notebook
                     return {
-                        ...baseData,
-                        'Equipamento': item.model,
-                        'Marca': item.brand,
+                        'Patrimônio': item.asset_tag,
                         'Hostname': item.hostname || '',
+                        'Equipamento': `${item.brand} ${item.model}`,
+                        'Valor': item.purchase_value || '',
                         'Responsável': item.assigned_to_name || 'Disponível',
-                        'Serial Number': item.serial_number || '',
-                        'Setor': item.location || '',
-                        'Empresa': item.company || '',
-                        'Observações': item.notes || '',
+                        'Entrega': item.delivery_date || '',
+                        'Devolução': item.return_date || '',
                         'Status': item.assigned_to_name && item.assigned_to_name !== 'Disponível' && item.assigned_to_name !== '*' && item.assigned_to_name !== '**' ? 'Em Uso' : (item.status === 'available' ? 'Disponível' : item.status === 'in_use' ? 'Em Uso' : item.status === 'maintenance' ? 'Manutenção' : item.status === 'broken' ? 'Defeito' : item.status)
                     };
                 }
@@ -587,6 +603,9 @@ export default function InventoryPage() {
             (!filters.assigned_to_name || (a.assigned_to_name || '').toLowerCase().includes(filters.assigned_to_name.toLowerCase())) &&
             (!filters.serial_number || (a.serial_number || '').toLowerCase().includes(filters.serial_number.toLowerCase())) &&
             (!filters.location || (a.location || '').toLowerCase().includes(filters.location.toLowerCase())) &&
+            (!filters.purchase_value || (a.purchase_value?.toString() || '').includes(filters.purchase_value)) &&
+            (!filters.delivery_date || (a.delivery_date || '').includes(filters.delivery_date)) &&
+            (!filters.return_date || (a.return_date || '').includes(filters.return_date)) &&
             (!filters.status || (
                 (a.assigned_to_name && a.assigned_to_name !== 'Disponível' && a.assigned_to_name !== '*' && a.assigned_to_name !== '**')
                     ? 'in_use' : a.status
@@ -916,11 +935,12 @@ export default function InventoryPage() {
                                         ) : (
                                             <>
                                                 <TableHead><FilterHeader label="Patrimônio" field="asset_tag" /></TableHead>
-                                                <TableHead><FilterHeader label="Equipamento" field="model" /></TableHead>
                                                 <TableHead><FilterHeader label="Hostname" field="hostname" /></TableHead>
+                                                <TableHead><FilterHeader label="Equipamento" field="model" /></TableHead>
+                                                <TableHead><FilterHeader label="Valor" field="purchase_value" /></TableHead>
                                                 <TableHead><FilterHeader label="Responsável" field="assigned_to_name" /></TableHead>
-                                                <TableHead><FilterHeader label="Serial Number" field="serial_number" /></TableHead>
-                                                <TableHead><FilterHeader label="Setor" field="location" /></TableHead>
+                                                <TableHead><FilterHeader label="Entrega" field="delivery_date" /></TableHead>
+                                                <TableHead><FilterHeader label="Devolução" field="return_date" /></TableHead>
                                                 <TableHead><FilterHeader label="Status" field="status" /></TableHead>
                                             </>
                                         )}
@@ -1036,6 +1056,7 @@ export default function InventoryPage() {
                                                             <span className="text-[10px] text-muted-foreground uppercase">{item.serial_number || 'S/N'}</span>
                                                         </div>
                                                     </TableCell>
+                                                    <TableCell className="text-sm font-mono text-muted-foreground">{item.hostname || "-"}</TableCell>
                                                     <TableCell>
                                                         <div className="flex items-center gap-2">
                                                             <div className="p-1.5 rounded-md bg-rose-gold/10 text-rose-gold">
@@ -1047,10 +1068,16 @@ export default function InventoryPage() {
                                                             </div>
                                                         </div>
                                                     </TableCell>
-                                                    <TableCell className="text-sm font-mono text-muted-foreground">{item.hostname || "-"}</TableCell>
+                                                    <TableCell className="text-sm">
+                                                        {item.purchase_value ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.purchase_value) : "-"}
+                                                    </TableCell>
                                                     <TableCell className="text-sm font-medium text-slate-700">{item.assigned_to_name || "Disponível"}</TableCell>
-                                                    <TableCell className="text-sm text-muted-foreground">{item.serial_number || "-"}</TableCell>
-                                                    <TableCell className="text-sm text-muted-foreground">{item.location || "-"}</TableCell>
+                                                    <TableCell className="text-sm text-muted-foreground">
+                                                        {item.delivery_date ? new Date(item.delivery_date).toLocaleDateString('pt-BR') : "-"}
+                                                    </TableCell>
+                                                    <TableCell className="text-sm text-muted-foreground">
+                                                        {item.return_date ? new Date(item.return_date).toLocaleDateString('pt-BR') : "-"}
+                                                    </TableCell>
                                                     <TableCell>
                                                         {getStatusBadge(
                                                             (item.assigned_to_name &&
@@ -1154,6 +1181,37 @@ export default function InventoryPage() {
                                 value={editingAsset?.company || ""}
                                 onChange={(e) => setEditingAsset({ ...editingAsset, company: e.target.value })}
                                 placeholder="MedBeauty, ..."
+                                className="border-rose-gold/20"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Valor de Compra</label>
+                            <Input
+                                type="number"
+                                value={editingAsset?.purchase_value || ""}
+                                onChange={(e) => setEditingAsset({ ...editingAsset, purchase_value: parseFloat(e.target.value) })}
+                                placeholder="0.00"
+                                className="border-rose-gold/20"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Data de Entrega</label>
+                            <Input
+                                type="date"
+                                value={editingAsset?.delivery_date || ""}
+                                onChange={(e) => setEditingAsset({ ...editingAsset, delivery_date: e.target.value })}
+                                className="border-rose-gold/20"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Data de Devolução</label>
+                            <Input
+                                type="date"
+                                value={editingAsset?.return_date || ""}
+                                onChange={(e) => setEditingAsset({ ...editingAsset, return_date: e.target.value })}
                                 className="border-rose-gold/20"
                             />
                         </div>
